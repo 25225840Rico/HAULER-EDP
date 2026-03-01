@@ -1,0 +1,987 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Estado de Pago · HAULER</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --navy: #0D2137;
+    --navy-mid: #1A3A5C;
+    --navy-light: #2A5580;
+    --accent: #0E7FC0;
+    --accent-light: #E8F4FC;
+    --silver: #B8C9D9;
+    --light: #F2F7FB;
+    --border: #D0DEE9;
+    --text: #0D2137;
+    --muted: #6A849E;
+    --white: #FFFFFF;
+    --success: #1B7A4A;
+    --danger: #C0392B;
+    --row-odd: #F7FAFD;
+    --row-even: #FFFFFF;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: #E4EDF5;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 30px 20px;
+    color: var(--text);
+  }
+
+  /* ── TOOLBAR (oculta al imprimir) ─────────────────────────── */
+  .toolbar {
+    width: 100%;
+    max-width: 1100px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 18px;
+    flex-wrap: wrap;
+  }
+
+  .toolbar span {
+    font-size: 11px;
+    color: var(--muted);
+    font-weight: 500;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    margin-right: auto;
+  }
+
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    padding: 9px 18px;
+    border-radius: 8px;
+    border: none;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    letter-spacing: 0.2px;
+  }
+
+  .btn-primary {
+    background: var(--navy);
+    color: white;
+  }
+  .btn-primary:hover { background: var(--navy-mid); transform: translateY(-1px); }
+
+  .btn-secondary {
+    background: white;
+    color: var(--navy);
+    border: 1.5px solid var(--border);
+  }
+  .btn-secondary:hover { background: var(--light); border-color: var(--silver); }
+
+  .btn-danger {
+    background: #FDECEA;
+    color: var(--danger);
+    border: 1.5px solid #F5C6C2;
+  }
+  .btn-danger:hover { background: #FAD4CF; }
+
+  .btn-print {
+    background: var(--accent);
+    color: white;
+  }
+  .btn-print:hover { background: #0B6EA8; transform: translateY(-1px); }
+
+  /* ── DOCUMENTO ────────────────────────────────────────────── */
+  .doc {
+    width: 100%;
+    max-width: 1100px;
+    background: var(--white);
+    border-radius: 16px;
+    box-shadow: 0 4px 24px rgba(13,33,55,0.10), 0 1px 4px rgba(13,33,55,0.06);
+    border: 1px solid var(--border);
+    overflow: hidden;
+  }
+
+  /* ── ENCABEZADO ───────────────────────────────────────────── */
+  .doc-header {
+    background: var(--navy);
+    padding: 28px 36px;
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    align-items: center;
+    gap: 30px;
+  }
+
+  .logo-block .logo-text {
+    font-family: 'DM Mono', monospace;
+    font-size: 30px;
+    font-weight: 500;
+    color: white;
+    letter-spacing: 3px;
+  }
+  .logo-block .logo-sub {
+    font-size: 10px;
+    color: var(--silver);
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    margin-top: 3px;
+  }
+
+  .doc-title-block {
+    text-align: center;
+  }
+  .doc-title-block h1 {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--silver);
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    margin-bottom: 4px;
+  }
+  .doc-title-block h2 {
+    font-size: 22px;
+    font-weight: 300;
+    color: white;
+    letter-spacing: 1px;
+  }
+
+  .doc-meta {
+    text-align: right;
+  }
+  .doc-meta .meta-row {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-bottom: 8px;
+  }
+  .doc-meta label {
+    font-size: 10px;
+    color: var(--silver);
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    white-space: nowrap;
+  }
+  .doc-meta input {
+    background: rgba(255,255,255,0.1);
+    border: 1px solid rgba(255,255,255,0.2);
+    border-radius: 6px;
+    color: white;
+    font-family: 'DM Mono', monospace;
+    font-size: 13px;
+    padding: 5px 10px;
+    width: 120px;
+    text-align: right;
+  }
+  .doc-meta input[type="date"] { width: 145px; color-scheme: dark; }
+  .doc-meta input:focus { outline: none; border-color: var(--accent); background: rgba(255,255,255,0.15); }
+
+  /* ── SECCIÓN DATOS ─────────────────────────────────────────── */
+  .doc-info {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .info-block {
+    padding: 22px 36px;
+  }
+  .info-block:first-child {
+    border-right: 1px solid var(--border);
+  }
+
+  .info-block-title {
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 14px;
+    padding-bottom: 6px;
+    border-bottom: 2px solid var(--accent-light);
+    display: flex;
+    align-items: center;
+    gap: 7px;
+  }
+  .info-block-title svg { flex-shrink: 0; }
+
+  .info-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px 16px;
+  }
+
+  .info-field {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+  }
+  .info-field.full { grid-column: 1 / -1; }
+
+  .info-field label {
+    font-size: 9px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1.2px;
+    color: var(--muted);
+  }
+
+  .info-field input {
+    background: transparent;
+    border: none;
+    border-bottom: 1px solid var(--border);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text);
+    padding: 4px 0;
+    width: 100%;
+    transition: border-color 0.15s;
+  }
+  .info-field input:focus { outline: none; border-bottom-color: var(--accent); }
+  .info-field input:disabled { color: var(--navy-mid); font-weight: 700; }
+
+  /* ── TABLA ────────────────────────────────────────────────── */
+  .doc-table-wrap {
+    padding: 24px 36px 16px;
+  }
+
+  .table-header-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 14px;
+  }
+
+  .table-label {
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--accent);
+    display: flex;
+    align-items: center;
+    gap: 7px;
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 12.5px;
+  }
+
+  thead tr {
+    background: var(--navy);
+  }
+
+  thead th {
+    color: white;
+    font-weight: 600;
+    font-size: 10px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    padding: 10px 10px;
+    text-align: center;
+    white-space: nowrap;
+  }
+  thead th:first-child { border-radius: 8px 0 0 0; text-align: left; padding-left: 14px; }
+  thead th:last-child { border-radius: 0 8px 0 0; width: 40px; }
+
+  tbody tr:nth-child(odd) { background: var(--row-odd); }
+  tbody tr:nth-child(even) { background: var(--row-even); }
+  tbody tr { transition: background 0.1s; }
+  tbody tr:hover { background: var(--accent-light); }
+
+  tbody td {
+    padding: 6px 6px;
+    text-align: center;
+    border-bottom: 1px solid var(--border);
+    font-size: 12.5px;
+  }
+  tbody td:first-child { text-align: left; padding-left: 14px; }
+
+  tbody td input {
+    width: 100%;
+    background: transparent;
+    border: none;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 12.5px;
+    color: var(--text);
+    text-align: center;
+    padding: 4px 4px;
+    border-radius: 5px;
+    transition: background 0.12s;
+  }
+  tbody td:first-child input { text-align: left; }
+  tbody td input:focus {
+    outline: none;
+    background: white;
+    box-shadow: 0 0 0 2px var(--accent);
+  }
+
+  .total-cell {
+    font-family: 'DM Mono', monospace;
+    font-weight: 500;
+    color: var(--navy-mid);
+    font-size: 12px;
+  }
+
+  .btn-del {
+    background: transparent;
+    border: none;
+    color: var(--muted);
+    cursor: pointer;
+    font-size: 16px;
+    width: 28px;
+    height: 28px;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.12s;
+    margin: 0 auto;
+  }
+  .btn-del:hover { background: #FDECEA; color: var(--danger); }
+
+  .empty-row td {
+    padding: 24px;
+    text-align: center;
+    color: var(--muted);
+    font-size: 13px;
+    font-style: italic;
+    background: var(--light) !important;
+    border-radius: 8px;
+  }
+
+  /* ── FOOTER TOTALES ───────────────────────────────────────── */
+  .doc-footer {
+    padding: 0 36px 28px;
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 24px;
+    align-items: end;
+  }
+
+  .iva-toggle-wrap {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: var(--light);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 8px 14px;
+    width: fit-content;
+    margin-bottom: 16px;
+  }
+  .iva-toggle-wrap label {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--navy);
+    cursor: pointer;
+    user-select: none;
+  }
+  .iva-toggle-wrap input[type="checkbox"] {
+    width: 16px;
+    height: 16px;
+    accent-color: var(--accent);
+    cursor: pointer;
+  }
+
+  .glosa-legal {
+    font-size: 10.5px;
+    line-height: 1.65;
+    color: var(--muted);
+    max-width: 520px;
+    padding: 14px 18px;
+    background: var(--light);
+    border-left: 3px solid var(--silver);
+    border-radius: 0 6px 6px 0;
+  }
+  .glosa-legal strong { color: var(--navy); }
+
+  .totales-box {
+    background: var(--navy);
+    border-radius: 12px;
+    padding: 20px 24px;
+    min-width: 280px;
+  }
+
+  .total-line {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 7px 0;
+    color: rgba(255,255,255,0.7);
+    font-size: 13px;
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+  }
+  .total-line:last-of-type { border-bottom: none; }
+  .total-line .amount {
+    font-family: 'DM Mono', monospace;
+    font-weight: 500;
+    letter-spacing: 0.5px;
+  }
+  .total-line.iva-line { transition: opacity 0.2s; }
+
+  .total-line.grand {
+    margin-top: 8px;
+    padding-top: 14px;
+    border-top: 1.5px solid rgba(255,255,255,0.3) !important;
+    border-bottom: none;
+    color: white;
+    font-size: 17px;
+    font-weight: 700;
+  }
+  .total-line.grand .amount {
+    font-size: 20px;
+    font-weight: 700;
+    color: #7FCCF0;
+  }
+
+  /* ── LOGO UPLOAD & RESIZE ────────────────────────────────────── */
+  .logo-controles {
+    margin-top: 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+  }
+
+  .btn-upload-logo {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba(255,255,255,0.12);
+    border: 1px dashed rgba(255,255,255,0.35);
+    border-radius: 6px;
+    color: rgba(255,255,255,0.75);
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.4px;
+    padding: 5px 10px;
+    cursor: pointer;
+    transition: all 0.15s;
+    width: fit-content;
+  }
+  .btn-upload-logo:hover {
+    background: rgba(255,255,255,0.22);
+    border-color: rgba(255,255,255,0.6);
+    color: white;
+  }
+
+  .logo-size-wrap {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    color: rgba(255,255,255,0.65);
+  }
+  .logo-size-wrap input[type="range"] {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 110px;
+    height: 3px;
+    background: rgba(255,255,255,0.25);
+    border-radius: 2px;
+    outline: none;
+    cursor: pointer;
+  }
+  .logo-size-wrap input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    background: white;
+    cursor: pointer;
+    border: 2px solid var(--accent);
+  }
+  .logo-size-wrap span {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    min-width: 32px;
+    color: rgba(255,255,255,0.6);
+  }
+
+  #logoImagen {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .logo-quitar {
+    background: rgba(255,255,255,0.15);
+    border: 1px solid rgba(255,255,255,0.3);
+    color: rgba(255,255,255,0.7);
+    border-radius: 50%;
+    width: 20px;
+    height: 20px;
+    font-size: 11px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    line-height: 1;
+    transition: all 0.12s;
+    flex-shrink: 0;
+    align-self: flex-start;
+    margin-top: 2px;
+    padding: 0;
+  }
+  .logo-quitar:hover { background: rgba(200,50,50,0.5); border-color: rgba(255,100,100,0.5); color: white; }
+
+  /* ── PRINT ─────────────────────────────────────────────────── */
+  @media print {
+    @page {
+      size: A4 landscape;
+      margin: 12mm 14mm;
+    }
+
+    * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+
+    body {
+      background: white;
+      padding: 0;
+      min-height: auto;
+    }
+
+    .toolbar { display: none !important; }
+
+    .doc {
+      box-shadow: none;
+      border: 1px solid #ccc;
+      max-width: 100%;
+      border-radius: 0;
+      page-break-inside: avoid;
+      break-inside: avoid;
+    }
+
+    .doc-header { padding: 14px 22px; }
+    .logo-block .logo-text { font-size: 22px; }
+    .doc-title-block h2 { font-size: 16px; }
+    .doc-meta input { font-size: 11px; padding: 3px 7px; }
+
+    .doc-info { border-bottom: 1px solid #ccc; }
+    .info-block { padding: 12px 22px; }
+    .info-field input { font-size: 11px; padding: 2px 0; }
+
+    .doc-table-wrap { padding: 12px 22px 8px; }
+
+    table { font-size: 10px; }
+    thead th { padding: 7px 6px; font-size: 8.5px; }
+    tbody td { padding: 4px 5px; }
+    tbody td input { font-size: 10px; }
+    .total-cell { font-size: 10px; }
+
+    .doc-footer { padding: 0 22px 14px; gap: 16px; }
+    .glosa-legal { font-size: 8.5px; line-height: 1.5; padding: 10px 12px; }
+    .totales-box { padding: 12px 16px; min-width: 200px; }
+    .total-line { font-size: 11px; padding: 5px 0; }
+    .total-line.grand { font-size: 14px; }
+    .total-line.grand .amount { font-size: 16px; }
+
+    .logo-controles { display: none !important; }
+    .logo-quitar { display: none !important; }
+    #logoImagen { gap: 0 !important; }
+    .btn-del { display: none !important; }
+    .btn { display: none !important; }
+    thead th:last-child { display: none !important; }
+    tbody td:last-child { display: none !important; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ── TOOLBAR ──────────────────────────────────────────────── -->
+<div class="toolbar">
+  <span>Hauler · Estado de Pago</span>
+  <button class="btn btn-secondary" onclick="agregarFila()">
+    <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+    Agregar servicio
+  </button>
+  <button class="btn btn-secondary" onclick="eliminarUltimaFila()">
+    <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="5" y1="12" x2="19" y2="12"/></svg>
+    Eliminar último
+  </button>
+  <button class="btn btn-danger" onclick="eliminarTodosLosServicios()">
+    <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/></svg>
+    Limpiar todo
+  </button>
+  <button class="btn btn-print" onclick="window.print()">
+    <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+    Imprimir / PDF
+  </button>
+</div>
+
+<!-- ── DOCUMENTO ────────────────────────────────────────────── -->
+<div class="doc">
+
+  <!-- Encabezado -->
+  <div class="doc-header">
+    <div class="logo-block">
+      <!-- Estado: texto (default) -->
+      <div id="logoTexto">
+        <div class="logo-text" id="logoTextContent">HAULER</div>
+        <div class="logo-sub">Transporte de pasajeros</div>
+      </div>
+      <!-- Estado: imagen cargada -->
+      <div id="logoImagen" style="display:none; position:relative;">
+        <img id="logoImg" src="" alt="Logo" style="display:block; object-fit:contain; object-position:left center;">
+        <button class="logo-quitar" onclick="quitarLogo()" title="Quitar logo">✕</button>
+      </div>
+      <!-- Controles (ocultos al imprimir) -->
+      <div class="logo-controles" id="logoControles">
+        <label class="btn-upload-logo" title="Subir imagen de logo">
+          <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+          Subir logo
+          <input type="file" id="logoInput" accept="image/*" onchange="cargarLogo(this)" style="display:none;">
+        </label>
+        <div class="logo-size-wrap" id="logoSizeWrap" style="display:none;">
+          <svg width="11" height="11" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7"/></svg>
+          <input type="range" id="logoSize" min="40" max="220" value="110" oninput="ajustarLogo(this.value)">
+          <span id="logoSizePx">110px</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="doc-title-block">
+      <h1>Documento de cobro</h1>
+      <h2>Estado de Pago</h2>
+    </div>
+
+    <div class="doc-meta">
+      <div class="meta-row">
+        <label>N° Doc.</label>
+        <input type="text" id="numDoc" value="EP-2401" maxlength="12">
+      </div>
+      <div class="meta-row">
+        <label>Emisión</label>
+        <input type="date" id="fechaEmision" value="2025-05-20">
+      </div>
+      <div class="meta-row">
+        <label>Vencimiento</label>
+        <input type="date" id="fechaVence" value="2025-06-20">
+      </div>
+    </div>
+  </div>
+
+  <!-- Datos mandante / proveedor -->
+  <div class="doc-info">
+    <div class="info-block">
+      <div class="info-block-title">
+        <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/></svg>
+        Mandante / Cliente
+      </div>
+      <div class="info-grid">
+        <div class="info-field full">
+          <label>Razón social</label>
+          <input type="text" value="Transportes del Sol Ltda.">
+        </div>
+        <div class="info-field">
+          <label>RUT</label>
+          <input type="text" placeholder="12.345.678-9">
+        </div>
+        <div class="info-field">
+          <label>Dirección</label>
+          <input type="text" value="Av. Libertador 1234">
+        </div>
+        <div class="info-field">
+          <label>Ciudad</label>
+          <input type="text" value="Santiago">
+        </div>
+        <div class="info-field">
+          <label>Contrato / Servicio</label>
+          <input type="text" value="Contrato escolar N° 24-05">
+        </div>
+        <div class="info-field">
+          <label>Orden de compra</label>
+          <input type="text" value="OC-2025-128">
+        </div>
+      </div>
+    </div>
+
+    <div class="info-block">
+      <div class="info-block-title">
+        <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></svg>
+        Proveedor del servicio
+      </div>
+      <div class="info-grid">
+        <div class="info-field full">
+          <label>Razón social</label>
+          <input type="text" value="HAULER SPA" disabled>
+        </div>
+        <div class="info-field">
+          <label>RUT</label>
+          <input type="text" value="76.123.456-7">
+        </div>
+        <div class="info-field">
+          <label>Giro</label>
+          <input type="text" value="Transporte terrestre de pasajeros">
+        </div>
+        <div class="info-field">
+          <label>Correo de contacto</label>
+          <input type="text" value="operaciones@hauler.cl">
+        </div>
+        <div class="info-field">
+          <label>Teléfono</label>
+          <input type="text" placeholder="+56 9 XXXX XXXX">
+        </div>
+        <div class="info-field">
+          <label>Banco / Cuenta</label>
+          <input type="text" placeholder="Banco · Cta. Cte. XXXXXXXX">
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tabla de servicios -->
+  <div class="doc-table-wrap">
+    <div class="table-header-row">
+      <div class="table-label">
+        <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="3" y1="15" x2="21" y2="15"/><line x1="9" y1="9" x2="9" y2="21"/></svg>
+        Detalle de servicios prestados
+      </div>
+    </div>
+
+    <table id="tabla">
+      <thead>
+        <tr>
+          <th style="text-align:left; padding-left:14px; width:14%">Vehículo</th>
+          <th style="width:9%">Patente</th>
+          <th style="width:16%">Ruta / Descripción</th>
+          <th style="width:10%">Fecha</th>
+          <th style="width:8%">Pasajeros</th>
+          <th style="width:7%">Viajes</th>
+          <th style="width:13%">Valor unit. $</th>
+          <th style="width:13%">Total $</th>
+          <th style="width:5%">—</th>
+        </tr>
+      </thead>
+      <tbody id="tbody">
+        <!-- filas dinámicas -->
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Footer: glosa + totales -->
+  <div class="doc-footer">
+    <div>
+      <div class="iva-toggle-wrap">
+        <input type="checkbox" id="incluirIva" checked onchange="calcular()">
+        <label for="incluirIva">Incluir IVA (19%)</label>
+      </div>
+      <div class="glosa-legal">
+        <strong>Ley N° 21.131 — Pago oportuno a 30 días:</strong> El presente estado de pago debe cancelarse dentro del plazo máximo de 30 días corridos contados desde la recepción conforme. El incumplimiento devengará los intereses moratorios que establece la ley, sin perjuicio de las acciones legales que correspondan. El proveedor declara que los servicios han sido prestados en conformidad a lo contratado.
+      </div>
+    </div>
+
+    <div class="totales-box">
+      <div class="total-line">
+        <span>Subtotal neto</span>
+        <span class="amount">$ <span id="subtotal">0</span></span>
+      </div>
+      <div class="total-line iva-line" id="ivaLinea">
+        <span>IVA 19%</span>
+        <span class="amount">$ <span id="iva">0</span></span>
+      </div>
+      <div class="total-line grand">
+        <span>TOTAL</span>
+        <span class="amount">$ <span id="total">0</span></span>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+  let filaId = 0;
+
+  function crearFila(datos) {
+    const id = filaId++;
+    const d = datos || {};
+
+    const tr = document.createElement('tr');
+    tr.dataset.id = id;
+
+    const cols = [
+      { key: 'vehiculo', placeholder: 'Ej: Bus Mercedes', align: 'left' },
+      { key: 'patente',  placeholder: 'XX-XX-00', align: 'center' },
+      { key: 'ruta',     placeholder: 'Origen → Destino', align: 'left' },
+      { key: 'fecha',    placeholder: '', align: 'center', type: 'date' },
+      { key: 'pasajeros',placeholder: '0', align: 'center' },
+      { key: 'viajes',   placeholder: '0', align: 'center' },
+      { key: 'valor',    placeholder: '0', align: 'right' },
+    ];
+
+    cols.forEach(col => {
+      const td = document.createElement('td');
+      const inp = document.createElement('input');
+      inp.type = col.type || 'text';
+      inp.placeholder = col.placeholder;
+      inp.style.textAlign = col.align;
+      if (d[col.key] !== undefined) inp.value = d[col.key];
+      if (col.key === 'viajes' || col.key === 'valor') inp.addEventListener('input', calcular);
+      td.appendChild(inp);
+      tr.appendChild(td);
+    });
+
+    // Celda total
+    const tdTotal = document.createElement('td');
+    tdTotal.className = 'total-cell';
+    tdTotal.dataset.total = '0';
+    tdTotal.textContent = d.total || '0';
+    tr.appendChild(tdTotal);
+
+    // Botón eliminar
+    const tdDel = document.createElement('td');
+    const btn = document.createElement('button');
+    btn.className = 'btn-del';
+    btn.title = 'Eliminar fila';
+    btn.innerHTML = '✕';
+    btn.onclick = () => { tr.remove(); calcular(); };
+    tdDel.appendChild(btn);
+    tr.appendChild(tdDel);
+
+    return tr;
+  }
+
+  function agregarFila(datos) {
+    const tbody = document.getElementById('tbody');
+    // Eliminar fila vacía placeholder si existe
+    const empty = tbody.querySelector('.empty-row');
+    if (empty) empty.remove();
+
+    const fila = crearFila(datos);
+    tbody.appendChild(fila);
+    calcular();
+  }
+
+  function eliminarUltimaFila() {
+    const tbody = document.getElementById('tbody');
+    const filas = tbody.querySelectorAll('tr:not(.empty-row)');
+    if (filas.length > 0) {
+      filas[filas.length - 1].remove();
+      calcular();
+    }
+  }
+
+  function eliminarTodosLosServicios() {
+    const tbody = document.getElementById('tbody');
+    tbody.innerHTML = '';
+    mostrarFilaVacia();
+    calcular();
+  }
+
+  function mostrarFilaVacia() {
+    const tbody = document.getElementById('tbody');
+    const tr = document.createElement('tr');
+    tr.className = 'empty-row';
+    const td = document.createElement('td');
+    td.colSpan = 9;
+    td.textContent = 'No hay servicios registrados. Haz clic en "Agregar servicio" para comenzar.';
+    tr.appendChild(td);
+    tbody.appendChild(tr);
+  }
+
+  function calcular() {
+    const tbody = document.getElementById('tbody');
+    const filas = tbody.querySelectorAll('tr:not(.empty-row)');
+    const incluirIva = document.getElementById('incluirIva').checked;
+    let subtotal = 0;
+
+    filas.forEach(tr => {
+      const celdas = tr.querySelectorAll('td');
+      const viajes = parseFloat(celdas[5]?.querySelector('input')?.value) || 0;
+      const valor  = parseFloat(celdas[6]?.querySelector('input')?.value) || 0;
+      const totalFila = viajes * valor;
+      const tdTotal = celdas[7];
+      if (tdTotal) {
+        tdTotal.dataset.total = totalFila;
+        tdTotal.textContent = totalFila.toLocaleString('es-CL');
+      }
+      subtotal += totalFila;
+    });
+
+    const iva   = incluirIva ? subtotal * 0.19 : 0;
+    const total = subtotal + iva;
+
+    document.getElementById('subtotal').textContent = subtotal.toLocaleString('es-CL');
+    document.getElementById('iva').textContent      = iva.toLocaleString('es-CL');
+    document.getElementById('total').textContent    = total.toLocaleString('es-CL');
+    document.getElementById('ivaLinea').style.opacity = incluirIva ? '1' : '0.4';
+  }
+
+
+  // ── LOGO ──────────────────────────────────────────────────
+  function cargarLogo(input) {
+    if (!input.files || !input.files[0]) return;
+    const reader = new FileReader();
+    reader.onload = function(e) {
+      const img = document.getElementById('logoImg');
+      img.src = e.target.result;
+      img.style.width = '110px';
+      img.style.height = 'auto';
+      img.style.maxHeight = '70px';
+
+      document.getElementById('logoTexto').style.display = 'none';
+      document.getElementById('logoImagen').style.display = 'flex';
+      document.getElementById('logoSizeWrap').style.display = 'flex';
+      document.getElementById('logoSize').value = 110;
+      document.getElementById('logoSizePx').textContent = '110px';
+    };
+    reader.readAsDataURL(input.files[0]);
+  }
+
+  function ajustarLogo(val) {
+    const img = document.getElementById('logoImg');
+    img.style.width = val + 'px';
+    img.style.maxHeight = Math.round(val * 0.65) + 'px';
+    document.getElementById('logoSizePx').textContent = val + 'px';
+  }
+
+  function quitarLogo() {
+    document.getElementById('logoTexto').style.display = 'block';
+    document.getElementById('logoImagen').style.display = 'none';
+    document.getElementById('logoSizeWrap').style.display = 'none';
+    document.getElementById('logoImg').src = '';
+    document.getElementById('logoInput').value = '';
+  }
+
+
+  window.addEventListener('DOMContentLoaded', () => {
+    agregarFila({
+      vehiculo:  'Bus Scania K410',
+      patente:   'BJCD-15',
+      ruta:      'Ruta 68 – Peñaflor a Mtgo.',
+      fecha:     '2025-05-20',
+      pasajeros: '45',
+      viajes:    '2',
+      valor:     '15000'
+    });
+    agregarFila({
+      vehiculo:  'Bus Mercedes OF',
+      patente:   'ABCD-12',
+      ruta:      'Ruta 5 Sur – Maipú a Centro',
+      fecha:     '2025-05-21',
+      pasajeros: '52',
+      viajes:    '3',
+      valor:     '14500'
+    });
+    agregarFila({
+      vehiculo:  'Minibús Volkswagen',
+      patente:   'WXYZ-99',
+      ruta:      'Servicio privado empresas',
+      fecha:     '2025-05-22',
+      pasajeros: '18',
+      viajes:    '1',
+      valor:     '28000'
+    });
+    calcular();
+  });
+</script>
+</body>
+</html>
