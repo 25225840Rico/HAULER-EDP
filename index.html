@@ -1,746 +1,818 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-<title>💰 Estado de Pago · HAULER</title>
-
-<link rel="icon" type="image/svg+xml" 
-href="data:image/svg+xml,
-<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22>
-<text y=%22.9em%22 font-size=%2290%22>💰</text>
-</svg>">
-
-<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
-<style>
-    --navy: #0D2137;
-    --navy-mid: #1A3A5C;
-    --navy-light: #2A5580;
-    --accent: #0E7FC0;
-    --accent-light: #E8F4FC;
-    --silver: #B8C9D9;
-    --light: #F2F7FB;
-    --border: #D0DEE9;
-    --text: #0D2137;
-    --muted: #6A849E;
-    --white: #FFFFFF;
-    --success: #1B7A4A;
-    --danger: #C0392B;
-    --row-odd: #F7FAFD;
-    --row-even: #FFFFFF;
-  }
-
-  * { margin: 0; padding: 0; box-sizing: border-box; }
-
-  body {
-    font-family: 'DM Sans', sans-serif;
-    background: #E4EDF5;
-    min-height: 100vh;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    padding: 30px 20px;
-    color: var(--text);
-  }
-
-  /* ── TOOLBAR (oculta al imprimir) ─────────────────────────── */
-  .toolbar {
-    width: 100%;
-    max-width: 1100px;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    margin-bottom: 18px;
-    flex-wrap: wrap;
-  }
-
-  .toolbar span {
-    font-size: 11px;
-    color: var(--muted);
-    font-weight: 500;
-    letter-spacing: 1px;
-    text-transform: uppercase;
-    margin-right: auto;
-  }
-
-  .btn {
-    display: inline-flex;
-    align-items: center;
-    gap: 7px;
-    padding: 9px 18px;
-    border-radius: 8px;
-    border: none;
-    font-family: 'DM Sans', sans-serif;
-    font-size: 13px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.15s ease;
-    letter-spacing: 0.2px;
-  }
-
-  .btn-primary {
-    background: var(--navy);
-    color: white;
-  }
-  .btn-primary:hover { background: var(--navy-mid); transform: translateY(-1px); }
-
-  .btn-secondary {
-    background: white;
-    color: var(--navy);
-    border: 1.5px solid var(--border);
-  }
-  .btn-secondary:hover { background: var(--light); border-color: var(--silver); }
-
-  .btn-danger {
-    background: #FDECEA;
-    color: var(--danger);
-    border: 1.5px solid #F5C6C2;
-  }
-  .btn-danger:hover { background: #FAD4CF; }
-
-  .btn-print {
-    background: var(--accent);
-    color: white;
-  }
-  .btn-print:hover { background: #0B6EA8; transform: translateY(-1px); }
-
-  /* ── DOCUMENTO ────────────────────────────────────────────── */
-  .doc {
-    width: 100%;
-    max-width: 1100px;
-    background: var(--white);
-    border-radius: 16px;
-    box-shadow: 0 4px 24px rgba(13,33,55,0.10), 0 1px 4px rgba(13,33,55,0.06);
-    border: 1px solid var(--border);
-    overflow: hidden;
-  }
-
-  /* ── ENCABEZADO ───────────────────────────────────────────── */
-  .doc-header {
-    background: var(--navy);
-    padding: 28px 36px;
-    display: grid;
-    grid-template-columns: auto 1fr auto;
-    align-items: center;
-    gap: 30px;
-  }
-
-  .logo-block .logo-text {
-    font-family: 'DM Mono', monospace;
-    font-size: 30px;
-    font-weight: 500;
-    color: white;
-    letter-spacing: 3px;
-  }
-  .logo-block .logo-sub {
-    font-size: 10px;
-    color: var(--silver);
-    letter-spacing: 2px;
-    text-transform: uppercase;
-    margin-top: 3px;
-  }
-
-  .doc-title-block {
-    text-align: center;
-  }
-  .doc-title-block h1 {
-    font-size: 13px;
-    font-weight: 700;
-    color: var(--silver);
-    letter-spacing: 3px;
-    text-transform: uppercase;
-    margin-bottom: 4px;
-  }
-  .doc-title-block h2 {
-    font-size: 22px;
-    font-weight: 300;
-    color: white;
-    letter-spacing: 1px;
-  }
-
-  .doc-meta {
-    text-align: right;
-  }
-  .doc-meta .meta-row {
-    display: flex;
-    align-items: center;
-    justify-content: flex-end;
-    gap: 10px;
-    margin-bottom: 8px;
-  }
-  .doc-meta label {
-    font-size: 10px;
-    color: var(--silver);
-    letter-spacing: 1.5px;
-    text-transform: uppercase;
-    white-space: nowrap;
-  }
-  .doc-meta input {
-    background: rgba(255,255,255,0.1);
-    border: 1px solid rgba(255,255,255,0.2);
-    border-radius: 6px;
-    color: white;
-    font-family: 'DM Mono', monospace;
-    font-size: 13px;
-    padding: 5px 10px;
-    width: 120px;
-    text-align: right;
-  }
-  .doc-meta input[type="date"] { width: 145px; color-scheme: dark; }
-  .doc-meta input:focus { outline: none; border-color: var(--accent); background: rgba(255,255,255,0.15); }
-
-  /* ── SECCIÓN DATOS ─────────────────────────────────────────── */
-  .doc-info {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    border-bottom: 1px solid var(--border);
-  }
-
-  .info-block {
-    padding: 22px 36px;
-  }
-  .info-block:first-child {
-    border-right: 1px solid var(--border);
-  }
-
-  .info-block-title {
-    font-size: 9px;
-    font-weight: 700;
-    letter-spacing: 2px;
-    text-transform: uppercase;
-    color: var(--accent);
-    margin-bottom: 14px;
-    padding-bottom: 6px;
-    border-bottom: 2px solid var(--accent-light);
-    display: flex;
-    align-items: center;
-    gap: 7px;
-  }
-  .info-block-title svg { flex-shrink: 0; }
-
-  .info-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 8px 16px;
-  }
-
-  .info-field {
-    display: flex;
-    flex-direction: column;
-    gap: 3px;
-  }
-  .info-field.full { grid-column: 1 / -1; }
-
-  .info-field label {
-    font-size: 9px;
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 1.2px;
-    color: var(--muted);
-  }
-
-  .info-field input {
-    background: transparent;
-    border: none;
-    border-bottom: 1px solid var(--border);
-    font-family: 'DM Sans', sans-serif;
-    font-size: 13px;
-    font-weight: 500;
-    color: var(--text);
-    padding: 4px 0;
-    width: 100%;
-    transition: border-color 0.15s;
-  }
-  .info-field input:focus { outline: none; border-bottom-color: var(--accent); }
-  .info-field input:disabled { color: var(--navy-mid); font-weight: 700; }
-
-  /* ── TABLA ────────────────────────────────────────────────── */
-  .doc-table-wrap {
-    padding: 24px 36px 16px;
-  }
-
-  .table-header-row {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin-bottom: 14px;
-  }
-
-  .table-label {
-    font-size: 9px;
-    font-weight: 700;
-    letter-spacing: 2px;
-    text-transform: uppercase;
-    color: var(--accent);
-    display: flex;
-    align-items: center;
-    gap: 7px;
-  }
-
-  table {
-    width: 100%;
-    border-collapse: collapse;
-    font-size: 12.5px;
-  }
-
-  thead tr {
-    background: var(--navy);
-  }
-
-  thead th {
-    color: white;
-    font-weight: 600;
-    font-size: 10px;
-    letter-spacing: 1px;
-    text-transform: uppercase;
-    padding: 10px 10px;
-    text-align: center;
-    white-space: nowrap;
-  }
-  thead th:first-child { border-radius: 8px 0 0 0; text-align: left; padding-left: 14px; }
-  thead th:last-child { border-radius: 0 8px 0 0; width: 40px; }
-
-  tbody tr:nth-child(odd) { background: var(--row-odd); }
-  tbody tr:nth-child(even) { background: var(--row-even); }
-  tbody tr { transition: background 0.1s; }
-  tbody tr:hover { background: var(--accent-light); }
-
-  tbody td {
-    padding: 6px 6px;
-    text-align: center;
-    border-bottom: 1px solid var(--border);
-    font-size: 12.5px;
-  }
-  tbody td:first-child { text-align: left; padding-left: 14px; }
-
-  tbody td input {
-    width: 100%;
-    background: transparent;
-    border: none;
-    font-family: 'DM Sans', sans-serif;
-    font-size: 12.5px;
-    color: var(--text);
-    text-align: center;
-    padding: 4px 4px;
-    border-radius: 5px;
-    transition: background 0.12s;
-  }
-  tbody td:first-child input { text-align: left; }
-  tbody td input:focus {
-    outline: none;
-    background: white;
-    box-shadow: 0 0 0 2px var(--accent);
-  }
-
-  .total-cell {
-    font-family: 'DM Mono', monospace;
-    font-weight: 500;
-    color: var(--navy-mid);
-    font-size: 12px;
-  }
-
-  .btn-del {
-    background: transparent;
-    border: none;
-    color: var(--muted);
-    cursor: pointer;
-    font-size: 16px;
-    width: 28px;
-    height: 28px;
-    border-radius: 6px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: all 0.12s;
-    margin: 0 auto;
-  }
-  .btn-del:hover { background: #FDECEA; color: var(--danger); }
-
-  .empty-row td {
-    padding: 24px;
-    text-align: center;
-    color: var(--muted);
-    font-size: 13px;
-    font-style: italic;
-    background: var(--light) !important;
-    border-radius: 8px;
-  }
-
-  /* ── FOOTER TOTALES ───────────────────────────────────────── */
-  .doc-footer {
-    padding: 0 36px 28px;
-    display: grid;
-    grid-template-columns: 1fr auto;
-    gap: 24px;
-    align-items: end;
-  }
-
-  .iva-toggle-wrap {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    background: var(--light);
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    padding: 8px 14px;
-    width: fit-content;
-    margin-bottom: 16px;
-  }
-  .iva-toggle-wrap label {
-    font-size: 12px;
-    font-weight: 600;
-    color: var(--navy);
-    cursor: pointer;
-    user-select: none;
-  }
-  .iva-toggle-wrap input[type="checkbox"] {
-    width: 16px;
-    height: 16px;
-    accent-color: var(--accent);
-    cursor: pointer;
-  }
-
-  .glosa-legal {
-    font-size: 10.5px;
-    line-height: 1.65;
-    color: var(--muted);
-    max-width: 520px;
-    padding: 14px 18px;
-    background: var(--light);
-    border-left: 3px solid var(--silver);
-    border-radius: 0 6px 6px 0;
-  }
-  .glosa-legal strong { color: var(--navy); }
-
-  .totales-box {
-    background: var(--navy);
-    border-radius: 12px;
-    padding: 20px 24px;
-    min-width: 280px;
-  }
-
-  .total-line {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 7px 0;
-    color: rgba(255,255,255,0.7);
-    font-size: 13px;
-    border-bottom: 1px solid rgba(255,255,255,0.1);
-  }
-  .total-line:last-of-type { border-bottom: none; }
-  .total-line .amount {
-    font-family: 'DM Mono', monospace;
-    font-weight: 500;
-    letter-spacing: 0.5px;
-  }
-  .total-line.iva-line { transition: opacity 0.2s; }
-
-  .total-line.grand {
-    margin-top: 8px;
-    padding-top: 14px;
-    border-top: 1.5px solid rgba(255,255,255,0.3) !important;
-    border-bottom: none;
-    color: white;
-    font-size: 17px;
-    font-weight: 700;
-  }
-  .total-line.grand .amount {
-    font-size: 20px;
-    font-weight: 700;
-    color: #7FCCF0;
-  }
-
-  /* ── LOGO UPLOAD & RESIZE ────────────────────────────────────── */
-  .logo-controles {
-    margin-top: 10px;
-    display: flex;
-    flex-direction: column;
-    gap: 7px;
-  }
-
-  .btn-upload-logo {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    background: rgba(255,255,255,0.12);
-    border: 1px dashed rgba(255,255,255,0.35);
-    border-radius: 6px;
-    color: rgba(255,255,255,0.75);
-    font-size: 11px;
-    font-weight: 600;
-    letter-spacing: 0.4px;
-    padding: 5px 10px;
-    cursor: pointer;
-    transition: all 0.15s;
-    width: fit-content;
-  }
-  .btn-upload-logo:hover {
-    background: rgba(255,255,255,0.22);
-    border-color: rgba(255,255,255,0.6);
-    color: white;
-  }
-
-  .logo-size-wrap {
-    display: flex;
-    align-items: center;
-    gap: 7px;
-    color: rgba(255,255,255,0.65);
-  }
-  .logo-size-wrap input[type="range"] {
-    -webkit-appearance: none;
-    appearance: none;
-    width: 110px;
-    height: 3px;
-    background: rgba(255,255,255,0.25);
-    border-radius: 2px;
-    outline: none;
-    cursor: pointer;
-  }
-  .logo-size-wrap input[type="range"]::-webkit-slider-thumb {
-    -webkit-appearance: none;
-    width: 14px;
-    height: 14px;
-    border-radius: 50%;
-    background: white;
-    cursor: pointer;
-    border: 2px solid var(--accent);
-  }
-  .logo-size-wrap span {
-    font-family: 'DM Mono', monospace;
-    font-size: 10px;
-    min-width: 32px;
-    color: rgba(255,255,255,0.6);
-  }
-
-  #logoImagen {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-  }
-
-  .logo-quitar {
-    background: rgba(255,255,255,0.15);
-    border: 1px solid rgba(255,255,255,0.3);
-    color: rgba(255,255,255,0.7);
-    border-radius: 50%;
-    width: 20px;
-    height: 20px;
-    font-size: 11px;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    line-height: 1;
-    transition: all 0.12s;
-    flex-shrink: 0;
-    align-self: flex-start;
-    margin-top: 2px;
-    padding: 0;
-  }
-  .logo-quitar:hover { background: rgba(200,50,50,0.5); border-color: rgba(255,100,100,0.5); color: white; }
-
-  /* ── PRINT ─────────────────────────────────────────────────── */
-  @media print {
-    @page {
-      size: A4 landscape;
-      margin: 12mm 14mm;
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>💰 Estado de Pago · HAULER</title>
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>💰</text></svg>">
+  <style>
+    /* ===== RESET Y VARIABLES ===== */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
     }
 
-    * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    :root {
+      --bg-page: #f5f5f7;
+      --bg-doc: #ffffff;
+      --text-primary: #1d1c1d;
+      --text-secondary: #6e6d73;
+      --text-tertiary: #8e8e93;
+      --border-subtle: #e1e4e8;
+      --accent-blue: #007AFF;
+      --accent-light: #e3f2fd;
+      --font-sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+      --font-mono: 'SF Mono', 'DM Mono', 'Menlo', monospace;
+      --shadow-doc: 0 8px 24px rgba(0, 0, 0, 0.04);
+      --gradient-border: linear-gradient(90deg, transparent 0%, #d0e2ff 20%, #d0e2ff 80%, transparent 100%);
+    }
 
     body {
-      background: white;
-      padding: 0;
-      min-height: auto;
+      font-family: var(--font-sans);
+      background: var(--bg-page);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 30px 20px;
+      color: var(--text-primary);
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
     }
 
-    .toolbar { display: none !important; }
+    /* ===== TOOLBAR ===== */
+    .toolbar {
+      width: 100%;
+      max-width: 1100px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+      padding: 0 8px;
+    }
 
+    .toolbar span {
+      font-size: 11px;
+      font-weight: 500;
+      color: var(--text-tertiary);
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+      margin-right: auto;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 8px 14px;
+      border-radius: 40px;
+      border: 0.5px solid transparent;
+      font-family: var(--font-sans);
+      font-size: 12px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      background: transparent;
+      color: var(--text-secondary);
+    }
+
+    .btn:hover {
+      background: rgba(0, 0, 0, 0.03);
+      border-color: var(--border-subtle);
+    }
+
+    .btn-primary {
+      background: var(--accent-blue);
+      color: white;
+      border-color: transparent;
+    }
+    .btn-primary:hover {
+      background: #005bbf;
+    }
+
+    .btn-danger {
+      color: #ff3b30;
+    }
+    .btn-danger:hover {
+      background: rgba(255, 59, 48, 0.05);
+      border-color: #ff3b3020;
+    }
+
+    /* ===== DOCUMENTO PRINCIPAL ===== */
     .doc {
-      box-shadow: none;
-      border: 1px solid #ccc;
-      max-width: 100%;
-      border-radius: 0;
-      page-break-inside: avoid;
-      break-inside: avoid;
+      width: 100%;
+      max-width: 1100px;
+      background: var(--bg-doc);
+      border-radius: 24px;
+      box-shadow: var(--shadow-doc);
+      overflow: hidden;
+      border: 0.5px solid var(--border-subtle);
     }
 
-    .doc-header { padding: 14px 22px; }
-    .logo-block .logo-text { font-size: 22px; }
-    .doc-title-block h2 { font-size: 16px; }
-    .doc-meta input { font-size: 11px; padding: 3px 7px; }
+    /* ===== ENCABEZADO ===== */
+    .doc-header {
+      padding: 32px 40px 24px;
+      display: grid;
+      grid-template-columns: auto 1fr auto;
+      align-items: center;
+      gap: 20px;
+      border-bottom: 1px solid transparent;
+      background: linear-gradient(to bottom, #ffffff, #fafafa);
+      position: relative;
+    }
+    .doc-header::after {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: 40px;
+      right: 40px;
+      height: 1px;
+      background: var(--gradient-border);
+    }
 
-    .doc-info { border-bottom: 1px solid #ccc; }
-    .info-block { padding: 12px 22px; }
-    .info-field input { font-size: 11px; padding: 2px 0; }
+    .logo-block { display: flex; flex-direction: column; }
+    .logo-text {
+      font-family: var(--font-sans);
+      font-size: 28px;
+      font-weight: 600;
+      color: var(--text-primary);
+      letter-spacing: -0.5px;
+    }
+    .logo-sub {
+      font-size: 9px;
+      font-weight: 400;
+      color: var(--text-tertiary);
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      margin-top: 4px;
+    }
 
-    .doc-table-wrap { padding: 12px 22px 8px; }
+    .doc-title-block { text-align: center; }
+    .doc-title-block h1 {
+      font-size: 10px;
+      font-weight: 500;
+      color: var(--text-tertiary);
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      margin-bottom: 4px;
+    }
+    .doc-title-block h2 {
+      font-size: 22px;
+      font-weight: 300;
+      color: var(--text-primary);
+      letter-spacing: -0.2px;
+    }
 
-    table { font-size: 10px; }
-    thead th { padding: 7px 6px; font-size: 8.5px; }
-    tbody td { padding: 4px 5px; }
-    tbody td input { font-size: 10px; }
-    .total-cell { font-size: 10px; }
+    .doc-meta { display: flex; flex-direction: column; gap: 8px; }
+    .meta-row {
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 10px;
+    }
+    .meta-row label {
+      font-size: 9px;
+      font-weight: 500;
+      color: var(--text-tertiary);
+      letter-spacing: 1px;
+      text-transform: uppercase;
+    }
+    .meta-row input {
+      background: #f9f9f9;
+      border: 0.5px solid var(--border-subtle);
+      border-radius: 8px;
+      color: var(--text-primary);
+      font-family: var(--font-mono);
+      font-size: 12px;
+      padding: 6px 12px;
+      width: 130px;
+      text-align: right;
+      transition: all 0.15s;
+    }
+    .meta-row input[type="date"] { width: 155px; }
+    .meta-row input:focus {
+      outline: none;
+      border-color: var(--accent-blue);
+      background: white;
+    }
 
-    .doc-footer { padding: 0 22px 14px; gap: 16px; }
-    .glosa-legal { font-size: 8.5px; line-height: 1.5; padding: 10px 12px; }
-    .totales-box { padding: 12px 16px; min-width: 200px; }
-    .total-line { font-size: 11px; padding: 5px 0; }
-    .total-line.grand { font-size: 14px; }
-    .total-line.grand .amount { font-size: 16px; }
+    /* ===== SECCIÓN DATOS ===== */
+    .doc-info {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      background: #ffffff;
+      position: relative;
+    }
+    .doc-info::after {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: 40px;
+      right: 40px;
+      height: 1px;
+      background: var(--gradient-border);
+    }
 
-    .logo-controles { display: none !important; }
-    .logo-quitar { display: none !important; }
-    #logoImagen { gap: 0 !important; }
-    .btn-del { display: none !important; }
-    .btn { display: none !important; }
-    thead th:last-child { display: none !important; }
-    tbody td:last-child { display: none !important; }
-  }
-</style>
+    .info-block { padding: 24px 40px; }
+    .info-block:first-child {
+      border-right: 1px solid transparent;
+      background: linear-gradient(to right, #ffffff, #fafafa);
+    }
+    .info-block:first-child::after {
+      content: '';
+      position: absolute;
+      top: 24px;
+      bottom: 24px;
+      right: 50%;
+      width: 1px;
+      background: var(--gradient-border);
+    }
+
+    .info-block-title {
+      font-size: 9px;
+      font-weight: 600;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: var(--text-tertiary);
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .info-block-title svg { stroke: var(--text-tertiary); stroke-width: 1.5; }
+
+    .info-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px 20px;
+    }
+    .info-field.full { grid-column: 1 / -1; }
+
+    .info-field {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+    .info-field label {
+      font-size: 8px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      color: var(--text-tertiary);
+    }
+    .info-field input, .info-field select {
+      background: transparent;
+      border: none;
+      border-bottom: 0.5px solid var(--border-subtle);
+      font-family: var(--font-sans);
+      font-size: 13px;
+      font-weight: 400;
+      color: var(--text-primary);
+      padding: 6px 0 4px;
+      width: 100%;
+      transition: border-color 0.15s;
+    }
+    .info-field select { cursor: pointer; }
+    .info-field input:focus, .info-field select:focus {
+      outline: none;
+      border-bottom-color: var(--accent-blue);
+    }
+    .info-field input:disabled { color: var(--text-secondary); font-weight: 500; }
+
+    /* ===== TABLA ===== */
+    .doc-table-wrap {
+      padding: 24px 40px 20px;
+      position: relative;
+    }
+    .doc-table-wrap::after {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: 40px;
+      right: 40px;
+      height: 1px;
+      background: var(--gradient-border);
+    }
+
+    .table-header-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+    .table-label {
+      font-size: 9px;
+      font-weight: 600;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: var(--text-tertiary);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .table-label svg { stroke: var(--text-tertiary); stroke-width: 1.5; }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+    }
+
+    thead tr { background: #f9f9f9; border-radius: 12px 12px 0 0; }
+    thead th {
+      font-weight: 500;
+      font-size: 10px;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+      color: var(--text-secondary);
+      padding: 12px 8px;
+      text-align: center;
+      white-space: nowrap;
+      border-bottom: 0.5px solid var(--border-subtle);
+    }
+    thead th:first-child { text-align: left; padding-left: 16px; }
+    thead th:last-child { width: 36px; }
+
+    tbody tr {
+      border-bottom: 0.5px solid transparent;
+      background: white;
+      position: relative;
+    }
+    tbody tr::after {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 0.5px;
+      background: var(--gradient-border);
+    }
+    tbody tr:last-child::after { display: none; }
+
+    tbody td {
+      padding: 12px 8px;
+      text-align: center;
+      vertical-align: middle;
+    }
+    tbody td:first-child { text-align: left; padding-left: 16px; }
+
+    /* Celda de ruta con botón */
+    .ruta-cell {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .ruta-cell input { flex: 1; }
+    .btn-ruta {
+      background: transparent;
+      border: 0.5px solid var(--border-subtle);
+      border-radius: 16px;
+      width: 26px;
+      height: 26px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      font-size: 14px;
+      color: var(--text-tertiary);
+      transition: all 0.15s;
+      flex-shrink: 0;
+    }
+    .btn-ruta:hover {
+      background: var(--accent-light);
+      border-color: var(--accent-blue);
+      color: var(--accent-blue);
+    }
+
+    tbody td input {
+      width: 100%;
+      background: transparent;
+      border: 0.5px solid transparent;
+      font-family: var(--font-sans);
+      font-size: 13px;
+      color: var(--text-primary);
+      text-align: center;
+      padding: 8px 6px;
+      border-radius: 10px;
+      transition: all 0.15s;
+    }
+    tbody td:first-child input { text-align: left; }
+    tbody td input:hover { background: #f9f9f9; }
+    tbody td input:focus {
+      outline: none;
+      background: white;
+      border-color: var(--accent-blue);
+    }
+
+    tbody td:nth-child(7) input,
+    tbody td:nth-child(8) {
+      font-family: var(--font-mono);
+      font-size: 13px;
+    }
+
+    .total-cell {
+      font-family: var(--font-mono);
+      font-weight: 500;
+      color: var(--text-primary);
+    }
+
+    .btn-del {
+      background: transparent;
+      border: none;
+      color: var(--text-tertiary);
+      cursor: pointer;
+      font-size: 16px;
+      width: 30px;
+      height: 30px;
+      border-radius: 30px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.15s;
+      margin: 0 auto;
+    }
+    .btn-del:hover {
+      background: rgba(255, 59, 48, 0.1);
+      color: #ff3b30;
+    }
+
+    .empty-row td {
+      padding: 40px 24px;
+      text-align: center;
+      color: var(--text-tertiary);
+      font-size: 13px;
+      font-style: normal;
+      background: #f9f9f9 !important;
+      border-radius: 16px;
+    }
+
+    /* ===== FOOTER ===== */
+    .doc-footer {
+      padding: 24px 40px 32px;
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 24px;
+      align-items: end;
+      background: #ffffff;
+    }
+
+    .iva-toggle-wrap {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      background: #f9f9f9;
+      border: 0.5px solid var(--border-subtle);
+      border-radius: 40px;
+      padding: 8px 16px;
+      width: fit-content;
+      margin-bottom: 20px;
+    }
+    .iva-toggle-wrap label {
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--text-primary);
+      cursor: pointer;
+    }
+    .iva-toggle-wrap input[type="checkbox"] {
+      width: 16px;
+      height: 16px;
+      accent-color: var(--accent-blue);
+      cursor: pointer;
+    }
+
+    .glosa-legal {
+      font-size: 10.5px;
+      line-height: 1.6;
+      color: var(--text-secondary);
+      max-width: 540px;
+      background: #f9f9f9;
+      padding: 16px 20px;
+      border-radius: 16px;
+      border-left: 3px solid var(--accent-blue);
+    }
+    .glosa-legal strong { color: var(--text-primary); font-weight: 600; }
+
+    .totales-box {
+      background: #f9f9f9;
+      border-radius: 20px;
+      padding: 20px 24px;
+      min-width: 260px;
+      border: 0.5px solid var(--border-subtle);
+    }
+
+    .total-line {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 8px 0;
+      color: var(--text-secondary);
+      font-size: 13px;
+      border-bottom: 0.5px solid var(--border-subtle);
+    }
+    .total-line:last-of-type { border-bottom: none; }
+    .total-line .amount {
+      font-family: var(--font-mono);
+      font-weight: 500;
+      color: var(--text-primary);
+    }
+    .total-line.iva-line { transition: opacity 0.2s; }
+
+    .total-line.grand {
+      margin-top: 8px;
+      padding-top: 16px;
+      border-top: 1px solid var(--border-subtle) !important;
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+    .total-line.grand .amount {
+      font-size: 20px;
+      font-weight: 600;
+      color: var(--accent-blue);
+    }
+
+    /* ===== MODAL DE GESTIÓN ===== */
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(0,0,0,0.3);
+      backdrop-filter: blur(4px);
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+    }
+    .modal.active { display: flex; }
+
+    .modal-content {
+      background: white;
+      border-radius: 32px;
+      width: 90%;
+      max-width: 800px;
+      max-height: 80vh;
+      overflow: hidden;
+      box-shadow: 0 24px 48px rgba(0,0,0,0.1);
+      display: flex;
+      flex-direction: column;
+    }
+
+    .modal-header {
+      padding: 20px 24px;
+      border-bottom: 0.5px solid var(--border-subtle);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .modal-header h3 {
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+    .modal-close {
+      background: transparent;
+      border: none;
+      font-size: 20px;
+      cursor: pointer;
+      color: var(--text-tertiary);
+      padding: 4px 8px;
+      border-radius: 30px;
+    }
+    .modal-close:hover { background: #f0f0f0; }
+
+    .modal-body {
+      padding: 24px;
+      overflow-y: auto;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 24px;
+    }
+
+    .clientes-lista, .rutas-lista {
+      background: #f9f9f9;
+      border-radius: 20px;
+      padding: 16px;
+    }
+    .clientes-lista h4, .rutas-lista h4 {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-tertiary);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 12px;
+    }
+
+    .cliente-item, .ruta-item {
+      background: white;
+      border-radius: 16px;
+      padding: 12px;
+      margin-bottom: 8px;
+      border: 0.5px solid var(--border-subtle);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .cliente-info, .ruta-info {
+      font-size: 13px;
+      font-weight: 500;
+    }
+    .cliente-acciones, .ruta-acciones {
+      display: flex;
+      gap: 6px;
+    }
+    .cliente-acciones button, .ruta-acciones button {
+      background: transparent;
+      border: none;
+      cursor: pointer;
+      color: var(--text-tertiary);
+      padding: 4px;
+      border-radius: 20px;
+    }
+    .cliente-acciones button:hover, .ruta-acciones button:hover {
+      background: var(--accent-light);
+      color: var(--accent-blue);
+    }
+
+    .form-group {
+      margin-bottom: 12px;
+    }
+    .form-group label {
+      display: block;
+      font-size: 9px;
+      font-weight: 600;
+      text-transform: uppercase;
+      color: var(--text-tertiary);
+      margin-bottom: 4px;
+    }
+    .form-group input {
+      width: 100%;
+      padding: 8px 12px;
+      border: 0.5px solid var(--border-subtle);
+      border-radius: 12px;
+      font-size: 13px;
+    }
+    .form-group input:focus {
+      outline: none;
+      border-color: var(--accent-blue);
+    }
+
+    .btn-agregar {
+      background: var(--accent-blue);
+      color: white;
+      border: none;
+      padding: 10px 16px;
+      border-radius: 40px;
+      font-weight: 500;
+      font-size: 12px;
+      cursor: pointer;
+      width: 100%;
+      margin-top: 8px;
+    }
+    .btn-agregar:hover { background: #005bbf; }
+
+    /* ===== LOGO ===== */
+    .logo-controles { margin-top: 12px; display: flex; flex-direction: column; gap: 8px; }
+    .btn-upload-logo {
+      display: inline-flex; align-items: center; gap: 6px;
+      background: #f9f9f9; border: 0.5px solid var(--border-subtle); border-radius: 30px;
+      color: var(--text-secondary); font-size: 11px; font-weight: 500; padding: 5px 12px;
+      cursor: pointer; transition: all 0.15s; width: fit-content;
+    }
+    .btn-upload-logo:hover { background: #eaeaea; }
+    .logo-size-wrap { display: flex; align-items: center; gap: 8px; color: var(--text-secondary); }
+    .logo-size-wrap input[type="range"] { width: 100px; height: 3px; background: var(--border-subtle); border-radius: 3px; }
+    .logo-size-wrap input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none; width: 14px; height: 14px; border-radius: 14px; background: var(--accent-blue); cursor: pointer;
+    }
+    .logo-size-wrap span { font-family: var(--font-mono); font-size: 10px; min-width: 32px; }
+    #logoImagen { display: flex; align-items: center; gap: 8px; }
+    .logo-quitar {
+      background: #f9f9f9; border: 0.5px solid var(--border-subtle); color: var(--text-tertiary);
+      border-radius: 20px; width: 20px; height: 20px; font-size: 11px; cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .logo-quitar:hover { background: #ff3b3010; color: #ff3b30; }
+
+    /* ===== IMPRESIÓN ===== */
+    @media print {
+      @page { size: A4 landscape; margin: 12mm 14mm; }
+      * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+      body { background: transparent; padding: 0; }
+      body::after {
+        content: ''; position: fixed; top:0; left:0; width:100%; height:100%;
+        background-image: url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIzMDAiIGhlaWdodD0iMzAwIj48ZmlsdGVyIGlkPSJmIj48ZmVUdXJidWxlbmNlIHR5cGU9ImZyYWN0YWxOb2lzZSIgYmFzZUZyZXF1ZW5jeT0iLjc0IiBudW1PY3RhdmVzPSIzIiAvPjwvZmlsdGVyPjxyZWN0IHdpZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiIGZpbHRlcj0idXJsKCNmKSIgb3BhY2l0eT0iMC4wMjUiIC8+PC9zdmc+');
+        background-repeat: repeat; pointer-events: none; z-index: 999; mix-blend-mode: multiply; opacity: 0.5;
+      }
+      .toolbar, .modal, .btn, .btn-del, .btn-ruta, .logo-controles { display: none !important; }
+      .doc { box-shadow: none; border: 0.5px solid #d0e2ff; border-radius: 0; background: white; }
+      .doc-header::after, .doc-info::after, .doc-table-wrap::after, tbody tr::after {
+        background: linear-gradient(90deg, transparent, #b0d4f0, transparent);
+      }
+      thead th:last-child, tbody td:last-child { display: none; }
+    }
+  </style>
 </head>
 <body>
 
-<!-- ── TOOLBAR ──────────────────────────────────────────────── -->
+<!-- Toolbar -->
 <div class="toolbar">
   <span>Hauler · Estado de Pago</span>
-  <button class="btn btn-secondary" onclick="agregarFila()">
-    <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-    Agregar servicio
+  <button class="btn" onclick="agregarFila()">
+    <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+    Agregar
   </button>
-  <button class="btn btn-secondary" onclick="eliminarUltimaFila()">
-    <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="5" y1="12" x2="19" y2="12"/></svg>
-    Eliminar último
+  <button class="btn" onclick="eliminarUltimaFila()">
+    <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><line x1="5" y1="12" x2="19" y2="12"/></svg>
+    Quitar último
   </button>
   <button class="btn btn-danger" onclick="eliminarTodosLosServicios()">
-    <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/></svg>
-    Limpiar todo
+    <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/></svg>
+    Limpiar
+  </button>
+  <button class="btn btn-primary" onclick="abrirModalClientes()">
+    <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+    Clientes y Rutas
   </button>
   <button class="btn btn-print" onclick="window.print()">
-    <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
-    Imprimir / PDF
+    <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+    Imprimir PDF
   </button>
 </div>
 
-<!-- ── DOCUMENTO ────────────────────────────────────────────── -->
+<!-- Documento principal -->
 <div class="doc">
-
   <!-- Encabezado -->
   <div class="doc-header">
     <div class="logo-block">
-      <!-- Estado: texto (default) -->
       <div id="logoTexto">
-        <div class="logo-text" id="logoTextContent">HAULER</div>
+        <div class="logo-text">HAULER</div>
         <div class="logo-sub">Transporte de pasajeros</div>
       </div>
-      <!-- Estado: imagen cargada -->
-      <div id="logoImagen" style="display:none; position:relative;">
-        <img id="logoImg" src="" alt="Logo" style="display:block; object-fit:contain; object-position:left center;">
-        <button class="logo-quitar" onclick="quitarLogo()" title="Quitar logo">✕</button>
+      <div id="logoImagen" style="display:none;">
+        <img id="logoImg" src="" alt="Logo" style="max-height:60px;">
+        <button class="logo-quitar" onclick="quitarLogo()">✕</button>
       </div>
-      <!-- Controles (ocultos al imprimir) -->
-      <div class="logo-controles" id="logoControles">
-        <label class="btn-upload-logo" title="Subir imagen de logo">
-          <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+      <div class="logo-controles">
+        <label class="btn-upload-logo">
+          <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
           Subir logo
           <input type="file" id="logoInput" accept="image/*" onchange="cargarLogo(this)" style="display:none;">
         </label>
         <div class="logo-size-wrap" id="logoSizeWrap" style="display:none;">
-          <svg width="11" height="11" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7"/></svg>
-          <input type="range" id="logoSize" min="40" max="220" value="110" oninput="ajustarLogo(this.value)">
-          <span id="logoSizePx">110px</span>
+          <input type="range" id="logoSize" min="40" max="180" value="100" oninput="ajustarLogo(this.value)">
+          <span id="logoSizePx">100px</span>
         </div>
       </div>
     </div>
-
     <div class="doc-title-block">
       <h1>Documento de cobro</h1>
       <h2>Estado de Pago</h2>
     </div>
-
     <div class="doc-meta">
-      <div class="meta-row">
-        <label>N° Doc.</label>
-        <input type="text" id="numDoc" value="EP-2401" maxlength="12">
-      </div>
-      <div class="meta-row">
-        <label>Emisión</label>
-        <input type="date" id="fechaEmision" value="2025-05-20">
-      </div>
-      <div class="meta-row">
-        <label>Vencimiento</label>
-        <input type="date" id="fechaVence" value="2025-06-20">
-      </div>
+      <div class="meta-row"><label>N° Doc.</label><input type="text" id="numDoc" value="EP-2401"></div>
+      <div class="meta-row"><label>Emisión</label><input type="date" id="fechaEmision" value="2025-05-20"></div>
+      <div class="meta-row"><label>Vencimiento</label><input type="date" id="fechaVence" value="2025-06-20"></div>
     </div>
   </div>
 
-  <!-- Datos mandante / proveedor -->
+  <!-- Datos -->
   <div class="doc-info">
     <div class="info-block">
       <div class="info-block-title">
-        <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/></svg>
+        <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/></svg>
         Mandante / Cliente
       </div>
       <div class="info-grid">
         <div class="info-field full">
-          <label>Razón social</label>
-          <input type="text" value="Transportes del Sol Ltda.">
+          <label>Cliente guardado</label>
+          <select id="clienteSelector" onchange="cargarClienteSeleccionado()">
+            <option value="">-- Seleccionar cliente --</option>
+          </select>
         </div>
-        <div class="info-field">
-          <label>RUT</label>
-          <input type="text" placeholder="12.345.678-9">
-        </div>
-        <div class="info-field">
-          <label>Dirección</label>
-          <input type="text" value="Av. Libertador 1234">
-        </div>
-        <div class="info-field">
-          <label>Ciudad</label>
-          <input type="text" value="Santiago">
-        </div>
-        <div class="info-field">
-          <label>Contrato / Servicio</label>
-          <input type="text" value="Contrato escolar N° 24-05">
-        </div>
-        <div class="info-field">
-          <label>Orden de compra</label>
-          <input type="text" value="OC-2025-128">
-        </div>
-      </div>
-    </div>
-
-    <div class="info-block">
-      <div class="info-block-title">
-        <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></svg>
-        Proveedor del servicio
-      </div>
-      <div class="info-grid">
         <div class="info-field full">
           <label>Razón social</label>
-          <input type="text" value="HAULER SPA" disabled>
+          <input type="text" id="clienteRazon" value="Transportes del Sol Ltda.">
         </div>
-        <div class="info-field">
-          <label>RUT</label>
-          <input type="text" value="76.123.456-7">
-        </div>
-        <div class="info-field">
-          <label>Giro</label>
-          <input type="text" value="Transporte terrestre de pasajeros">
-        </div>
-        <div class="info-field">
-          <label>Correo de contacto</label>
-          <input type="text" value="operaciones@hauler.cl">
-        </div>
-        <div class="info-field">
-          <label>Teléfono</label>
-          <input type="text" placeholder="+56 9 XXXX XXXX">
-        </div>
-        <div class="info-field">
-          <label>Banco / Cuenta</label>
-          <input type="text" placeholder="Banco · Cta. Cte. XXXXXXXX">
-        </div>
+        <div class="info-field"><label>RUT</label><input type="text" id="clienteRut" placeholder="12.345.678-9"></div>
+        <div class="info-field"><label>Dirección</label><input type="text" id="clienteDireccion" value="Av. Libertador 1234"></div>
+        <div class="info-field"><label>Ciudad</label><input type="text" id="clienteCiudad" value="Santiago"></div>
+        <div class="info-field"><label>Contrato</label><input type="text" id="clienteContrato" value="Contrato escolar N° 24-05"></div>
+        <div class="info-field"><label>Orden de compra</label><input type="text" id="clienteOC" value="OC-2025-128"></div>
+      </div>
+    </div>
+    <div class="info-block">
+      <div class="info-block-title">
+        <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></svg>
+        Proveedor
+      </div>
+      <div class="info-grid">
+        <div class="info-field full"><label>Razón social</label><input type="text" value="HAULER SPA" disabled></div>
+        <div class="info-field"><label>RUT</label><input type="text" value="76.123.456-7"></div>
+        <div class="info-field"><label>Giro</label><input type="text" value="Transporte terrestre"></div>
+        <div class="info-field"><label>Email</label><input type="text" value="operaciones@hauler.cl"></div>
+        <div class="info-field"><label>Teléfono</label><input type="text" placeholder="+56 9 XXXX XXXX"></div>
+        <div class="info-field"><label>Cuenta</label><input type="text" placeholder="Banco · Cta. Cte."></div>
       </div>
     </div>
   </div>
@@ -749,32 +821,29 @@ href="data:image/svg+xml,
   <div class="doc-table-wrap">
     <div class="table-header-row">
       <div class="table-label">
-        <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="3" y1="15" x2="21" y2="15"/><line x1="9" y1="9" x2="9" y2="21"/></svg>
-        Detalle de servicios prestados
+        <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="3" y1="15" x2="21" y2="15"/><line x1="9" y1="9" x2="9" y2="21"/></svg>
+        Detalle de servicios
       </div>
     </div>
-
     <table id="tabla">
       <thead>
         <tr>
-          <th style="text-align:left; padding-left:14px; width:14%">Vehículo</th>
-          <th style="width:9%">Patente</th>
-          <th style="width:16%">Ruta / Descripción</th>
-          <th style="width:10%">Fecha</th>
-          <th style="width:8%">Pasajeros</th>
-          <th style="width:7%">Viajes</th>
-          <th style="width:13%">Valor unit. $</th>
-          <th style="width:13%">Total $</th>
-          <th style="width:5%">—</th>
+          <th style="text-align:left; padding-left:16px;">Vehículo</th>
+          <th>Patente</th>
+          <th>Ruta</th>
+          <th>Fecha</th>
+          <th>Pasaj.</th>
+          <th>Viajes</th>
+          <th>Valor unit.</th>
+          <th>Total $</th>
+          <th></th>
         </tr>
       </thead>
-      <tbody id="tbody">
-        <!-- filas dinámicas -->
-      </tbody>
+      <tbody id="tbody"></tbody>
     </table>
   </div>
 
-  <!-- Footer: glosa + totales -->
+  <!-- Footer -->
   <div class="doc-footer">
     <div>
       <div class="iva-toggle-wrap">
@@ -782,29 +851,277 @@ href="data:image/svg+xml,
         <label for="incluirIva">Incluir IVA (19%)</label>
       </div>
       <div class="glosa-legal">
-        <strong>Ley N° 21.131 — Pago oportuno a 30 días:</strong> El presente estado de pago debe cancelarse dentro del plazo máximo de 30 días corridos contados desde la recepción conforme. El incumplimiento devengará los intereses moratorios que establece la ley, sin perjuicio de las acciones legales que correspondan. El proveedor declara que los servicios han sido prestados en conformidad a lo contratado.
+        <strong>DISPOSICIONES LEGALES – LEY N° 21.131 Y CÓDIGO DE COMERCIO:</strong> El presente Estado de Pago es emitido por HAULER SPA (en adelante "El Proveedor") por servicios de transporte efectivamente prestados y recibidos a conformidad por el Mandante. Conforme a la Ley N° 21.131 (Pago a 30 días) y el Código de Comercio chileno, el saldo deberá ser cancelado dentro del plazo máximo de 30 días corridos contados desde la fecha de emisión. En caso de mora, se aplicará el interés máximo convencional permitido por la ley, más una penalidad del 1% mensual sobre el monto adeudado. El Proveedor se reserva el derecho de suspender los servicios ante incumplimiento, sin perjuicio de las acciones legales correspondientes. Para todos los efectos, las partes fijan domicilio en la ciudad de Santiago y se someten a la jurisdicción de sus tribunales.
       </div>
     </div>
-
     <div class="totales-box">
-      <div class="total-line">
-        <span>Subtotal neto</span>
-        <span class="amount">$ <span id="subtotal">0</span></span>
+      <div class="total-line"><span>Subtotal neto</span><span class="amount">$ <span id="subtotal">0</span></span></div>
+      <div class="total-line iva-line" id="ivaLinea"><span>IVA 19%</span><span class="amount">$ <span id="iva">0</span></span></div>
+      <div class="total-line grand"><span>TOTAL</span><span class="amount">$ <span id="total">0</span></span></div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal de gestión de clientes y rutas -->
+<div id="modalClientes" class="modal">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h3>Gestionar Clientes y Rutas</h3>
+      <button class="modal-close" onclick="cerrarModalClientes()">✕</button>
+    </div>
+    <div class="modal-body">
+      <!-- Columna izquierda: Clientes -->
+      <div class="clientes-lista">
+        <h4>Clientes</h4>
+        <div id="clientesContainer"></div>
+        <div class="form-group">
+          <label>Nuevo cliente</label>
+          <input type="text" id="nuevoClienteRazon" placeholder="Razón social">
+          <input type="text" id="nuevoClienteRut" placeholder="RUT" style="margin-top:6px;">
+          <input type="text" id="nuevoClienteDir" placeholder="Dirección" style="margin-top:6px;">
+          <input type="text" id="nuevoClienteCiudad" placeholder="Ciudad" style="margin-top:6px;">
+          <input type="text" id="nuevoClienteContrato" placeholder="Contrato" style="margin-top:6px;">
+          <input type="text" id="nuevoClienteOC" placeholder="Orden de compra" style="margin-top:6px;">
+          <button class="btn-agregar" onclick="agregarCliente()">Agregar Cliente</button>
+        </div>
       </div>
-      <div class="total-line iva-line" id="ivaLinea">
-        <span>IVA 19%</span>
-        <span class="amount">$ <span id="iva">0</span></span>
-      </div>
-      <div class="total-line grand">
-        <span>TOTAL</span>
-        <span class="amount">$ <span id="total">0</span></span>
+      <!-- Columna derecha: Rutas del cliente seleccionado -->
+      <div class="rutas-lista">
+        <h4>Rutas del Cliente <span id="clienteSeleccionadoNombre"></span></h4>
+        <div id="rutasContainer"></div>
+        <div class="form-group" id="formNuevaRuta" style="display:none;">
+          <label>Nueva ruta</label>
+          <input type="text" id="nuevaRutaDesc" placeholder="Descripción (ej: Ruta 68)">
+          <input type="text" id="nuevaRutaValor" placeholder="Valor unitario $" style="margin-top:6px;">
+          <button class="btn-agregar" onclick="agregarRuta()">Agregar Ruta</button>
+        </div>
+        <p id="sinClienteMsg" style="color: var(--text-tertiary); font-size:12px; padding:10px;">Selecciona un cliente para administrar sus rutas.</p>
       </div>
     </div>
   </div>
-
 </div>
 
 <script>
+  // ========== GESTIÓN DE ESTADO LOCAL ==========
+  let clientes = [];
+  let clienteActivoId = null; // ID del cliente actualmente seleccionado en el modal (para rutas)
+
+  // Cargar datos de localStorage al iniciar
+  function cargarClientesStorage() {
+    const stored = localStorage.getItem('hauler_clientes');
+    if (stored) {
+      try { clientes = JSON.parse(stored); } catch(e){ clientes = []; }
+    } else {
+      // Datos de ejemplo
+      clientes = [
+        { id: 'c1', razon: 'Transportes del Sol Ltda.', rut: '76.123.456-7', direccion: 'Av. Libertador 1234', ciudad: 'Santiago', contrato: 'Contrato escolar N° 24-05', oc: 'OC-2025-128', rutas: [
+          { id: 'r1', descripcion: 'Ruta 68 – Peñaflor a Mtgo.', valor: 15000 },
+          { id: 'r2', descripcion: 'Ruta 5 Sur – Maipú a Centro', valor: 14500 }
+        ] },
+        { id: 'c2', razon: 'Minera Andina S.A.', rut: '77.888.999-0', direccion: 'Camino Internacional 500', ciudad: 'Los Andes', contrato: 'Contrato minero 2025', oc: 'OC-9876', rutas: [
+          { id: 'r3', descripcion: 'Servicio mineros diario', valor: 28000 }
+        ] }
+      ];
+      guardarClientes();
+    }
+    actualizarSelectorClientes();
+    actualizarListaClientesModal();
+  }
+
+  function guardarClientes() {
+    localStorage.setItem('hauler_clientes', JSON.stringify(clientes));
+  }
+
+  // ========== SELECTOR DE CLIENTES EN BLOQUE MANDANTE ==========
+  function actualizarSelectorClientes() {
+    const select = document.getElementById('clienteSelector');
+    select.innerHTML = '<option value="">-- Seleccionar cliente --</option>';
+    clientes.forEach(c => {
+      const opt = document.createElement('option');
+      opt.value = c.id;
+      opt.textContent = c.razon;
+      select.appendChild(opt);
+    });
+  }
+
+  function cargarClienteSeleccionado() {
+    const id = document.getElementById('clienteSelector').value;
+    const cliente = clientes.find(c => c.id === id);
+    if (cliente) {
+      document.getElementById('clienteRazon').value = cliente.razon || '';
+      document.getElementById('clienteRut').value = cliente.rut || '';
+      document.getElementById('clienteDireccion').value = cliente.direccion || '';
+      document.getElementById('clienteCiudad').value = cliente.ciudad || '';
+      document.getElementById('clienteContrato').value = cliente.contrato || '';
+      document.getElementById('clienteOC').value = cliente.oc || '';
+      clienteActivoId = cliente.id;
+    } else {
+      clienteActivoId = null;
+    }
+  }
+
+  // ========== MODAL ==========
+  function abrirModalClientes() {
+    document.getElementById('modalClientes').classList.add('active');
+    actualizarListaClientesModal();
+    clienteActivoId = null;
+    document.getElementById('clienteSeleccionadoNombre').innerText = '';
+    document.getElementById('formNuevaRuta').style.display = 'none';
+    document.getElementById('sinClienteMsg').style.display = 'block';
+  }
+
+  function cerrarModalClientes() {
+    document.getElementById('modalClientes').classList.remove('active');
+  }
+
+  function actualizarListaClientesModal() {
+    const container = document.getElementById('clientesContainer');
+    container.innerHTML = '';
+    clientes.forEach(c => {
+      const div = document.createElement('div');
+      div.className = 'cliente-item';
+      div.innerHTML = `
+        <div class="cliente-info">${c.razon}<br><span style="font-size:10px; color:var(--text-tertiary);">${c.rut || ''}</span></div>
+        <div class="cliente-acciones">
+          <button onclick="seleccionarClienteModal('${c.id}')" title="Ver rutas">📋</button>
+          <button onclick="editarCliente('${c.id}')" title="Editar">✏️</button>
+          <button onclick="eliminarCliente('${c.id}')" title="Eliminar">🗑️</button>
+        </div>
+      `;
+      container.appendChild(div);
+    });
+  }
+
+  function seleccionarClienteModal(id) {
+    clienteActivoId = id;
+    const cliente = clientes.find(c => c.id === id);
+    if (cliente) {
+      document.getElementById('clienteSeleccionadoNombre').innerText = `- ${cliente.razon}`;
+      document.getElementById('sinClienteMsg').style.display = 'none';
+      document.getElementById('formNuevaRuta').style.display = 'block';
+      actualizarRutasModal(id);
+    }
+  }
+
+  function actualizarRutasModal(clienteId) {
+    const cliente = clientes.find(c => c.id === clienteId);
+    const container = document.getElementById('rutasContainer');
+    container.innerHTML = '';
+    if (cliente && cliente.rutas) {
+      cliente.rutas.forEach(r => {
+        const div = document.createElement('div');
+        div.className = 'ruta-item';
+        div.innerHTML = `
+          <div class="ruta-info">${r.descripcion}<br><span style="font-family:var(--font-mono);">$${r.valor?.toLocaleString('es-CL')}</span></div>
+          <div class="ruta-acciones">
+            <button onclick="editarRuta('${clienteId}', '${r.id}')">✏️</button>
+            <button onclick="eliminarRuta('${clienteId}', '${r.id}')">🗑️</button>
+          </div>
+        `;
+        container.appendChild(div);
+      });
+    }
+  }
+
+  function agregarCliente() {
+    const razon = document.getElementById('nuevoClienteRazon').value.trim();
+    if (!razon) return;
+    const nuevo = {
+      id: 'c_' + Date.now() + Math.random().toString(36).substr(2, 5),
+      razon: razon,
+      rut: document.getElementById('nuevoClienteRut').value.trim(),
+      direccion: document.getElementById('nuevoClienteDir').value.trim(),
+      ciudad: document.getElementById('nuevoClienteCiudad').value.trim(),
+      contrato: document.getElementById('nuevoClienteContrato').value.trim(),
+      oc: document.getElementById('nuevoClienteOC').value.trim(),
+      rutas: []
+    };
+    clientes.push(nuevo);
+    guardarClientes();
+    // Limpiar campos
+    document.getElementById('nuevoClienteRazon').value = '';
+    document.getElementById('nuevoClienteRut').value = '';
+    document.getElementById('nuevoClienteDir').value = '';
+    document.getElementById('nuevoClienteCiudad').value = '';
+    document.getElementById('nuevoClienteContrato').value = '';
+    document.getElementById('nuevoClienteOC').value = '';
+    actualizarSelectorClientes();
+    actualizarListaClientesModal();
+  }
+
+  function eliminarCliente(id) {
+    if (confirm('¿Eliminar este cliente?')) {
+      clientes = clientes.filter(c => c.id !== id);
+      guardarClientes();
+      actualizarSelectorClientes();
+      actualizarListaClientesModal();
+      if (clienteActivoId === id) {
+        clienteActivoId = null;
+        document.getElementById('clienteSeleccionadoNombre').innerText = '';
+        document.getElementById('sinClienteMsg').style.display = 'block';
+        document.getElementById('formNuevaRuta').style.display = 'none';
+        document.getElementById('rutasContainer').innerHTML = '';
+      }
+    }
+  }
+
+  function editarCliente(id) {
+    const cliente = clientes.find(c => c.id === id);
+    if (!cliente) return;
+    const nuevaRazon = prompt('Razón social:', cliente.razon);
+    if (nuevaRazon !== null) cliente.razon = nuevaRazon;
+    const nuevoRut = prompt('RUT:', cliente.rut || '');
+    if (nuevoRut !== null) cliente.rut = nuevoRut;
+    // Podríamos hacer más campos, pero simplificamos
+    guardarClientes();
+    actualizarSelectorClientes();
+    actualizarListaClientesModal();
+  }
+
+  function agregarRuta() {
+    if (!clienteActivoId) return;
+    const desc = document.getElementById('nuevaRutaDesc').value.trim();
+    const valor = parseFloat(document.getElementById('nuevaRutaValor').value) || 0;
+    if (!desc) return;
+    const cliente = clientes.find(c => c.id === clienteActivoId);
+    if (cliente) {
+      if (!cliente.rutas) cliente.rutas = [];
+      cliente.rutas.push({
+        id: 'r_' + Date.now() + Math.random().toString(36).substr(2, 5),
+        descripcion: desc,
+        valor: valor
+      });
+      guardarClientes();
+      document.getElementById('nuevaRutaDesc').value = '';
+      document.getElementById('nuevaRutaValor').value = '';
+      actualizarRutasModal(clienteActivoId);
+    }
+  }
+
+  function eliminarRuta(clienteId, rutaId) {
+    if (!confirm('¿Eliminar esta ruta?')) return;
+    const cliente = clientes.find(c => c.id === clienteId);
+    if (cliente && cliente.rutas) {
+      cliente.rutas = cliente.rutas.filter(r => r.id !== rutaId);
+      guardarClientes();
+      actualizarRutasModal(clienteId);
+    }
+  }
+
+  function editarRuta(clienteId, rutaId) {
+    const cliente = clientes.find(c => c.id === clienteId);
+    if (!cliente || !cliente.rutas) return;
+    const ruta = cliente.rutas.find(r => r.id === rutaId);
+    if (!ruta) return;
+    const nuevaDesc = prompt('Descripción:', ruta.descripcion);
+    if (nuevaDesc !== null) ruta.descripcion = nuevaDesc;
+    const nuevoValor = prompt('Valor unitario:', ruta.valor);
+    if (nuevoValor !== null) ruta.valor = parseFloat(nuevoValor) || 0;
+    guardarClientes();
+    actualizarRutasModal(clienteId);
+  }
+
+  // ========== FUNCIONES DE TABLA ==========
   let filaId = 0;
 
   function crearFila(datos) {
@@ -814,56 +1131,129 @@ href="data:image/svg+xml,
     const tr = document.createElement('tr');
     tr.dataset.id = id;
 
-    const cols = [
-      { key: 'vehiculo', placeholder: 'Ej: Bus Mercedes', align: 'left' },
-      { key: 'patente',  placeholder: 'XX-XX-00', align: 'center' },
-      { key: 'ruta',     placeholder: 'Origen → Destino', align: 'left' },
-      { key: 'fecha',    placeholder: '', align: 'center', type: 'date' },
-      { key: 'pasajeros',placeholder: '0', align: 'center' },
-      { key: 'viajes',   placeholder: '0', align: 'center' },
-      { key: 'valor',    placeholder: '0', align: 'right' },
-    ];
+    // Columna Vehículo
+    const td1 = document.createElement('td');
+    const inp1 = document.createElement('input');
+    inp1.type = 'text';
+    inp1.placeholder = 'Ej: Bus Mercedes';
+    inp1.value = d.vehiculo || '';
+    td1.appendChild(inp1);
+    tr.appendChild(td1);
 
-    cols.forEach(col => {
-      const td = document.createElement('td');
-      const inp = document.createElement('input');
-      inp.type = col.type || 'text';
-      inp.placeholder = col.placeholder;
-      inp.style.textAlign = col.align;
-      if (d[col.key] !== undefined) inp.value = d[col.key];
-      if (col.key === 'viajes' || col.key === 'valor') inp.addEventListener('input', calcular);
-      td.appendChild(inp);
-      tr.appendChild(td);
-    });
+    // Patente
+    const td2 = document.createElement('td');
+    const inp2 = document.createElement('input');
+    inp2.type = 'text';
+    inp2.placeholder = 'XX-XX-00';
+    inp2.value = d.patente || '';
+    td2.appendChild(inp2);
+    tr.appendChild(td2);
 
-    // Celda total
-    const tdTotal = document.createElement('td');
-    tdTotal.className = 'total-cell';
-    tdTotal.dataset.total = '0';
-    tdTotal.textContent = d.total || '0';
-    tr.appendChild(tdTotal);
+    // Ruta (con botón)
+    const td3 = document.createElement('td');
+    const divRuta = document.createElement('div');
+    divRuta.className = 'ruta-cell';
+    const inpRuta = document.createElement('input');
+    inpRuta.type = 'text';
+    inpRuta.placeholder = 'Origen → Destino';
+    inpRuta.value = d.ruta || '';
+    const btnRuta = document.createElement('button');
+    btnRuta.className = 'btn-ruta';
+    btnRuta.innerHTML = '📋';
+    btnRuta.title = 'Seleccionar ruta guardada';
+    btnRuta.onclick = (e) => {
+      e.preventDefault();
+      if (!clienteActivoId) {
+        alert('Primero selecciona un cliente en el bloque Mandante.');
+        return;
+      }
+      const cliente = clientes.find(c => c.id === clienteActivoId);
+      if (!cliente || !cliente.rutas || cliente.rutas.length === 0) {
+        alert('El cliente no tiene rutas guardadas.');
+        return;
+      }
+      // Crear un menú simple con prompt (mejoraría con un select flotante, pero por ahora prompt)
+      const opciones = cliente.rutas.map((r, idx) => `${idx+1}: ${r.descripcion} ($${r.valor})`).join('\n');
+      const elegida = prompt(`Elige una ruta (número):\n${opciones}`);
+      if (elegida) {
+        const idx = parseInt(elegida) - 1;
+        if (idx >= 0 && idx < cliente.rutas.length) {
+          inpRuta.value = cliente.rutas[idx].descripcion;
+          // También llenar valor unitario si existe
+          const valorInput = tr.querySelectorAll('td')[6]?.querySelector('input');
+          if (valorInput && cliente.rutas[idx].valor) {
+            valorInput.value = cliente.rutas[idx].valor;
+          }
+          calcular();
+        }
+      }
+    };
+    divRuta.appendChild(inpRuta);
+    divRuta.appendChild(btnRuta);
+    td3.appendChild(divRuta);
+    tr.appendChild(td3);
+
+    // Fecha
+    const td4 = document.createElement('td');
+    const inp4 = document.createElement('input');
+    inp4.type = 'date';
+    inp4.value = d.fecha || '';
+    td4.appendChild(inp4);
+    tr.appendChild(td4);
+
+    // Pasajeros
+    const td5 = document.createElement('td');
+    const inp5 = document.createElement('input');
+    inp5.type = 'text';
+    inp5.placeholder = '0';
+    inp5.value = d.pasajeros || '';
+    td5.appendChild(inp5);
+    tr.appendChild(td5);
+
+    // Viajes
+    const td6 = document.createElement('td');
+    const inp6 = document.createElement('input');
+    inp6.type = 'text';
+    inp6.placeholder = '0';
+    inp6.value = d.viajes || '';
+    inp6.addEventListener('input', calcular);
+    td6.appendChild(inp6);
+    tr.appendChild(td6);
+
+    // Valor unit.
+    const td7 = document.createElement('td');
+    const inp7 = document.createElement('input');
+    inp7.type = 'text';
+    inp7.placeholder = '0';
+    inp7.value = d.valor || '';
+    inp7.addEventListener('input', calcular);
+    td7.appendChild(inp7);
+    tr.appendChild(td7);
+
+    // Total
+    const td8 = document.createElement('td');
+    td8.className = 'total-cell';
+    td8.dataset.total = '0';
+    td8.textContent = d.total || '0';
+    tr.appendChild(td8);
 
     // Botón eliminar
-    const tdDel = document.createElement('td');
-    const btn = document.createElement('button');
-    btn.className = 'btn-del';
-    btn.title = 'Eliminar fila';
-    btn.innerHTML = '✕';
-    btn.onclick = () => { tr.remove(); calcular(); };
-    tdDel.appendChild(btn);
-    tr.appendChild(tdDel);
+    const td9 = document.createElement('td');
+    const btnDel = document.createElement('button');
+    btnDel.className = 'btn-del';
+    btnDel.innerHTML = '✕';
+    btnDel.onclick = () => { tr.remove(); calcular(); };
+    td9.appendChild(btnDel);
+    tr.appendChild(td9);
 
     return tr;
   }
 
   function agregarFila(datos) {
     const tbody = document.getElementById('tbody');
-    // Eliminar fila vacía placeholder si existe
     const empty = tbody.querySelector('.empty-row');
     if (empty) empty.remove();
-
-    const fila = crearFila(datos);
-    tbody.appendChild(fila);
+    tbody.appendChild(crearFila(datos));
     calcular();
   }
 
@@ -877,8 +1267,7 @@ href="data:image/svg+xml,
   }
 
   function eliminarTodosLosServicios() {
-    const tbody = document.getElementById('tbody');
-    tbody.innerHTML = '';
+    document.getElementById('tbody').innerHTML = '';
     mostrarFilaVacia();
     calcular();
   }
@@ -889,7 +1278,7 @@ href="data:image/svg+xml,
     tr.className = 'empty-row';
     const td = document.createElement('td');
     td.colSpan = 9;
-    td.textContent = 'No hay servicios registrados. Haz clic en "Agregar servicio" para comenzar.';
+    td.textContent = 'No hay servicios registrados. Haz clic en "Agregar" para comenzar.';
     tr.appendChild(td);
     tbody.appendChild(tr);
   }
@@ -922,31 +1311,25 @@ href="data:image/svg+xml,
     document.getElementById('ivaLinea').style.opacity = incluirIva ? '1' : '0.4';
   }
 
-
-  // ── LOGO ──────────────────────────────────────────────────
+  // ========== LOGO ==========
   function cargarLogo(input) {
     if (!input.files || !input.files[0]) return;
     const reader = new FileReader();
     reader.onload = function(e) {
       const img = document.getElementById('logoImg');
       img.src = e.target.result;
-      img.style.width = '110px';
-      img.style.height = 'auto';
-      img.style.maxHeight = '70px';
-
+      img.style.width = '100px';
       document.getElementById('logoTexto').style.display = 'none';
       document.getElementById('logoImagen').style.display = 'flex';
       document.getElementById('logoSizeWrap').style.display = 'flex';
-      document.getElementById('logoSize').value = 110;
-      document.getElementById('logoSizePx').textContent = '110px';
+      document.getElementById('logoSize').value = 100;
+      document.getElementById('logoSizePx').textContent = '100px';
     };
     reader.readAsDataURL(input.files[0]);
   }
 
   function ajustarLogo(val) {
-    const img = document.getElementById('logoImg');
-    img.style.width = val + 'px';
-    img.style.maxHeight = Math.round(val * 0.65) + 'px';
+    document.getElementById('logoImg').style.width = val + 'px';
     document.getElementById('logoSizePx').textContent = val + 'px';
   }
 
@@ -958,35 +1341,19 @@ href="data:image/svg+xml,
     document.getElementById('logoInput').value = '';
   }
 
-
+  // ========== INICIALIZACIÓN ==========
   window.addEventListener('DOMContentLoaded', () => {
-    agregarFila({
-      vehiculo:  'Bus Scania K410',
-      patente:   'BJCD-15',
-      ruta:      'Ruta 68 – Peñaflor a Mtgo.',
-      fecha:     '2025-05-20',
-      pasajeros: '45',
-      viajes:    '2',
-      valor:     '15000'
-    });
-    agregarFila({
-      vehiculo:  'Bus Mercedes OF',
-      patente:   'ABCD-12',
-      ruta:      'Ruta 5 Sur – Maipú a Centro',
-      fecha:     '2025-05-21',
-      pasajeros: '52',
-      viajes:    '3',
-      valor:     '14500'
-    });
-    agregarFila({
-      vehiculo:  'Minibús Volkswagen',
-      patente:   'WXYZ-99',
-      ruta:      'Servicio privado empresas',
-      fecha:     '2025-05-22',
-      pasajeros: '18',
-      viajes:    '1',
-      valor:     '28000'
-    });
+    cargarClientesStorage();
+    // Agregar filas de ejemplo (si no hay, usar datos de clientes para precargar)
+    if (clientes.length > 0 && clientes[0].rutas) {
+      agregarFila({ vehiculo: 'Bus Scania K410', patente: 'BJCD-15', ruta: clientes[0].rutas[0].descripcion, fecha: '2025-05-20', pasajeros: '45', viajes: '2', valor: clientes[0].rutas[0].valor });
+      agregarFila({ vehiculo: 'Bus Mercedes OF', patente: 'ABCD-12', ruta: clientes[0].rutas[1]?.descripcion || 'Ruta 5 Sur', fecha: '2025-05-21', pasajeros: '52', viajes: '3', valor: clientes[0].rutas[1]?.valor || 14500 });
+      agregarFila({ vehiculo: 'Minibús Volkswagen', patente: 'WXYZ-99', ruta: clientes[1]?.rutas[0]?.descripcion || 'Servicio privado', fecha: '2025-05-22', pasajeros: '18', viajes: '1', valor: clientes[1]?.rutas[0]?.valor || 28000 });
+    } else {
+      agregarFila({ vehiculo: 'Bus Scania K410', patente: 'BJCD-15', ruta: 'Ruta 68 – Peñaflor a Mtgo.', fecha: '2025-05-20', pasajeros: '45', viajes: '2', valor: 15000 });
+      agregarFila({ vehiculo: 'Bus Mercedes OF', patente: 'ABCD-12', ruta: 'Ruta 5 Sur – Maipú a Centro', fecha: '2025-05-21', pasajeros: '52', viajes: '3', valor: 14500 });
+      agregarFila({ vehiculo: 'Minibús Volkswagen', patente: 'WXYZ-99', ruta: 'Servicio privado empresas', fecha: '2025-05-22', pasajeros: '18', viajes: '1', valor: 28000 });
+    }
     calcular();
   });
 </script>
