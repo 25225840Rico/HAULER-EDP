@@ -1,1361 +1,609 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>💰 Estado de Pago · HAULER</title>
-  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>💰</text></svg>">
-  <style>
-    /* ===== RESET Y VARIABLES ===== */
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Estado de Pago · HAULER</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --sans:'Inter',-apple-system,BlinkMacSystemFont,sans-serif;
+  --mono:'JetBrains Mono','Courier New',monospace;
+  --bg:#eef0f4;--card:#fff;
+  --t1:#111115;--t2:#5a5a66;--t3:#9898a6;--bdr:#dde0e8;
+  --blue:#0055FF;--blue-lt:#e6eeff;
+  --grad:linear-gradient(90deg,transparent 0%,#bdd0ff 40%,#bdd0ff 60%,transparent 100%);
+  --sh:0 2px 16px rgba(0,0,0,.06),0 1px 3px rgba(0,0,0,.04);
+}
+html{font-size:15px}
+body{font-family:var(--sans);background:var(--bg);min-height:100vh;color:var(--t1);
+  display:flex;flex-direction:column;align-items:center;padding:1.2rem;-webkit-font-smoothing:antialiased}
 
-    :root {
-      --bg-page: #f5f5f7;
-      --bg-doc: #ffffff;
-      --text-primary: #1d1c1d;
-      --text-secondary: #6e6d73;
-      --text-tertiary: #8e8e93;
-      --border-subtle: #e1e4e8;
-      --accent-blue: #007AFF;
-      --accent-light: #e3f2fd;
-      --font-sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-      --font-mono: 'SF Mono', 'DM Mono', 'Menlo', monospace;
-      --shadow-doc: 0 8px 24px rgba(0, 0, 0, 0.04);
-      --gradient-border: linear-gradient(90deg, transparent 0%, #d0e2ff 20%, #d0e2ff 80%, transparent 100%);
-    }
+/* TOOLBAR */
+.toolbar{width:100%;max-width:1080px;display:flex;align-items:center;gap:.4rem;margin-bottom:1.1rem;flex-wrap:wrap}
+.toolbar-brand{font-size:.65rem;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--t3);margin-right:auto}
+.btn{display:inline-flex;align-items:center;gap:.35rem;padding:.42rem .9rem;border-radius:99px;
+  border:1px solid transparent;font:500 .7rem/1 var(--sans);cursor:pointer;transition:all .15s;
+  background:rgba(255,255,255,.8);color:var(--t2);backdrop-filter:blur(4px)}
+.btn:hover{background:#fff;border-color:var(--bdr);box-shadow:var(--sh)}
+.btn-blue{background:var(--blue);color:#fff;border-color:transparent;box-shadow:0 2px 10px rgba(0,85,255,.3)}
+.btn-blue:hover{background:#003ecc}
+.btn-red{color:#d93030}
+.btn-red:hover{background:rgba(217,48,48,.07);border-color:rgba(217,48,48,.2)}
 
-    body {
-      font-family: var(--font-sans);
-      background: var(--bg-page);
-      min-height: 100vh;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      padding: 30px 20px;
-      color: var(--text-primary);
-      -webkit-font-smoothing: antialiased;
-      -moz-osx-font-smoothing: grayscale;
-    }
+/* DOC */
+.doc{width:100%;max-width:1080px;background:var(--card);border-radius:18px;border:1px solid var(--bdr);box-shadow:var(--sh);overflow:hidden}
+.hdiv{height:1px;background:var(--grad);margin:0 2rem}
+.vdiv{width:1px;background:var(--grad);align-self:stretch}
 
-    /* ===== TOOLBAR ===== */
-    .toolbar {
-      width: 100%;
-      max-width: 1100px;
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      margin-bottom: 20px;
-      flex-wrap: wrap;
-      padding: 0 8px;
-    }
+/* HEADER */
+.doc-header{display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:1.5rem;padding:1.6rem 2rem;background:linear-gradient(150deg,#fff 60%,#f6f8ff)}
+.logo-text{font-size:1.6rem;font-weight:700;letter-spacing:-.5px}
+.logo-sub{font-size:.48rem;font-weight:500;letter-spacing:2.5px;text-transform:uppercase;color:var(--t3);margin-top:3px}
+.logo-img-wrap{display:flex;align-items:center;gap:.5rem}
+.logo-img-wrap img{max-height:56px;object-fit:contain}
+.logo-controls{margin-top:.6rem;display:flex;flex-direction:column;gap:.35rem}
+.btn-upload{display:inline-flex;align-items:center;gap:.3rem;font:500 .62rem/1 var(--sans);color:var(--t2);
+  background:#f5f6f9;border:1px solid var(--bdr);border-radius:99px;padding:.28rem .7rem;cursor:pointer;width:fit-content;transition:all .15s}
+.btn-upload:hover{background:#ebebeb}
+.size-wrap{display:flex;align-items:center;gap:.5rem}
+.size-wrap input[type=range]{width:78px;height:3px;background:var(--bdr);border-radius:3px;-webkit-appearance:none;appearance:none}
+.size-wrap input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:13px;height:13px;border-radius:50%;background:var(--blue);cursor:pointer}
+.size-wrap span{font:400 .58rem/1 var(--mono);color:var(--t3);min-width:30px}
+.doc-title{text-align:center}
+.doc-title h1{font-size:.52rem;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:var(--t3);margin-bottom:4px}
+.doc-title h2{font-size:1.25rem;font-weight:300;letter-spacing:-.2px}
+.meta-row{display:flex;align-items:center;justify-content:flex-end;gap:.55rem;margin-bottom:.4rem}
+.meta-row label{font-size:.5rem;font-weight:700;letter-spacing:.8px;text-transform:uppercase;color:var(--t3)}
+.meta-row input{background:#f5f6f9;border:1px solid var(--bdr);border-radius:7px;color:var(--t1);
+  font:400 .68rem/1 var(--mono);padding:.32rem .7rem;width:130px;text-align:right;transition:all .15s}
+.meta-row input[type=date]{width:148px}
+.meta-row input:focus{outline:none;border-color:var(--blue);background:#fff}
 
-    .toolbar span {
-      font-size: 11px;
-      font-weight: 500;
-      color: var(--text-tertiary);
-      letter-spacing: 0.5px;
-      text-transform: uppercase;
-      margin-right: auto;
-    }
+/* INFO */
+.doc-info{display:grid;grid-template-columns:1fr auto 1fr}
+.info-block{padding:1.3rem 2rem}
+.block-title{font-size:.48rem;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--t3);
+  display:flex;align-items:center;gap:.35rem;margin-bottom:.9rem}
+.info-grid{display:grid;grid-template-columns:1fr 1fr;gap:.65rem 1.1rem}
+.f-full{grid-column:1/-1}
+.field{display:flex;flex-direction:column;gap:.2rem}
+.field label{font-size:.45rem;font-weight:700;text-transform:uppercase;letter-spacing:.7px;color:var(--t3)}
+.field input,.field select{background:transparent;border:none;border-bottom:1px solid var(--bdr);
+  font:400 .76rem/1.2 var(--sans);color:var(--t1);padding:.3rem 0 .2rem;width:100%;transition:border-color .15s}
+.field select{cursor:pointer}
+.field input:focus,.field select:focus{outline:none;border-bottom-color:var(--blue)}
+.field input:disabled{color:var(--t2);font-weight:600}
 
-    .btn {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      padding: 8px 14px;
-      border-radius: 40px;
-      border: 0.5px solid transparent;
-      font-family: var(--font-sans);
-      font-size: 12px;
-      font-weight: 500;
-      cursor: pointer;
-      transition: all 0.2s ease;
-      background: transparent;
-      color: var(--text-secondary);
-    }
+/* TABLA */
+.table-wrap{padding:1.3rem 2rem 1.1rem}
+.section-label{font-size:.48rem;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--t3);
+  display:flex;align-items:center;gap:.35rem;margin-bottom:1rem}
+table{width:100%;border-collapse:collapse;font-size:.76rem}
+thead th{background:#f5f6f9;font:600 .56rem/1 var(--sans);letter-spacing:.4px;text-transform:uppercase;color:var(--t2);
+  padding:.65rem .5rem;text-align:center;white-space:nowrap;border-bottom:1px solid var(--bdr)}
+thead th:first-child{text-align:left;padding-left:.9rem}
+thead th:last-child{width:2.2rem}
+tbody tr{position:relative;transition:background .12s}
+tbody tr:hover{background:#fafbff}
+tbody tr+tr::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:var(--grad)}
+tbody td{padding:.6rem .4rem;text-align:center;vertical-align:middle}
+tbody td:first-child{text-align:left;padding-left:.9rem}
+tbody td input{width:100%;background:transparent;border:1px solid transparent;font:400 .76rem/1 var(--sans);
+  color:var(--t1);text-align:center;padding:.38rem .3rem;border-radius:7px;transition:all .15s}
+tbody td:first-child input{text-align:left}
+tbody td input:hover{background:#f5f6f9}
+tbody td input:focus{outline:none;background:#fff;border-color:var(--blue)}
+.ruta-cell{display:flex;align-items:center;gap:.2rem}
+.ruta-cell input{flex:1}
+.btn-ruta{background:transparent;border:1px solid var(--bdr);border-radius:99px;width:1.6rem;height:1.6rem;
+  display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:.8rem;color:var(--t3);flex-shrink:0;transition:all .15s}
+.btn-ruta:hover{background:var(--blue-lt);border-color:var(--blue);color:var(--blue)}
+td.num input,td.num{font-family:var(--mono);font-size:.74rem}
+.total-cell{font-family:var(--mono);font-weight:500;font-size:.76rem}
+.btn-del{background:transparent;border:none;color:var(--t3);cursor:pointer;font-size:.9rem;
+  width:1.9rem;height:1.9rem;border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto;transition:all .15s}
+.btn-del:hover{background:rgba(217,48,48,.1);color:#d93030}
+.empty-row td{padding:2.5rem;text-align:center;color:var(--t3);font-size:.76rem}
 
-    .btn:hover {
-      background: rgba(0, 0, 0, 0.03);
-      border-color: var(--border-subtle);
-    }
+/* FOOTER */
+.doc-footer{display:grid;grid-template-columns:1fr auto;gap:1.5rem;align-items:end;padding:1.3rem 2rem 1.8rem}
+.iva-toggle{display:flex;align-items:center;gap:.65rem;background:#f5f6f9;border:1px solid var(--bdr);
+  border-radius:99px;padding:.4rem .9rem;width:fit-content;margin-bottom:1rem}
+.iva-toggle label{font-size:.72rem;font-weight:500;cursor:pointer}
+.iva-toggle input[type=checkbox]{width:.95rem;height:.95rem;accent-color:var(--blue);cursor:pointer}
+.glosa{font-size:.6rem;line-height:1.65;color:var(--t2);max-width:520px;background:#f5f6f9;
+  padding:.85rem 1rem;border-radius:12px;border-left:3px solid var(--blue)}
+.glosa strong{color:var(--t1);font-weight:600}
+.totales{background:#f5f6f9;border-radius:14px;padding:1rem 1.3rem;min-width:230px;border:1px solid var(--bdr)}
+.t-line{display:flex;justify-content:space-between;align-items:center;padding:.4rem 0;color:var(--t2);font-size:.76rem;border-bottom:1px solid var(--bdr)}
+.t-line:last-child{border-bottom:none}
+.t-line .amt{font-family:var(--mono);font-weight:500;color:var(--t1)}
+.t-line.grand{margin-top:.35rem;padding-top:.8rem;border-top:1px solid var(--bdr)!important;font-size:.9rem;font-weight:700;color:var(--t1)}
+.t-line.grand .amt{font-size:1.1rem;font-weight:700;color:var(--blue)}
 
-    .btn-primary {
-      background: var(--accent-blue);
-      color: white;
-      border-color: transparent;
-    }
-    .btn-primary:hover {
-      background: #005bbf;
-    }
-
-    .btn-danger {
-      color: #ff3b30;
-    }
-    .btn-danger:hover {
-      background: rgba(255, 59, 48, 0.05);
-      border-color: #ff3b3020;
-    }
-
-    /* ===== DOCUMENTO PRINCIPAL ===== */
-    .doc {
-      width: 100%;
-      max-width: 1100px;
-      background: var(--bg-doc);
-      border-radius: 24px;
-      box-shadow: var(--shadow-doc);
-      overflow: hidden;
-      border: 0.5px solid var(--border-subtle);
-    }
-
-    /* ===== ENCABEZADO ===== */
-    .doc-header {
-      padding: 32px 40px 24px;
-      display: grid;
-      grid-template-columns: auto 1fr auto;
-      align-items: center;
-      gap: 20px;
-      border-bottom: 1px solid transparent;
-      background: linear-gradient(to bottom, #ffffff, #fafafa);
-      position: relative;
-    }
-    .doc-header::after {
-      content: '';
-      position: absolute;
-      bottom: 0;
-      left: 40px;
-      right: 40px;
-      height: 1px;
-      background: var(--gradient-border);
-    }
-
-    .logo-block { display: flex; flex-direction: column; }
-    .logo-text {
-      font-family: var(--font-sans);
-      font-size: 28px;
-      font-weight: 600;
-      color: var(--text-primary);
-      letter-spacing: -0.5px;
-    }
-    .logo-sub {
-      font-size: 9px;
-      font-weight: 400;
-      color: var(--text-tertiary);
-      letter-spacing: 2px;
-      text-transform: uppercase;
-      margin-top: 4px;
-    }
-
-    .doc-title-block { text-align: center; }
-    .doc-title-block h1 {
-      font-size: 10px;
-      font-weight: 500;
-      color: var(--text-tertiary);
-      letter-spacing: 2px;
-      text-transform: uppercase;
-      margin-bottom: 4px;
-    }
-    .doc-title-block h2 {
-      font-size: 22px;
-      font-weight: 300;
-      color: var(--text-primary);
-      letter-spacing: -0.2px;
-    }
-
-    .doc-meta { display: flex; flex-direction: column; gap: 8px; }
-    .meta-row {
-      display: flex;
-      align-items: center;
-      justify-content: flex-end;
-      gap: 10px;
-    }
-    .meta-row label {
-      font-size: 9px;
-      font-weight: 500;
-      color: var(--text-tertiary);
-      letter-spacing: 1px;
-      text-transform: uppercase;
-    }
-    .meta-row input {
-      background: #f9f9f9;
-      border: 0.5px solid var(--border-subtle);
-      border-radius: 8px;
-      color: var(--text-primary);
-      font-family: var(--font-mono);
-      font-size: 12px;
-      padding: 6px 12px;
-      width: 130px;
-      text-align: right;
-      transition: all 0.15s;
-    }
-    .meta-row input[type="date"] { width: 155px; }
-    .meta-row input:focus {
-      outline: none;
-      border-color: var(--accent-blue);
-      background: white;
-    }
-
-    /* ===== SECCIÓN DATOS ===== */
-    .doc-info {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      background: #ffffff;
-      position: relative;
-    }
-    .doc-info::after {
-      content: '';
-      position: absolute;
-      bottom: 0;
-      left: 40px;
-      right: 40px;
-      height: 1px;
-      background: var(--gradient-border);
-    }
-
-    .info-block { padding: 24px 40px; }
-    .info-block:first-child {
-      border-right: 1px solid transparent;
-      background: linear-gradient(to right, #ffffff, #fafafa);
-    }
-    .info-block:first-child::after {
-      content: '';
-      position: absolute;
-      top: 24px;
-      bottom: 24px;
-      right: 50%;
-      width: 1px;
-      background: var(--gradient-border);
-    }
-
-    .info-block-title {
-      font-size: 9px;
-      font-weight: 600;
-      letter-spacing: 1.5px;
-      text-transform: uppercase;
-      color: var(--text-tertiary);
-      margin-bottom: 16px;
-      display: flex;
-      align-items: center;
-      gap: 6px;
-    }
-    .info-block-title svg { stroke: var(--text-tertiary); stroke-width: 1.5; }
-
-    .info-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 12px 20px;
-    }
-    .info-field.full { grid-column: 1 / -1; }
-
-    .info-field {
-      display: flex;
-      flex-direction: column;
-      gap: 4px;
-    }
-    .info-field label {
-      font-size: 8px;
-      font-weight: 600;
-      text-transform: uppercase;
-      letter-spacing: 0.8px;
-      color: var(--text-tertiary);
-    }
-    .info-field input, .info-field select {
-      background: transparent;
-      border: none;
-      border-bottom: 0.5px solid var(--border-subtle);
-      font-family: var(--font-sans);
-      font-size: 13px;
-      font-weight: 400;
-      color: var(--text-primary);
-      padding: 6px 0 4px;
-      width: 100%;
-      transition: border-color 0.15s;
-    }
-    .info-field select { cursor: pointer; }
-    .info-field input:focus, .info-field select:focus {
-      outline: none;
-      border-bottom-color: var(--accent-blue);
-    }
-    .info-field input:disabled { color: var(--text-secondary); font-weight: 500; }
-
-    /* ===== TABLA ===== */
-    .doc-table-wrap {
-      padding: 24px 40px 20px;
-      position: relative;
-    }
-    .doc-table-wrap::after {
-      content: '';
-      position: absolute;
-      bottom: 0;
-      left: 40px;
-      right: 40px;
-      height: 1px;
-      background: var(--gradient-border);
-    }
-
-    .table-header-row {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 20px;
-    }
-    .table-label {
-      font-size: 9px;
-      font-weight: 600;
-      letter-spacing: 1.5px;
-      text-transform: uppercase;
-      color: var(--text-tertiary);
-      display: flex;
-      align-items: center;
-      gap: 6px;
-    }
-    .table-label svg { stroke: var(--text-tertiary); stroke-width: 1.5; }
-
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      font-size: 13px;
-    }
-
-    thead tr { background: #f9f9f9; border-radius: 12px 12px 0 0; }
-    thead th {
-      font-weight: 500;
-      font-size: 10px;
-      letter-spacing: 0.5px;
-      text-transform: uppercase;
-      color: var(--text-secondary);
-      padding: 12px 8px;
-      text-align: center;
-      white-space: nowrap;
-      border-bottom: 0.5px solid var(--border-subtle);
-    }
-    thead th:first-child { text-align: left; padding-left: 16px; }
-    thead th:last-child { width: 36px; }
-
-    tbody tr {
-      border-bottom: 0.5px solid transparent;
-      background: white;
-      position: relative;
-    }
-    tbody tr::after {
-      content: '';
-      position: absolute;
-      bottom: 0;
-      left: 0;
-      right: 0;
-      height: 0.5px;
-      background: var(--gradient-border);
-    }
-    tbody tr:last-child::after { display: none; }
-
-    tbody td {
-      padding: 12px 8px;
-      text-align: center;
-      vertical-align: middle;
-    }
-    tbody td:first-child { text-align: left; padding-left: 16px; }
-
-    /* Celda de ruta con botón */
-    .ruta-cell {
-      display: flex;
-      align-items: center;
-      gap: 4px;
-    }
-    .ruta-cell input { flex: 1; }
-    .btn-ruta {
-      background: transparent;
-      border: 0.5px solid var(--border-subtle);
-      border-radius: 16px;
-      width: 26px;
-      height: 26px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      cursor: pointer;
-      font-size: 14px;
-      color: var(--text-tertiary);
-      transition: all 0.15s;
-      flex-shrink: 0;
-    }
-    .btn-ruta:hover {
-      background: var(--accent-light);
-      border-color: var(--accent-blue);
-      color: var(--accent-blue);
-    }
-
-    tbody td input {
-      width: 100%;
-      background: transparent;
-      border: 0.5px solid transparent;
-      font-family: var(--font-sans);
-      font-size: 13px;
-      color: var(--text-primary);
-      text-align: center;
-      padding: 8px 6px;
-      border-radius: 10px;
-      transition: all 0.15s;
-    }
-    tbody td:first-child input { text-align: left; }
-    tbody td input:hover { background: #f9f9f9; }
-    tbody td input:focus {
-      outline: none;
-      background: white;
-      border-color: var(--accent-blue);
-    }
-
-    tbody td:nth-child(7) input,
-    tbody td:nth-child(8) {
-      font-family: var(--font-mono);
-      font-size: 13px;
-    }
-
-    .total-cell {
-      font-family: var(--font-mono);
-      font-weight: 500;
-      color: var(--text-primary);
-    }
-
-    .btn-del {
-      background: transparent;
-      border: none;
-      color: var(--text-tertiary);
-      cursor: pointer;
-      font-size: 16px;
-      width: 30px;
-      height: 30px;
-      border-radius: 30px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      transition: all 0.15s;
-      margin: 0 auto;
-    }
-    .btn-del:hover {
-      background: rgba(255, 59, 48, 0.1);
-      color: #ff3b30;
-    }
-
-    .empty-row td {
-      padding: 40px 24px;
-      text-align: center;
-      color: var(--text-tertiary);
-      font-size: 13px;
-      font-style: normal;
-      background: #f9f9f9 !important;
-      border-radius: 16px;
-    }
-
-    /* ===== FOOTER ===== */
-    .doc-footer {
-      padding: 24px 40px 32px;
-      display: grid;
-      grid-template-columns: 1fr auto;
-      gap: 24px;
-      align-items: end;
-      background: #ffffff;
-    }
-
-    .iva-toggle-wrap {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      background: #f9f9f9;
-      border: 0.5px solid var(--border-subtle);
-      border-radius: 40px;
-      padding: 8px 16px;
-      width: fit-content;
-      margin-bottom: 20px;
-    }
-    .iva-toggle-wrap label {
-      font-size: 12px;
-      font-weight: 500;
-      color: var(--text-primary);
-      cursor: pointer;
-    }
-    .iva-toggle-wrap input[type="checkbox"] {
-      width: 16px;
-      height: 16px;
-      accent-color: var(--accent-blue);
-      cursor: pointer;
-    }
-
-    .glosa-legal {
-      font-size: 10.5px;
-      line-height: 1.6;
-      color: var(--text-secondary);
-      max-width: 540px;
-      background: #f9f9f9;
-      padding: 16px 20px;
-      border-radius: 16px;
-      border-left: 3px solid var(--accent-blue);
-    }
-    .glosa-legal strong { color: var(--text-primary); font-weight: 600; }
-
-    .totales-box {
-      background: #f9f9f9;
-      border-radius: 20px;
-      padding: 20px 24px;
-      min-width: 260px;
-      border: 0.5px solid var(--border-subtle);
-    }
-
-    .total-line {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 8px 0;
-      color: var(--text-secondary);
-      font-size: 13px;
-      border-bottom: 0.5px solid var(--border-subtle);
-    }
-    .total-line:last-of-type { border-bottom: none; }
-    .total-line .amount {
-      font-family: var(--font-mono);
-      font-weight: 500;
-      color: var(--text-primary);
-    }
-    .total-line.iva-line { transition: opacity 0.2s; }
-
-    .total-line.grand {
-      margin-top: 8px;
-      padding-top: 16px;
-      border-top: 1px solid var(--border-subtle) !important;
-      font-size: 16px;
-      font-weight: 600;
-      color: var(--text-primary);
-    }
-    .total-line.grand .amount {
-      font-size: 20px;
-      font-weight: 600;
-      color: var(--accent-blue);
-    }
-
-    /* ===== MODAL DE GESTIÓN ===== */
-    .modal {
-      display: none;
-      position: fixed;
-      top: 0; left: 0; width: 100%; height: 100%;
-      background: rgba(0,0,0,0.3);
-      backdrop-filter: blur(4px);
-      align-items: center;
-      justify-content: center;
-      z-index: 1000;
-    }
-    .modal.active { display: flex; }
-
-    .modal-content {
-      background: white;
-      border-radius: 32px;
-      width: 90%;
-      max-width: 800px;
-      max-height: 80vh;
-      overflow: hidden;
-      box-shadow: 0 24px 48px rgba(0,0,0,0.1);
-      display: flex;
-      flex-direction: column;
-    }
-
-    .modal-header {
-      padding: 20px 24px;
-      border-bottom: 0.5px solid var(--border-subtle);
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-    .modal-header h3 {
-      font-size: 16px;
-      font-weight: 600;
-      color: var(--text-primary);
-    }
-    .modal-close {
-      background: transparent;
-      border: none;
-      font-size: 20px;
-      cursor: pointer;
-      color: var(--text-tertiary);
-      padding: 4px 8px;
-      border-radius: 30px;
-    }
-    .modal-close:hover { background: #f0f0f0; }
-
-    .modal-body {
-      padding: 24px;
-      overflow-y: auto;
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 24px;
-    }
-
-    .clientes-lista, .rutas-lista {
-      background: #f9f9f9;
-      border-radius: 20px;
-      padding: 16px;
-    }
-    .clientes-lista h4, .rutas-lista h4 {
-      font-size: 12px;
-      font-weight: 600;
-      color: var(--text-tertiary);
-      text-transform: uppercase;
-      letter-spacing: 1px;
-      margin-bottom: 12px;
-    }
-
-    .cliente-item, .ruta-item {
-      background: white;
-      border-radius: 16px;
-      padding: 12px;
-      margin-bottom: 8px;
-      border: 0.5px solid var(--border-subtle);
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-    .cliente-info, .ruta-info {
-      font-size: 13px;
-      font-weight: 500;
-    }
-    .cliente-acciones, .ruta-acciones {
-      display: flex;
-      gap: 6px;
-    }
-    .cliente-acciones button, .ruta-acciones button {
-      background: transparent;
-      border: none;
-      cursor: pointer;
-      color: var(--text-tertiary);
-      padding: 4px;
-      border-radius: 20px;
-    }
-    .cliente-acciones button:hover, .ruta-acciones button:hover {
-      background: var(--accent-light);
-      color: var(--accent-blue);
-    }
-
-    .form-group {
-      margin-bottom: 12px;
-    }
-    .form-group label {
-      display: block;
-      font-size: 9px;
-      font-weight: 600;
-      text-transform: uppercase;
-      color: var(--text-tertiary);
-      margin-bottom: 4px;
-    }
-    .form-group input {
-      width: 100%;
-      padding: 8px 12px;
-      border: 0.5px solid var(--border-subtle);
-      border-radius: 12px;
-      font-size: 13px;
-    }
-    .form-group input:focus {
-      outline: none;
-      border-color: var(--accent-blue);
-    }
-
-    .btn-agregar {
-      background: var(--accent-blue);
-      color: white;
-      border: none;
-      padding: 10px 16px;
-      border-radius: 40px;
-      font-weight: 500;
-      font-size: 12px;
-      cursor: pointer;
-      width: 100%;
-      margin-top: 8px;
-    }
-    .btn-agregar:hover { background: #005bbf; }
-
-    /* ===== LOGO ===== */
-    .logo-controles { margin-top: 12px; display: flex; flex-direction: column; gap: 8px; }
-    .btn-upload-logo {
-      display: inline-flex; align-items: center; gap: 6px;
-      background: #f9f9f9; border: 0.5px solid var(--border-subtle); border-radius: 30px;
-      color: var(--text-secondary); font-size: 11px; font-weight: 500; padding: 5px 12px;
-      cursor: pointer; transition: all 0.15s; width: fit-content;
-    }
-    .btn-upload-logo:hover { background: #eaeaea; }
-    .logo-size-wrap { display: flex; align-items: center; gap: 8px; color: var(--text-secondary); }
-    .logo-size-wrap input[type="range"] { width: 100px; height: 3px; background: var(--border-subtle); border-radius: 3px; }
-    .logo-size-wrap input[type="range"]::-webkit-slider-thumb {
-      -webkit-appearance: none; width: 14px; height: 14px; border-radius: 14px; background: var(--accent-blue); cursor: pointer;
-    }
-    .logo-size-wrap span { font-family: var(--font-mono); font-size: 10px; min-width: 32px; }
-    #logoImagen { display: flex; align-items: center; gap: 8px; }
-    .logo-quitar {
-      background: #f9f9f9; border: 0.5px solid var(--border-subtle); color: var(--text-tertiary);
-      border-radius: 20px; width: 20px; height: 20px; font-size: 11px; cursor: pointer;
-      display: flex; align-items: center; justify-content: center;
-    }
-    .logo-quitar:hover { background: #ff3b3010; color: #ff3b30; }
-
-    /* ===== IMPRESIÓN ===== */
-    @media print {
-      @page { size: A4 landscape; margin: 12mm 14mm; }
-      * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-      body { background: transparent; padding: 0; }
-      body::after {
-        content: ''; position: fixed; top:0; left:0; width:100%; height:100%;
-        background-image: url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIzMDAiIGhlaWdodD0iMzAwIj48ZmlsdGVyIGlkPSJmIj48ZmVUdXJidWxlbmNlIHR5cGU9ImZyYWN0YWxOb2lzZSIgYmFzZUZyZXF1ZW5jeT0iLjc0IiBudW1PY3RhdmVzPSIzIiAvPjwvZmlsdGVyPjxyZWN0IHdpZHRoPSIxMDAlIiBoZWlnaHQ9IjEwMCUiIGZpbHRlcj0idXJsKCNmKSIgb3BhY2l0eT0iMC4wMjUiIC8+PC9zdmc+');
-        background-repeat: repeat; pointer-events: none; z-index: 999; mix-blend-mode: multiply; opacity: 0.5;
-      }
-      .toolbar, .modal, .btn, .btn-del, .btn-ruta, .logo-controles { display: none !important; }
-      .doc { box-shadow: none; border: 0.5px solid #d0e2ff; border-radius: 0; background: white; }
-      .doc-header::after, .doc-info::after, .doc-table-wrap::after, tbody tr::after {
-        background: linear-gradient(90deg, transparent, #b0d4f0, transparent);
-      }
-      thead th:last-child, tbody td:last-child { display: none; }
-    }
-  </style>
+/* MODAL */
+.modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.22);backdrop-filter:blur(5px);
+  align-items:center;justify-content:center;z-index:1000}
+.modal.open{display:flex}
+.modal-box{background:#fff;border-radius:22px;width:90%;max-width:800px;max-height:84vh;overflow:hidden;
+  box-shadow:0 28px 56px rgba(0,0,0,.12);display:flex;flex-direction:column;border:1px solid var(--bdr)}
+.modal-head{padding:1rem 1.3rem;border-bottom:1px solid var(--bdr);display:flex;justify-content:space-between;align-items:center}
+.modal-head h3{font-size:.9rem;font-weight:600}
+.modal-close{background:transparent;border:none;font-size:1.1rem;cursor:pointer;color:var(--t3);
+  padding:.2rem .45rem;border-radius:20px;transition:all .15s;line-height:1}
+.modal-close:hover{background:#f0f0f0;color:var(--t1)}
+.modal-body{padding:1.3rem;overflow-y:auto;display:grid;grid-template-columns:1fr 1fr;gap:1.3rem}
+.panel{background:#f5f6f9;border-radius:14px;padding:.9rem}
+.panel h4{font-size:.6rem;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:1px;margin-bottom:.75rem}
+.panel-sep{border:none;border-top:1px solid var(--bdr);margin:.75rem 0}
+.list-item{background:#fff;border-radius:10px;padding:.65rem .8rem;margin-bottom:.4rem;border:1px solid var(--bdr);
+  display:flex;justify-content:space-between;align-items:center}
+.item-info{font-size:.76rem;font-weight:500}
+.item-info small{display:block;font-size:.6rem;color:var(--t3);font-weight:400;margin-top:2px}
+.item-btns{display:flex;gap:.3rem}
+.item-btns button{background:transparent;border:none;cursor:pointer;color:var(--t3);
+  padding:.18rem .4rem;border-radius:10px;font-size:.82rem;transition:all .15s}
+.item-btns button:hover{background:var(--blue-lt);color:var(--blue)}
+.item-btns button.del:hover{background:rgba(217,48,48,.08);color:#d93030}
+.form-g{margin-bottom:.65rem}
+.form-g label{display:block;font-size:.47rem;font-weight:700;text-transform:uppercase;color:var(--t3);margin-bottom:.2rem;letter-spacing:.7px}
+.form-g input{width:100%;padding:.44rem .75rem;border:1px solid var(--bdr);border-radius:9px;font:400 .76rem/1 var(--sans);transition:border-color .15s}
+.form-g input:focus{outline:none;border-color:var(--blue)}
+.btn-add{background:var(--blue);color:#fff;border:none;padding:.52rem 1rem;border-radius:99px;
+  font:600 .68rem/1 var(--sans);cursor:pointer;width:100%;margin-top:.35rem;transition:background .15s}
+.btn-add:hover{background:#003ecc}
+</style>
 </head>
 <body>
 
-<!-- Toolbar -->
 <div class="toolbar">
-  <span>Hauler · Estado de Pago</span>
-  <button class="btn" onclick="agregarFila()">
-    <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-    Agregar
-  </button>
-  <button class="btn" onclick="eliminarUltimaFila()">
-    <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><line x1="5" y1="12" x2="19" y2="12"/></svg>
-    Quitar último
-  </button>
-  <button class="btn btn-danger" onclick="eliminarTodosLosServicios()">
-    <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/></svg>
-    Limpiar
-  </button>
-  <button class="btn btn-primary" onclick="abrirModalClientes()">
-    <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-    Clientes y Rutas
-  </button>
-  <button class="btn btn-print" onclick="window.print()">
-    <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
-    Imprimir PDF
-  </button>
+  <span class="toolbar-brand">Hauler · Estado de Pago</span>
+  <button class="btn" onclick="agregarFila()">➕ Agregar</button>
+  <button class="btn" onclick="eliminarUltima()">➖ Quitar último</button>
+  <button class="btn btn-red" onclick="limpiarTabla()">🗑 Limpiar</button>
+  <button class="btn btn-blue" onclick="abrirModal()">👥 Clientes y Rutas</button>
+  <button class="btn btn-blue" onclick="imprimirDoc()">🖨 Imprimir PDF</button>
 </div>
 
-<!-- Documento principal -->
-<div class="doc">
-  <!-- Encabezado -->
+<div class="doc" id="doc">
+
   <div class="doc-header">
-    <div class="logo-block">
-      <div id="logoTexto">
-        <div class="logo-text">HAULER</div>
-        <div class="logo-sub">Transporte de pasajeros</div>
-      </div>
-      <div id="logoImagen" style="display:none;">
-        <img id="logoImg" src="" alt="Logo" style="max-height:60px;">
-        <button class="logo-quitar" onclick="quitarLogo()">✕</button>
-      </div>
-      <div class="logo-controles">
-        <label class="btn-upload-logo">
-          <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+    <div>
+      <div id="logoTexto"><div class="logo-text">HAULER</div><div class="logo-sub">Transporte de pasajeros</div></div>
+      <div id="logoImg" class="logo-img-wrap" style="display:none"><img id="imgTag" src="" alt="Logo"></div>
+      <div class="logo-controls">
+        <label class="btn-upload">
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
           Subir logo
-          <input type="file" id="logoInput" accept="image/*" onchange="cargarLogo(this)" style="display:none;">
+          <input type="file" accept="image/*" onchange="cargarLogo(this)" style="display:none">
         </label>
-        <div class="logo-size-wrap" id="logoSizeWrap" style="display:none;">
-          <input type="range" id="logoSize" min="40" max="180" value="100" oninput="ajustarLogo(this.value)">
-          <span id="logoSizePx">100px</span>
+        <div class="size-wrap" id="sizeWrap" style="display:none">
+          <input type="range" id="logoSize" min="30" max="150" value="56" oninput="ajustarLogo(this.value)">
+          <span id="sizePx">56px</span>
         </div>
+        <button class="btn" id="btnQuitarLogo" style="display:none;font-size:.6rem;padding:.25rem .7rem" onclick="quitarLogo()">✕ Quitar logo</button>
       </div>
     </div>
-    <div class="doc-title-block">
-      <h1>Documento de cobro</h1>
-      <h2>Estado de Pago</h2>
-    </div>
-    <div class="doc-meta">
+    <div class="doc-title"><h1>Documento de cobro</h1><h2>Estado de Pago</h2></div>
+    <div>
       <div class="meta-row"><label>N° Doc.</label><input type="text" id="numDoc" value="EP-2401"></div>
-      <div class="meta-row"><label>Emisión</label><input type="date" id="fechaEmision" value="2025-05-20"></div>
-      <div class="meta-row"><label>Vencimiento</label><input type="date" id="fechaVence" value="2025-06-20"></div>
+      <div class="meta-row"><label>Emisión</label><input type="date" id="fechaEmision"></div>
+      <div class="meta-row"><label>Vencimiento</label><input type="date" id="fechaVence"></div>
     </div>
   </div>
+  <div class="hdiv"></div>
 
-  <!-- Datos -->
   <div class="doc-info">
     <div class="info-block">
-      <div class="info-block-title">
-        <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/></svg>
+      <div class="block-title">
+        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/></svg>
         Mandante / Cliente
       </div>
       <div class="info-grid">
-        <div class="info-field full">
-          <label>Cliente guardado</label>
-          <select id="clienteSelector" onchange="cargarClienteSeleccionado()">
-            <option value="">-- Seleccionar cliente --</option>
-          </select>
+        <div class="field f-full"><label>Cliente guardado</label>
+          <select id="clienteSelector" onchange="cargarCliente()"><option value="">— Seleccionar —</option></select>
         </div>
-        <div class="info-field full">
-          <label>Razón social</label>
-          <input type="text" id="clienteRazon" value="Transportes del Sol Ltda.">
-        </div>
-        <div class="info-field"><label>RUT</label><input type="text" id="clienteRut" placeholder="12.345.678-9"></div>
-        <div class="info-field"><label>Dirección</label><input type="text" id="clienteDireccion" value="Av. Libertador 1234"></div>
-        <div class="info-field"><label>Ciudad</label><input type="text" id="clienteCiudad" value="Santiago"></div>
-        <div class="info-field"><label>Contrato</label><input type="text" id="clienteContrato" value="Contrato escolar N° 24-05"></div>
-        <div class="info-field"><label>Orden de compra</label><input type="text" id="clienteOC" value="OC-2025-128"></div>
+        <div class="field f-full"><label>Razón social</label><input type="text" id="cliNombre" value="Transportes del Sol Ltda."></div>
+        <div class="field"><label>RUT</label><input type="text" id="cliRut" placeholder="12.345.678-9"></div>
+        <div class="field"><label>Dirección</label><input type="text" id="cliDir" value="Av. Libertador 1234"></div>
+        <div class="field"><label>Ciudad</label><input type="text" id="cliCiudad" value="Santiago"></div>
+        <div class="field"><label>Contrato</label><input type="text" id="cliContrato" value="Contrato escolar N° 24-05"></div>
+        <div class="field"><label>Orden de compra</label><input type="text" id="cliOC" value="OC-2025-128"></div>
       </div>
     </div>
+    <div class="vdiv"></div>
     <div class="info-block">
-      <div class="info-block-title">
-        <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></svg>
+      <div class="block-title">
+        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="8" r="4"/><path d="M6 20v-2a4 4 0 0 1 4-4h4a4 4 0 0 1 4 4v2"/></svg>
         Proveedor
       </div>
       <div class="info-grid">
-        <div class="info-field full"><label>Razón social</label><input type="text" value="HAULER SPA" disabled></div>
-        <div class="info-field"><label>RUT</label><input type="text" value="76.123.456-7"></div>
-        <div class="info-field"><label>Giro</label><input type="text" value="Transporte terrestre"></div>
-        <div class="info-field"><label>Email</label><input type="text" value="operaciones@hauler.cl"></div>
-        <div class="info-field"><label>Teléfono</label><input type="text" placeholder="+56 9 XXXX XXXX"></div>
-        <div class="info-field"><label>Cuenta</label><input type="text" placeholder="Banco · Cta. Cte."></div>
+        <div class="field f-full"><label>Razón social</label><input type="text" value="HAULER SPA" disabled></div>
+        <div class="field"><label>RUT</label><input type="text" value="76.123.456-7"></div>
+        <div class="field"><label>Giro</label><input type="text" value="Transporte terrestre"></div>
+        <div class="field"><label>Email</label><input type="text" value="operaciones@hauler.cl"></div>
+        <div class="field"><label>Teléfono</label><input type="text" placeholder="+56 9 XXXX XXXX"></div>
+        <div class="field"><label>Cuenta bancaria</label><input type="text" placeholder="Banco · Cta. Cte."></div>
       </div>
     </div>
   </div>
+  <div class="hdiv"></div>
 
-  <!-- Tabla de servicios -->
-  <div class="doc-table-wrap">
-    <div class="table-header-row">
-      <div class="table-label">
-        <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="3" y1="15" x2="21" y2="15"/><line x1="9" y1="9" x2="9" y2="21"/></svg>
-        Detalle de servicios
-      </div>
+  <div class="table-wrap">
+    <div class="section-label">
+      <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="3" y1="15" x2="21" y2="15"/><line x1="9" y1="9" x2="9" y2="21"/></svg>
+      Detalle de servicios
     </div>
-    <table id="tabla">
-      <thead>
-        <tr>
-          <th style="text-align:left; padding-left:16px;">Vehículo</th>
-          <th>Patente</th>
-          <th>Ruta</th>
-          <th>Fecha</th>
-          <th>Pasaj.</th>
-          <th>Viajes</th>
-          <th>Valor unit.</th>
-          <th>Total $</th>
-          <th></th>
-        </tr>
-      </thead>
-      <tbody id="tbody"></tbody>
-    </table>
+    <table><thead><tr>
+      <th style="text-align:left;padding-left:.9rem">Vehículo</th>
+      <th>Patente</th><th>Ruta</th><th>Fecha</th>
+      <th>Pasaj.</th><th>Viajes</th><th>Valor unit.</th><th>Total</th><th></th>
+    </tr></thead>
+    <tbody id="tbody"></tbody></table>
   </div>
+  <div class="hdiv"></div>
 
-  <!-- Footer -->
   <div class="doc-footer">
     <div>
-      <div class="iva-toggle-wrap">
-        <input type="checkbox" id="incluirIva" checked onchange="calcular()">
-        <label for="incluirIva">Incluir IVA (19%)</label>
+      <div class="iva-toggle">
+        <input type="checkbox" id="chkIva" checked onchange="calcular()">
+        <label for="chkIva">Incluir IVA (19%)</label>
       </div>
-      <div class="glosa-legal">
-        <strong>DISPOSICIONES LEGALES – LEY N° 21.131 Y CÓDIGO DE COMERCIO:</strong> El presente Estado de Pago es emitido por HAULER SPA (en adelante "El Proveedor") por servicios de transporte efectivamente prestados y recibidos a conformidad por el Mandante. Conforme a la Ley N° 21.131 (Pago a 30 días) y el Código de Comercio chileno, el saldo deberá ser cancelado dentro del plazo máximo de 30 días corridos contados desde la fecha de emisión. En caso de mora, se aplicará el interés máximo convencional permitido por la ley, más una penalidad del 1% mensual sobre el monto adeudado. El Proveedor se reserva el derecho de suspender los servicios ante incumplimiento, sin perjuicio de las acciones legales correspondientes. Para todos los efectos, las partes fijan domicilio en la ciudad de Santiago y se someten a la jurisdicción de sus tribunales.
+      <div class="glosa">
+        <strong>Importante:</strong> Este Estado de Pago constituye respaldo administrativo de los servicios prestados y antecedente para facturación. Los montos están sujetos a revisión. Observaciones deberán realizarse dentro de 5 días hábiles. La factura se regirá por la Ley de Pago a 30 Días.
       </div>
     </div>
-    <div class="totales-box">
-      <div class="total-line"><span>Subtotal neto</span><span class="amount">$ <span id="subtotal">0</span></span></div>
-      <div class="total-line iva-line" id="ivaLinea"><span>IVA 19%</span><span class="amount">$ <span id="iva">0</span></span></div>
-      <div class="total-line grand"><span>TOTAL</span><span class="amount">$ <span id="total">0</span></span></div>
+    <div class="totales">
+      <div class="t-line"><span>Subtotal neto</span><span class="amt">$&thinsp;<span id="tSubtotal">0</span></span></div>
+      <div class="t-line" id="ivaRow"><span>IVA 19%</span><span class="amt">$&thinsp;<span id="tIva">0</span></span></div>
+      <div class="t-line grand"><span>TOTAL</span><span class="amt">$&thinsp;<span id="tTotal">0</span></span></div>
     </div>
   </div>
 </div>
 
-<!-- Modal de gestión de clientes y rutas -->
-<div id="modalClientes" class="modal">
-  <div class="modal-content">
-    <div class="modal-header">
-      <h3>Gestionar Clientes y Rutas</h3>
-      <button class="modal-close" onclick="cerrarModalClientes()">✕</button>
+<!-- MODAL -->
+<div id="modal" class="modal">
+  <div class="modal-box">
+    <div class="modal-head">
+      <h3>👥 Clientes y Rutas</h3>
+      <button class="modal-close" onclick="cerrarModal()">✕</button>
     </div>
     <div class="modal-body">
-      <!-- Columna izquierda: Clientes -->
-      <div class="clientes-lista">
-        <h4>Clientes</h4>
-        <div id="clientesContainer"></div>
-        <div class="form-group">
-          <label>Nuevo cliente</label>
-          <input type="text" id="nuevoClienteRazon" placeholder="Razón social">
-          <input type="text" id="nuevoClienteRut" placeholder="RUT" style="margin-top:6px;">
-          <input type="text" id="nuevoClienteDir" placeholder="Dirección" style="margin-top:6px;">
-          <input type="text" id="nuevoClienteCiudad" placeholder="Ciudad" style="margin-top:6px;">
-          <input type="text" id="nuevoClienteContrato" placeholder="Contrato" style="margin-top:6px;">
-          <input type="text" id="nuevoClienteOC" placeholder="Orden de compra" style="margin-top:6px;">
-          <button class="btn-agregar" onclick="agregarCliente()">Agregar Cliente</button>
-        </div>
+      <div class="panel">
+        <h4>Clientes guardados</h4>
+        <div id="listaClientes"></div>
+        <hr class="panel-sep">
+        <div class="form-g"><label>Razón social</label><input type="text" id="nCliNombre" placeholder="Empresa SA"></div>
+        <div class="form-g"><label>RUT</label><input type="text" id="nCliRut" placeholder="12.345.678-9"></div>
+        <div class="form-g"><label>Dirección</label><input type="text" id="nCliDir" placeholder="Calle #1234"></div>
+        <div class="form-g"><label>Ciudad</label><input type="text" id="nCliCiudad" placeholder="Santiago"></div>
+        <button class="btn-add" onclick="agregarCliente()">+ Agregar cliente</button>
       </div>
-      <!-- Columna derecha: Rutas del cliente seleccionado -->
-      <div class="rutas-lista">
-        <h4>Rutas del Cliente <span id="clienteSeleccionadoNombre"></span></h4>
-        <div id="rutasContainer"></div>
-        <div class="form-group" id="formNuevaRuta" style="display:none;">
-          <label>Nueva ruta</label>
-          <input type="text" id="nuevaRutaDesc" placeholder="Descripción (ej: Ruta 68)">
-          <input type="text" id="nuevaRutaValor" placeholder="Valor unitario $" style="margin-top:6px;">
-          <button class="btn-agregar" onclick="agregarRuta()">Agregar Ruta</button>
-        </div>
-        <p id="sinClienteMsg" style="color: var(--text-tertiary); font-size:12px; padding:10px;">Selecciona un cliente para administrar sus rutas.</p>
+      <div class="panel">
+        <h4>Rutas guardadas</h4>
+        <div id="listaRutas"></div>
+        <hr class="panel-sep">
+        <div class="form-g"><label>Nombre de ruta</label><input type="text" id="nRutaNombre" placeholder="Ruta Centro – Norte"></div>
+        <div class="form-g"><label>Descripción</label><input type="text" id="nRutaDesc" placeholder="Opcional"></div>
+        <button class="btn-add" onclick="agregarRuta()">+ Agregar ruta</button>
       </div>
     </div>
   </div>
 </div>
 
 <script>
-  // ========== GESTIÓN DE ESTADO LOCAL ==========
-  let clientes = [];
-  let clienteActivoId = null; // ID del cliente actualmente seleccionado en el modal (para rutas)
+/* ══ ESTADO ═══════════════════════════════════════════ */
+let filas      = [];
+let clientes   = load('hClientes', []);
+let rutas      = load('hRutas',    []);
+let rutaTarget = null;
 
-  // Cargar datos de localStorage al iniciar
-  function cargarClientesStorage() {
-    const stored = localStorage.getItem('hauler_clientes');
-    if (stored) {
-      try { clientes = JSON.parse(stored); } catch(e){ clientes = []; }
-    } else {
-      // Datos de ejemplo
-      clientes = [
-        { id: 'c1', razon: 'Transportes del Sol Ltda.', rut: '76.123.456-7', direccion: 'Av. Libertador 1234', ciudad: 'Santiago', contrato: 'Contrato escolar N° 24-05', oc: 'OC-2025-128', rutas: [
-          { id: 'r1', descripcion: 'Ruta 68 – Peñaflor a Mtgo.', valor: 15000 },
-          { id: 'r2', descripcion: 'Ruta 5 Sur – Maipú a Centro', valor: 14500 }
-        ] },
-        { id: 'c2', razon: 'Minera Andina S.A.', rut: '77.888.999-0', direccion: 'Camino Internacional 500', ciudad: 'Los Andes', contrato: 'Contrato minero 2025', oc: 'OC-9876', rutas: [
-          { id: 'r3', descripcion: 'Servicio mineros diario', valor: 28000 }
-        ] }
-      ];
-      guardarClientes();
-    }
-    actualizarSelectorClientes();
-    actualizarListaClientesModal();
-  }
+function load(k,def){try{return JSON.parse(localStorage.getItem(k))||def}catch{return def}}
+function save(k,v){localStorage.setItem(k,JSON.stringify(v))}
 
-  function guardarClientes() {
-    localStorage.setItem('hauler_clientes', JSON.stringify(clientes));
-  }
+/* ══ INIT ═════════════════════════════════════════════ */
+(function(){
+  const hoy=new Date(), v30=new Date(hoy);
+  v30.setDate(v30.getDate()+30);
+  document.getElementById('fechaEmision').value=iso(hoy);
+  document.getElementById('fechaVence').value=iso(v30);
+  renderSelector();
+  agregarFila();
+})();
 
-  // ========== SELECTOR DE CLIENTES EN BLOQUE MANDANTE ==========
-  function actualizarSelectorClientes() {
-    const select = document.getElementById('clienteSelector');
-    select.innerHTML = '<option value="">-- Seleccionar cliente --</option>';
-    clientes.forEach(c => {
-      const opt = document.createElement('option');
-      opt.value = c.id;
-      opt.textContent = c.razon;
-      select.appendChild(opt);
-    });
-  }
+function iso(d){return d.toISOString().slice(0,10)}
 
-  function cargarClienteSeleccionado() {
-    const id = document.getElementById('clienteSelector').value;
-    const cliente = clientes.find(c => c.id === id);
-    if (cliente) {
-      document.getElementById('clienteRazon').value = cliente.razon || '';
-      document.getElementById('clienteRut').value = cliente.rut || '';
-      document.getElementById('clienteDireccion').value = cliente.direccion || '';
-      document.getElementById('clienteCiudad').value = cliente.ciudad || '';
-      document.getElementById('clienteContrato').value = cliente.contrato || '';
-      document.getElementById('clienteOC').value = cliente.oc || '';
-      clienteActivoId = cliente.id;
-    } else {
-      clienteActivoId = null;
-    }
-  }
+/* ══ FILAS ════════════════════════════════════════════ */
+function agregarFila(data={}){filas.push({id:Date.now()+Math.random(),...data});renderTabla()}
+function eliminarFila(id){filas=filas.filter(f=>f.id!==id);renderTabla();calcular()}
+function eliminarUltima(){if(!filas.length)return;filas.pop();renderTabla();calcular()}
+function limpiarTabla(){if(!filas.length||confirm('¿Eliminar todos los servicios?')){filas=[];renderTabla();calcular()}}
 
-  // ========== MODAL ==========
-  function abrirModalClientes() {
-    document.getElementById('modalClientes').classList.add('active');
-    actualizarListaClientesModal();
-    clienteActivoId = null;
-    document.getElementById('clienteSeleccionadoNombre').innerText = '';
-    document.getElementById('formNuevaRuta').style.display = 'none';
-    document.getElementById('sinClienteMsg').style.display = 'block';
-  }
+function renderTabla(){
+  const tbody=document.getElementById('tbody');
+  if(!filas.length){tbody.innerHTML='<tr class="empty-row"><td colspan="9">Sin servicios — haz clic en ➕ Agregar</td></tr>';return}
+  tbody.innerHTML=filas.map(f=>`
+    <tr data-id="${f.id}">
+      <td><input type="text" value="${x(f.vehiculo)}" placeholder="Bus · Van..." oninput="set(${f.id},'vehiculo',this.value)"></td>
+      <td><input type="text" value="${x(f.patente)}" placeholder="AB-CD-12" style="max-width:85px" oninput="set(${f.id},'patente',this.value)"></td>
+      <td><div class="ruta-cell">
+        <input type="text" value="${x(f.ruta)}" placeholder="Ruta..." oninput="set(${f.id},'ruta',this.value)">
+        <button class="btn-ruta" onclick="selRuta(${f.id})" title="Elegir ruta">📍</button>
+      </div></td>
+      <td><input type="date" value="${x(f.fecha)}" oninput="set(${f.id},'fecha',this.value)"></td>
+      <td class="num"><input type="number" min="0" value="${x(f.pasajeros)}" placeholder="0" style="max-width:55px" oninput="set(${f.id},'pasajeros',this.value)"></td>
+      <td class="num"><input type="number" min="0" value="${x(f.viajes)}" placeholder="0" style="max-width:55px" oninput="set(${f.id},'viajes',this.value);calcular()"></td>
+      <td class="num"><input type="number" min="0" value="${x(f.valorUnit)}" placeholder="0" oninput="set(${f.id},'valorUnit',this.value);calcular()"></td>
+      <td class="total-cell">${linea(f)}</td>
+      <td><button class="btn-del" onclick="eliminarFila(${f.id})" title="Eliminar">✕</button></td>
+    </tr>`).join('');
+}
 
-  function cerrarModalClientes() {
-    document.getElementById('modalClientes').classList.remove('active');
-  }
+function x(v){return v==null?'':String(v).replace(/"/g,'&quot;')}
+function set(id,k,v){const f=filas.find(f=>f.id===id);if(f)f[k]=v}
+function linea(f){const vi=parseFloat(f.viajes)||0,vu=parseFloat(f.valorUnit)||0;return vi&&vu?'$ '+fmt(vi*vu):'—'}
 
-  function actualizarListaClientesModal() {
-    const container = document.getElementById('clientesContainer');
-    container.innerHTML = '';
-    clientes.forEach(c => {
-      const div = document.createElement('div');
-      div.className = 'cliente-item';
-      div.innerHTML = `
-        <div class="cliente-info">${c.razon}<br><span style="font-size:10px; color:var(--text-tertiary);">${c.rut || ''}</span></div>
-        <div class="cliente-acciones">
-          <button onclick="seleccionarClienteModal('${c.id}')" title="Ver rutas">📋</button>
-          <button onclick="editarCliente('${c.id}')" title="Editar">✏️</button>
-          <button onclick="eliminarCliente('${c.id}')" title="Eliminar">🗑️</button>
-        </div>
-      `;
-      container.appendChild(div);
-    });
-  }
-
-  function seleccionarClienteModal(id) {
-    clienteActivoId = id;
-    const cliente = clientes.find(c => c.id === id);
-    if (cliente) {
-      document.getElementById('clienteSeleccionadoNombre').innerText = `- ${cliente.razon}`;
-      document.getElementById('sinClienteMsg').style.display = 'none';
-      document.getElementById('formNuevaRuta').style.display = 'block';
-      actualizarRutasModal(id);
-    }
-  }
-
-  function actualizarRutasModal(clienteId) {
-    const cliente = clientes.find(c => c.id === clienteId);
-    const container = document.getElementById('rutasContainer');
-    container.innerHTML = '';
-    if (cliente && cliente.rutas) {
-      cliente.rutas.forEach(r => {
-        const div = document.createElement('div');
-        div.className = 'ruta-item';
-        div.innerHTML = `
-          <div class="ruta-info">${r.descripcion}<br><span style="font-family:var(--font-mono);">$${r.valor?.toLocaleString('es-CL')}</span></div>
-          <div class="ruta-acciones">
-            <button onclick="editarRuta('${clienteId}', '${r.id}')">✏️</button>
-            <button onclick="eliminarRuta('${clienteId}', '${r.id}')">🗑️</button>
-          </div>
-        `;
-        container.appendChild(div);
-      });
-    }
-  }
-
-  function agregarCliente() {
-    const razon = document.getElementById('nuevoClienteRazon').value.trim();
-    if (!razon) return;
-    const nuevo = {
-      id: 'c_' + Date.now() + Math.random().toString(36).substr(2, 5),
-      razon: razon,
-      rut: document.getElementById('nuevoClienteRut').value.trim(),
-      direccion: document.getElementById('nuevoClienteDir').value.trim(),
-      ciudad: document.getElementById('nuevoClienteCiudad').value.trim(),
-      contrato: document.getElementById('nuevoClienteContrato').value.trim(),
-      oc: document.getElementById('nuevoClienteOC').value.trim(),
-      rutas: []
-    };
-    clientes.push(nuevo);
-    guardarClientes();
-    // Limpiar campos
-    document.getElementById('nuevoClienteRazon').value = '';
-    document.getElementById('nuevoClienteRut').value = '';
-    document.getElementById('nuevoClienteDir').value = '';
-    document.getElementById('nuevoClienteCiudad').value = '';
-    document.getElementById('nuevoClienteContrato').value = '';
-    document.getElementById('nuevoClienteOC').value = '';
-    actualizarSelectorClientes();
-    actualizarListaClientesModal();
-  }
-
-  function eliminarCliente(id) {
-    if (confirm('¿Eliminar este cliente?')) {
-      clientes = clientes.filter(c => c.id !== id);
-      guardarClientes();
-      actualizarSelectorClientes();
-      actualizarListaClientesModal();
-      if (clienteActivoId === id) {
-        clienteActivoId = null;
-        document.getElementById('clienteSeleccionadoNombre').innerText = '';
-        document.getElementById('sinClienteMsg').style.display = 'block';
-        document.getElementById('formNuevaRuta').style.display = 'none';
-        document.getElementById('rutasContainer').innerHTML = '';
-      }
-    }
-  }
-
-  function editarCliente(id) {
-    const cliente = clientes.find(c => c.id === id);
-    if (!cliente) return;
-    const nuevaRazon = prompt('Razón social:', cliente.razon);
-    if (nuevaRazon !== null) cliente.razon = nuevaRazon;
-    const nuevoRut = prompt('RUT:', cliente.rut || '');
-    if (nuevoRut !== null) cliente.rut = nuevoRut;
-    // Podríamos hacer más campos, pero simplificamos
-    guardarClientes();
-    actualizarSelectorClientes();
-    actualizarListaClientesModal();
-  }
-
-  function agregarRuta() {
-    if (!clienteActivoId) return;
-    const desc = document.getElementById('nuevaRutaDesc').value.trim();
-    const valor = parseFloat(document.getElementById('nuevaRutaValor').value) || 0;
-    if (!desc) return;
-    const cliente = clientes.find(c => c.id === clienteActivoId);
-    if (cliente) {
-      if (!cliente.rutas) cliente.rutas = [];
-      cliente.rutas.push({
-        id: 'r_' + Date.now() + Math.random().toString(36).substr(2, 5),
-        descripcion: desc,
-        valor: valor
-      });
-      guardarClientes();
-      document.getElementById('nuevaRutaDesc').value = '';
-      document.getElementById('nuevaRutaValor').value = '';
-      actualizarRutasModal(clienteActivoId);
-    }
-  }
-
-  function eliminarRuta(clienteId, rutaId) {
-    if (!confirm('¿Eliminar esta ruta?')) return;
-    const cliente = clientes.find(c => c.id === clienteId);
-    if (cliente && cliente.rutas) {
-      cliente.rutas = cliente.rutas.filter(r => r.id !== rutaId);
-      guardarClientes();
-      actualizarRutasModal(clienteId);
-    }
-  }
-
-  function editarRuta(clienteId, rutaId) {
-    const cliente = clientes.find(c => c.id === clienteId);
-    if (!cliente || !cliente.rutas) return;
-    const ruta = cliente.rutas.find(r => r.id === rutaId);
-    if (!ruta) return;
-    const nuevaDesc = prompt('Descripción:', ruta.descripcion);
-    if (nuevaDesc !== null) ruta.descripcion = nuevaDesc;
-    const nuevoValor = prompt('Valor unitario:', ruta.valor);
-    if (nuevoValor !== null) ruta.valor = parseFloat(nuevoValor) || 0;
-    guardarClientes();
-    actualizarRutasModal(clienteId);
-  }
-
-  // ========== FUNCIONES DE TABLA ==========
-  let filaId = 0;
-
-  function crearFila(datos) {
-    const id = filaId++;
-    const d = datos || {};
-
-    const tr = document.createElement('tr');
-    tr.dataset.id = id;
-
-    // Columna Vehículo
-    const td1 = document.createElement('td');
-    const inp1 = document.createElement('input');
-    inp1.type = 'text';
-    inp1.placeholder = 'Ej: Bus Mercedes';
-    inp1.value = d.vehiculo || '';
-    td1.appendChild(inp1);
-    tr.appendChild(td1);
-
-    // Patente
-    const td2 = document.createElement('td');
-    const inp2 = document.createElement('input');
-    inp2.type = 'text';
-    inp2.placeholder = 'XX-XX-00';
-    inp2.value = d.patente || '';
-    td2.appendChild(inp2);
-    tr.appendChild(td2);
-
-    // Ruta (con botón)
-    const td3 = document.createElement('td');
-    const divRuta = document.createElement('div');
-    divRuta.className = 'ruta-cell';
-    const inpRuta = document.createElement('input');
-    inpRuta.type = 'text';
-    inpRuta.placeholder = 'Origen → Destino';
-    inpRuta.value = d.ruta || '';
-    const btnRuta = document.createElement('button');
-    btnRuta.className = 'btn-ruta';
-    btnRuta.innerHTML = '📋';
-    btnRuta.title = 'Seleccionar ruta guardada';
-    btnRuta.onclick = (e) => {
-      e.preventDefault();
-      if (!clienteActivoId) {
-        alert('Primero selecciona un cliente en el bloque Mandante.');
-        return;
-      }
-      const cliente = clientes.find(c => c.id === clienteActivoId);
-      if (!cliente || !cliente.rutas || cliente.rutas.length === 0) {
-        alert('El cliente no tiene rutas guardadas.');
-        return;
-      }
-      // Crear un menú simple con prompt (mejoraría con un select flotante, pero por ahora prompt)
-      const opciones = cliente.rutas.map((r, idx) => `${idx+1}: ${r.descripcion} ($${r.valor})`).join('\n');
-      const elegida = prompt(`Elige una ruta (número):\n${opciones}`);
-      if (elegida) {
-        const idx = parseInt(elegida) - 1;
-        if (idx >= 0 && idx < cliente.rutas.length) {
-          inpRuta.value = cliente.rutas[idx].descripcion;
-          // También llenar valor unitario si existe
-          const valorInput = tr.querySelectorAll('td')[6]?.querySelector('input');
-          if (valorInput && cliente.rutas[idx].valor) {
-            valorInput.value = cliente.rutas[idx].valor;
-          }
-          calcular();
-        }
-      }
-    };
-    divRuta.appendChild(inpRuta);
-    divRuta.appendChild(btnRuta);
-    td3.appendChild(divRuta);
-    tr.appendChild(td3);
-
-    // Fecha
-    const td4 = document.createElement('td');
-    const inp4 = document.createElement('input');
-    inp4.type = 'date';
-    inp4.value = d.fecha || '';
-    td4.appendChild(inp4);
-    tr.appendChild(td4);
-
-    // Pasajeros
-    const td5 = document.createElement('td');
-    const inp5 = document.createElement('input');
-    inp5.type = 'text';
-    inp5.placeholder = '0';
-    inp5.value = d.pasajeros || '';
-    td5.appendChild(inp5);
-    tr.appendChild(td5);
-
-    // Viajes
-    const td6 = document.createElement('td');
-    const inp6 = document.createElement('input');
-    inp6.type = 'text';
-    inp6.placeholder = '0';
-    inp6.value = d.viajes || '';
-    inp6.addEventListener('input', calcular);
-    td6.appendChild(inp6);
-    tr.appendChild(td6);
-
-    // Valor unit.
-    const td7 = document.createElement('td');
-    const inp7 = document.createElement('input');
-    inp7.type = 'text';
-    inp7.placeholder = '0';
-    inp7.value = d.valor || '';
-    inp7.addEventListener('input', calcular);
-    td7.appendChild(inp7);
-    tr.appendChild(td7);
-
-    // Total
-    const td8 = document.createElement('td');
-    td8.className = 'total-cell';
-    td8.dataset.total = '0';
-    td8.textContent = d.total || '0';
-    tr.appendChild(td8);
-
-    // Botón eliminar
-    const td9 = document.createElement('td');
-    const btnDel = document.createElement('button');
-    btnDel.className = 'btn-del';
-    btnDel.innerHTML = '✕';
-    btnDel.onclick = () => { tr.remove(); calcular(); };
-    td9.appendChild(btnDel);
-    tr.appendChild(td9);
-
-    return tr;
-  }
-
-  function agregarFila(datos) {
-    const tbody = document.getElementById('tbody');
-    const empty = tbody.querySelector('.empty-row');
-    if (empty) empty.remove();
-    tbody.appendChild(crearFila(datos));
-    calcular();
-  }
-
-  function eliminarUltimaFila() {
-    const tbody = document.getElementById('tbody');
-    const filas = tbody.querySelectorAll('tr:not(.empty-row)');
-    if (filas.length > 0) {
-      filas[filas.length - 1].remove();
-      calcular();
-    }
-  }
-
-  function eliminarTodosLosServicios() {
-    document.getElementById('tbody').innerHTML = '';
-    mostrarFilaVacia();
-    calcular();
-  }
-
-  function mostrarFilaVacia() {
-    const tbody = document.getElementById('tbody');
-    const tr = document.createElement('tr');
-    tr.className = 'empty-row';
-    const td = document.createElement('td');
-    td.colSpan = 9;
-    td.textContent = 'No hay servicios registrados. Haz clic en "Agregar" para comenzar.';
-    tr.appendChild(td);
-    tbody.appendChild(tr);
-  }
-
-  function calcular() {
-    const tbody = document.getElementById('tbody');
-    const filas = tbody.querySelectorAll('tr:not(.empty-row)');
-    const incluirIva = document.getElementById('incluirIva').checked;
-    let subtotal = 0;
-
-    filas.forEach(tr => {
-      const celdas = tr.querySelectorAll('td');
-      const viajes = parseFloat(celdas[5]?.querySelector('input')?.value) || 0;
-      const valor  = parseFloat(celdas[6]?.querySelector('input')?.value) || 0;
-      const totalFila = viajes * valor;
-      const tdTotal = celdas[7];
-      if (tdTotal) {
-        tdTotal.dataset.total = totalFila;
-        tdTotal.textContent = totalFila.toLocaleString('es-CL');
-      }
-      subtotal += totalFila;
-    });
-
-    const iva   = incluirIva ? subtotal * 0.19 : 0;
-    const total = subtotal + iva;
-
-    document.getElementById('subtotal').textContent = subtotal.toLocaleString('es-CL');
-    document.getElementById('iva').textContent      = iva.toLocaleString('es-CL');
-    document.getElementById('total').textContent    = total.toLocaleString('es-CL');
-    document.getElementById('ivaLinea').style.opacity = incluirIva ? '1' : '0.4';
-  }
-
-  // ========== LOGO ==========
-  function cargarLogo(input) {
-    if (!input.files || !input.files[0]) return;
-    const reader = new FileReader();
-    reader.onload = function(e) {
-      const img = document.getElementById('logoImg');
-      img.src = e.target.result;
-      img.style.width = '100px';
-      document.getElementById('logoTexto').style.display = 'none';
-      document.getElementById('logoImagen').style.display = 'flex';
-      document.getElementById('logoSizeWrap').style.display = 'flex';
-      document.getElementById('logoSize').value = 100;
-      document.getElementById('logoSizePx').textContent = '100px';
-    };
-    reader.readAsDataURL(input.files[0]);
-  }
-
-  function ajustarLogo(val) {
-    document.getElementById('logoImg').style.width = val + 'px';
-    document.getElementById('logoSizePx').textContent = val + 'px';
-  }
-
-  function quitarLogo() {
-    document.getElementById('logoTexto').style.display = 'block';
-    document.getElementById('logoImagen').style.display = 'none';
-    document.getElementById('logoSizeWrap').style.display = 'none';
-    document.getElementById('logoImg').src = '';
-    document.getElementById('logoInput').value = '';
-  }
-
-  // ========== INICIALIZACIÓN ==========
-  window.addEventListener('DOMContentLoaded', () => {
-    cargarClientesStorage();
-    // Agregar filas de ejemplo (si no hay, usar datos de clientes para precargar)
-    if (clientes.length > 0 && clientes[0].rutas) {
-      agregarFila({ vehiculo: 'Bus Scania K410', patente: 'BJCD-15', ruta: clientes[0].rutas[0].descripcion, fecha: '2025-05-20', pasajeros: '45', viajes: '2', valor: clientes[0].rutas[0].valor });
-      agregarFila({ vehiculo: 'Bus Mercedes OF', patente: 'ABCD-12', ruta: clientes[0].rutas[1]?.descripcion || 'Ruta 5 Sur', fecha: '2025-05-21', pasajeros: '52', viajes: '3', valor: clientes[0].rutas[1]?.valor || 14500 });
-      agregarFila({ vehiculo: 'Minibús Volkswagen', patente: 'WXYZ-99', ruta: clientes[1]?.rutas[0]?.descripcion || 'Servicio privado', fecha: '2025-05-22', pasajeros: '18', viajes: '1', valor: clientes[1]?.rutas[0]?.valor || 28000 });
-    } else {
-      agregarFila({ vehiculo: 'Bus Scania K410', patente: 'BJCD-15', ruta: 'Ruta 68 – Peñaflor a Mtgo.', fecha: '2025-05-20', pasajeros: '45', viajes: '2', valor: 15000 });
-      agregarFila({ vehiculo: 'Bus Mercedes OF', patente: 'ABCD-12', ruta: 'Ruta 5 Sur – Maipú a Centro', fecha: '2025-05-21', pasajeros: '52', viajes: '3', valor: 14500 });
-      agregarFila({ vehiculo: 'Minibús Volkswagen', patente: 'WXYZ-99', ruta: 'Servicio privado empresas', fecha: '2025-05-22', pasajeros: '18', viajes: '1', valor: 28000 });
-    }
-    calcular();
+/* ══ CALCULAR ════════════════════════════════════════ */
+function calcular(){
+  filas.forEach(f=>{
+    const row=document.querySelector(`tr[data-id="${f.id}"]`);
+    if(!row)return;
+    f.viajes=parseFloat(row.cells[5].querySelector('input')?.value)||0;
+    f.valorUnit=parseFloat(row.cells[6].querySelector('input')?.value)||0;
+    row.cells[7].textContent=linea(f);
   });
+  const bruto=filas.reduce((s,f)=>s+(f.viajes*f.valorUnit||0),0);
+  const conIva=document.getElementById('chkIva').checked;
+  const iva=conIva?Math.round(bruto*0.19):0;
+  document.getElementById('tSubtotal').textContent=fmt(bruto);
+  document.getElementById('tIva').textContent=fmt(iva);
+  document.getElementById('tTotal').textContent=fmt(bruto+iva);
+  document.getElementById('ivaRow').style.opacity=conIva?'1':'0.38';
+}
+
+function fmt(n){return Math.round(n).toLocaleString('es-CL')}
+
+/* ══ IMPRIMIR — abre ventana nueva, evita restricciones de iframe ══ */
+function imprimirDoc(){
+  // Recoger datos actuales del formulario
+  const vals={};
+  document.querySelectorAll('#doc input,#doc select').forEach(el=>{
+    if(el.id) vals[el.id] = el.type==='checkbox' ? el.checked : el.value;
+  });
+
+  // Logo si existe
+  const logoSrc = document.getElementById('imgTag').src || '';
+  const logoSize = document.getElementById('logoSize').value || '56';
+  const tieneLogo = document.getElementById('logoImg').style.display !== 'none';
+
+  // Construir filas HTML para impresión
+  const filasHTML = filas.length
+    ? filas.map(f=>`<tr>
+        <td style="text-align:left">${f.vehiculo||''}</td>
+        <td>${f.patente||''}</td>
+        <td>${f.ruta||''}</td>
+        <td>${f.fecha||''}</td>
+        <td>${f.pasajeros||''}</td>
+        <td>${f.viajes||''}</td>
+        <td>${f.valorUnit ? fmt(f.valorUnit) : ''}</td>
+        <td style="font-family:var(--mono)">${linea(f)}</td>
+      </tr>`).join('')
+    : '<tr><td colspan="8" style="text-align:center;color:#999;padding:1rem">Sin servicios registrados</td></tr>';
+
+  const bruto=filas.reduce((s,f)=>s+(f.viajes*f.valorUnit||0),0);
+  const conIva=document.getElementById('chkIva').checked;
+  const iva=conIva?Math.round(bruto*0.19):0;
+
+  const logoHTML = tieneLogo
+    ? `<img src="${logoSrc}" style="max-height:${logoSize}px;object-fit:contain">`
+    : `<div style="font-size:22pt;font-weight:700;letter-spacing:-.5px">HAULER</div>
+       <div style="font-size:7pt;font-weight:500;letter-spacing:2.5px;text-transform:uppercase;color:#999;margin-top:3px">Transporte de pasajeros</div>`;
+
+  const html=`<!DOCTYPE html><html lang="es"><head>
+<meta charset="UTF-8">
+<title>Estado de Pago · HAULER</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{--sans:'Inter',sans-serif;--mono:'JetBrains Mono','Courier New',monospace;--blue:#0055FF;--t1:#111115;--t2:#5a5a66;--t3:#9898a6;--bdr:#dde0e8;--grad:linear-gradient(90deg,transparent,#bdd0ff 40%,#bdd0ff 60%,transparent)}
+@page{size:letter portrait;margin:12mm 14mm}
+html,body{font-family:var(--sans);font-size:10pt;color:var(--t1);background:#fff;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+.doc{border:1pt solid #c0d0f0;max-width:100%}
+.hdiv{height:1pt;background:var(--grad);margin:0 10mm}
+.vdiv{width:1pt;background:var(--grad)}
+.doc-header{display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:12mm;padding:7mm 10mm;background:#fff}
+.logo-text{font-size:18pt;font-weight:700;letter-spacing:-.5px}
+.logo-sub{font-size:6pt;letter-spacing:2.5px;text-transform:uppercase;color:var(--t3);margin-top:2px}
+.doc-title{text-align:center}
+.doc-title h1{font-size:6.5pt;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:var(--t3);margin-bottom:3px}
+.doc-title h2{font-size:14pt;font-weight:300}
+.meta-row{display:flex;align-items:center;justify-content:flex-end;gap:4mm;margin-bottom:2.5mm}
+.meta-row label{font-size:6pt;font-weight:700;letter-spacing:.8px;text-transform:uppercase;color:var(--t3)}
+.meta-row span{font:9pt/1 var(--mono);color:var(--t1)}
+.doc-info{display:grid;grid-template-columns:1fr auto 1fr}
+.info-block{padding:5mm 10mm}
+.block-title{font-size:6pt;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--t3);margin-bottom:5mm;display:flex;align-items:center;gap:2mm}
+.info-grid{display:grid;grid-template-columns:1fr 1fr;gap:3.5mm 6mm}
+.f-full{grid-column:1/-1}
+.field label{font-size:5.5pt;font-weight:700;text-transform:uppercase;letter-spacing:.7px;color:var(--t3);display:block;margin-bottom:1mm}
+.field span{font-size:9pt;color:var(--t1);display:block;border-bottom:1pt solid var(--bdr);padding-bottom:1.5mm}
+.table-wrap{padding:5mm 10mm 4mm}
+.section-label{font-size:6pt;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--t3);margin-bottom:4mm}
+table{width:100%;border-collapse:collapse;font-size:8.5pt}
+thead th{background:#f5f6f9;font:700 6.5pt/1 var(--sans);letter-spacing:.3px;text-transform:uppercase;color:var(--t2);padding:2mm 1.5mm;text-align:center;white-space:nowrap;border-bottom:1pt solid var(--bdr)}
+thead th:first-child{text-align:left;padding-left:3mm}
+tbody td{padding:1.8mm 1.5mm;text-align:center;vertical-align:middle;border-bottom:1pt solid #eef}
+tbody td:first-child{text-align:left;padding-left:3mm}
+.doc-footer{display:grid;grid-template-columns:1fr auto;gap:8mm;align-items:end;padding:4mm 10mm 6mm}
+.glosa{font-size:7pt;line-height:1.6;color:var(--t2);background:#f8f9ff;padding:3mm 4mm;border-radius:4pt;border-left:2pt solid #a0bff0}
+.glosa strong{color:var(--t1);font-weight:600}
+.totales{background:#f5f6f9;border-radius:6pt;padding:3.5mm 5mm;width:52mm;border:1pt solid var(--bdr)}
+.t-line{display:flex;justify-content:space-between;align-items:center;padding:2mm 0;color:var(--t2);font-size:8pt;border-bottom:1pt solid var(--bdr)}
+.t-line:last-child{border-bottom:none}
+.t-line .amt{font:500 8pt/1 var(--mono);color:var(--t1)}
+.t-line.grand{margin-top:2mm;padding-top:3mm;border-top:1pt solid var(--bdr)!important;font-size:9pt;font-weight:700}
+.t-line.grand .amt{font-size:11pt;font-weight:700;color:var(--blue)}
+</style></head><body>
+<div class="doc">
+  <div class="doc-header">
+    <div>${logoHTML}</div>
+    <div class="doc-title"><h1>Documento de cobro</h1><h2>Estado de Pago</h2></div>
+    <div>
+      <div class="meta-row"><label>N° Doc.</label><span>${vals.numDoc||''}</span></div>
+      <div class="meta-row"><label>Emisión</label><span>${vals.fechaEmision||''}</span></div>
+      <div class="meta-row"><label>Vencimiento</label><span>${vals.fechaVence||''}</span></div>
+    </div>
+  </div>
+  <div class="hdiv"></div>
+  <div class="doc-info">
+    <div class="info-block">
+      <div class="block-title">Mandante / Cliente</div>
+      <div class="info-grid">
+        <div class="field f-full"><label>Razón social</label><span>${vals.cliNombre||''}</span></div>
+        <div class="field"><label>RUT</label><span>${vals.cliRut||''}</span></div>
+        <div class="field"><label>Dirección</label><span>${vals.cliDir||''}</span></div>
+        <div class="field"><label>Ciudad</label><span>${vals.cliCiudad||''}</span></div>
+        <div class="field"><label>Contrato</label><span>${vals.cliContrato||''}</span></div>
+        <div class="field"><label>Orden de compra</label><span>${vals.cliOC||''}</span></div>
+      </div>
+    </div>
+    <div class="vdiv"></div>
+    <div class="info-block">
+      <div class="block-title">Proveedor</div>
+      <div class="info-grid">
+        <div class="field f-full"><label>Razón social</label><span>HAULER SPA</span></div>
+        <div class="field"><label>RUT</label><span>76.123.456-7</span></div>
+        <div class="field"><label>Giro</label><span>Transporte terrestre</span></div>
+        <div class="field"><label>Email</label><span>operaciones@hauler.cl</span></div>
+      </div>
+    </div>
+  </div>
+  <div class="hdiv"></div>
+  <div class="table-wrap">
+    <div class="section-label">Detalle de servicios</div>
+    <table><thead><tr>
+      <th style="text-align:left;padding-left:3mm">Vehículo</th>
+      <th>Patente</th><th>Ruta</th><th>Fecha</th>
+      <th>Pasaj.</th><th>Viajes</th><th>Valor unit.</th><th>Total</th>
+    </tr></thead>
+    <tbody>${filasHTML}</tbody></table>
+  </div>
+  <div class="hdiv"></div>
+  <div class="doc-footer">
+    <div class="glosa"><strong>Importante:</strong> Este Estado de Pago constituye respaldo administrativo de los servicios prestados y antecedente para facturación. Los montos están sujetos a revisión. Observaciones deberán realizarse dentro de 5 días hábiles. La factura se regirá por la Ley de Pago a 30 Días.</div>
+    <div class="totales">
+      <div class="t-line"><span>Subtotal neto</span><span class="amt">$ ${fmt(bruto)}</span></div>
+      ${conIva?`<div class="t-line"><span>IVA 19%</span><span class="amt">$ ${fmt(iva)}</span></div>`:''}
+      <div class="t-line grand"><span>TOTAL</span><span class="amt">$ ${fmt(bruto+iva)}</span></div>
+    </div>
+  </div>
+</div>
+<script>
+  // Esperar que la fuente cargue antes de imprimir
+  document.fonts.ready.then(function(){
+    setTimeout(function(){ window.print(); }, 300);
+  });
+<\/script>
+</body></html>`;
+
+  const w=window.open('','_blank','width=900,height=700');
+  if(!w){alert('Permite las ventanas emergentes en tu navegador para imprimir.');return;}
+  w.document.open();
+  w.document.write(html);
+  w.document.close();
+}
+
+/* ══ LOGO ════════════════════════════════════════════ */
+function cargarLogo(input){
+  const file=input.files[0];if(!file)return;
+  const reader=new FileReader();
+  reader.onload=e=>{
+    document.getElementById('imgTag').src=e.target.result;
+    document.getElementById('logoTexto').style.display='none';
+    document.getElementById('logoImg').style.display='flex';
+    document.getElementById('sizeWrap').style.display='flex';
+    document.getElementById('btnQuitarLogo').style.display='inline-flex';
+    ajustarLogo(document.getElementById('logoSize').value);
+  };
+  reader.readAsDataURL(file);
+}
+function ajustarLogo(v){document.getElementById('imgTag').style.maxHeight=v+'px';document.getElementById('sizePx').textContent=v+'px'}
+function quitarLogo(){
+  document.getElementById('logoTexto').style.display='block';
+  document.getElementById('logoImg').style.display='none';
+  document.getElementById('sizeWrap').style.display='none';
+  document.getElementById('btnQuitarLogo').style.display='none';
+  document.getElementById('imgTag').src='';
+}
+
+/* ══ CLIENTES ════════════════════════════════════════ */
+function renderSelector(){
+  const sel=document.getElementById('clienteSelector');
+  sel.innerHTML='<option value="">— Seleccionar —</option>'+clientes.map((c,i)=>`<option value="${i}">${c.nombre}</option>`).join('');
+}
+function cargarCliente(){
+  const idx=document.getElementById('clienteSelector').value;if(idx==='')return;
+  const c=clientes[parseInt(idx)];if(!c)return;
+  document.getElementById('cliNombre').value=c.nombre||'';
+  document.getElementById('cliRut').value=c.rut||'';
+  document.getElementById('cliDir').value=c.dir||'';
+  document.getElementById('cliCiudad').value=c.ciudad||'';
+}
+function agregarCliente(){
+  const nombre=g('nCliNombre');if(!nombre)return alert('Ingresa la razón social.');
+  clientes.push({nombre,rut:g('nCliRut'),dir:g('nCliDir'),ciudad:g('nCliCiudad')});
+  save('hClientes',clientes);
+  ['nCliNombre','nCliRut','nCliDir','nCliCiudad'].forEach(id=>document.getElementById(id).value='');
+  renderSelector();renderListaClientes();
+}
+function eliminarCliente(i){clientes.splice(i,1);save('hClientes',clientes);renderSelector();renderListaClientes()}
+function usarCliente(i){
+  const c=clientes[i];
+  document.getElementById('cliNombre').value=c.nombre||'';
+  document.getElementById('cliRut').value=c.rut||'';
+  document.getElementById('cliDir').value=c.dir||'';
+  document.getElementById('cliCiudad').value=c.ciudad||'';
+  cerrarModal();
+}
+function renderListaClientes(){
+  const el=document.getElementById('listaClientes');if(!el)return;
+  el.innerHTML=clientes.length
+    ?clientes.map((c,i)=>`<div class="list-item"><div class="item-info">${c.nombre}<small>${c.rut||''} ${c.ciudad?'· '+c.ciudad:''}</small></div><div class="item-btns"><button onclick="usarCliente(${i})">✓</button><button class="del" onclick="eliminarCliente(${i})">✕</button></div></div>`).join('')
+    :'<p style="font-size:.7rem;color:var(--t3);text-align:center;padding:.8rem">Sin clientes guardados</p>';
+}
+
+/* ══ RUTAS ═══════════════════════════════════════════ */
+function agregarRuta(){
+  const nombre=g('nRutaNombre');if(!nombre)return alert('Ingresa el nombre de la ruta.');
+  rutas.push({nombre,desc:g('nRutaDesc')});save('hRutas',rutas);
+  ['nRutaNombre','nRutaDesc'].forEach(id=>document.getElementById(id).value='');
+  renderListaRutas();
+}
+function eliminarRuta(i){rutas.splice(i,1);save('hRutas',rutas);renderListaRutas()}
+function usarRuta(i){
+  if(rutaTarget!=null){const f=filas.find(f=>f.id===rutaTarget);if(f){f.ruta=rutas[i].nombre;renderTabla();}rutaTarget=null;}
+  cerrarModal();
+}
+function selRuta(filaId){rutaTarget=filaId;abrirModal()}
+function renderListaRutas(){
+  const el=document.getElementById('listaRutas');if(!el)return;
+  el.innerHTML=rutas.length
+    ?rutas.map((r,i)=>`<div class="list-item"><div class="item-info">${r.nombre}<small>${r.desc||''}</small></div><div class="item-btns"><button onclick="usarRuta(${i})">✓</button><button class="del" onclick="eliminarRuta(${i})">✕</button></div></div>`).join('')
+    :'<p style="font-size:.7rem;color:var(--t3);text-align:center;padding:.8rem">Sin rutas guardadas</p>';
+}
+
+/* ══ MODAL ═══════════════════════════════════════════ */
+function abrirModal(){renderListaClientes();renderListaRutas();document.getElementById('modal').classList.add('open')}
+function cerrarModal(){document.getElementById('modal').classList.remove('open');rutaTarget=null}
+document.getElementById('modal').addEventListener('click',e=>{if(e.target===e.currentTarget)cerrarModal()});
+document.addEventListener('keydown',e=>{if(e.key==='Escape')cerrarModal()});
+
+/* ══ UTIL ════════════════════════════════════════════ */
+function g(id){return document.getElementById(id).value.trim()}
 </script>
 </body>
 </html>
