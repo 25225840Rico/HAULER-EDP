@@ -22,7 +22,7 @@ body{font-family:var(--sans);background:var(--bg);min-height:100vh;color:var(--t
   display:flex;flex-direction:column;align-items:center;padding:1.2rem;-webkit-font-smoothing:antialiased}
 
 /* TOOLBAR */
-.toolbar{width:100%;max-width:1140px;display:flex;align-items:center;gap:.4rem;margin-bottom:1.1rem;flex-wrap:wrap}
+.toolbar{width:100%;max-width:1160px;display:flex;align-items:center;gap:.4rem;margin-bottom:1.1rem;flex-wrap:wrap}
 .toolbar-brand{font-size:.65rem;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--t3);margin-right:auto}
 .btn{display:inline-flex;align-items:center;gap:.35rem;padding:.42rem .9rem;border-radius:99px;
   border:1px solid transparent;font:500 .7rem/1 var(--sans);cursor:pointer;transition:all .15s;
@@ -35,8 +35,15 @@ body{font-family:var(--sans);background:var(--bg);min-height:100vh;color:var(--t
 .btn-green{background:#12a150;color:#fff;border-color:transparent;box-shadow:0 2px 10px rgba(18,161,80,.25)}
 .btn-green:hover{background:#0d8040}
 
+/* Selector de moneda en toolbar */
+.currency-wrap{display:inline-flex;align-items:center;gap:.4rem;background:rgba(255,255,255,.8);
+  border:1px solid var(--bdr);border-radius:99px;padding:.3rem .75rem;backdrop-filter:blur(4px)}
+.currency-wrap label{font-size:.6rem;font-weight:700;letter-spacing:.5px;text-transform:uppercase;color:var(--t3)}
+.currency-wrap select{background:transparent;border:none;font:600 .72rem/1 var(--sans);color:var(--t1);
+  cursor:pointer;padding:.05rem .15rem;outline:none;max-width:120px}
+
 /* DOC */
-.doc{width:100%;max-width:1140px;background:var(--card);border-radius:18px;border:1px solid var(--bdr);box-shadow:var(--sh);overflow:hidden}
+.doc{width:100%;max-width:1160px;background:var(--card);border-radius:18px;border:1px solid var(--bdr);box-shadow:var(--sh);overflow:hidden}
 .hdiv{height:1px;background:var(--grad);margin:0 2rem}
 .vdiv{width:1px;background:var(--grad);align-self:stretch}
 
@@ -80,9 +87,11 @@ body{font-family:var(--sans);background:var(--bg);min-height:100vh;color:var(--t
 .field input:focus,.field select:focus{outline:none;border-bottom-color:var(--blue)}
 .field input:disabled{color:var(--t2);font-weight:600}
 
-/* TABLA */
+/* TABLA SERVICIOS */
 .table-wrap{padding:1.3rem 2rem 1.1rem}
 .section-label{font-size:.48rem;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--t3);display:flex;align-items:center;gap:.35rem;margin-bottom:1rem}
+.section-label-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem}
+.section-label-row .section-label{margin-bottom:0}
 table{width:100%;border-collapse:collapse;font-size:.76rem}
 thead th{background:#f5f6f9;font:600 .56rem/1 var(--sans);letter-spacing:.4px;text-transform:uppercase;color:var(--t2);padding:.65rem .5rem;text-align:center;white-space:nowrap;border-bottom:1px solid var(--bdr)}
 thead th:first-child{text-align:left;padding-left:.9rem}
@@ -100,71 +109,60 @@ tbody td input[type=text]:hover,tbody td input[type=number]:hover{background:#f5
 tbody td input[type=text]:focus,tbody td input[type=number]:focus{outline:none;background:#fff;border-color:var(--blue)}
 .ruta-cell{display:flex;align-items:center;gap:.2rem}
 .ruta-cell input{flex:1}
-.btn-ruta{background:transparent;border:1px solid var(--bdr);border-radius:99px;width:1.6rem;height:1.6rem;
-  display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:.8rem;color:var(--t3);flex-shrink:0;transition:all .15s}
+.btn-ruta{background:transparent;border:1px solid var(--bdr);border-radius:99px;width:1.6rem;height:1.6rem;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:.8rem;color:var(--t3);flex-shrink:0;transition:all .15s}
 .btn-ruta:hover{background:var(--blue-lt);border-color:var(--blue);color:var(--blue)}
 td.num input,td.num{font-family:var(--mono);font-size:.74rem}
 .total-cell{font-family:var(--mono);font-weight:500;font-size:.76rem}
-.btn-del{background:transparent;border:none;color:var(--t3);cursor:pointer;font-size:.9rem;
-  width:1.9rem;height:1.9rem;border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto;transition:all .15s}
+.btn-del{background:transparent;border:none;color:var(--t3);cursor:pointer;font-size:.9rem;width:1.9rem;height:1.9rem;border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto;transition:all .15s}
 .btn-del:hover{background:rgba(217,48,48,.1);color:#d93030}
 .empty-row td{padding:2.5rem;text-align:center;color:var(--t3);font-size:.76rem}
 
-/* ── CELDA PERIODO ───────────────────────────────────── */
-.periodo-cell{min-width:180px;padding:.4rem !important}
-
-.periodo-wrap{
-  background:#f7f8fa;
-  border:1px solid var(--bdr);
-  border-radius:10px;
-  padding:.4rem .5rem;
-  display:flex;
-  flex-direction:column;
-  gap:.3rem;
-  transition:border-color .15s;
-}
+/* PERÍODO */
+.periodo-cell{min-width:165px;padding:.4rem !important}
+.periodo-wrap{background:#f7f8fa;border:1px solid var(--bdr);border-radius:10px;padding:.4rem .5rem;display:flex;flex-direction:column;gap:.3rem;transition:border-color .15s}
 .periodo-wrap:focus-within{border-color:var(--blue)}
-
-/* selector de tipo: 4 pastillas */
 .tipo-pills{display:flex;gap:2px;background:#eaecf0;border-radius:7px;padding:2px}
-.tipo-pill{
-  flex:1;padding:.2rem 0;border:none;border-radius:5px;cursor:pointer;
-  font:600 .56rem/1 var(--sans);color:var(--t3);background:transparent;transition:all .15s;
-}
+.tipo-pill{flex:1;padding:.2rem 0;border:none;border-radius:5px;cursor:pointer;font:600 .56rem/1 var(--sans);color:var(--t3);background:transparent;transition:all .15s}
 .tipo-pill.act{background:#fff;color:var(--blue);box-shadow:0 1px 4px rgba(0,0,0,.08)}
-
-/* inputs de fecha dentro del periodo */
 .periodo-inputs{display:flex;flex-direction:column;gap:.25rem}
-.periodo-inputs input[type=date],
-.periodo-inputs input[type=month],
-.periodo-inputs input[type=number]{
-  width:100%;background:#fff;border:1px solid var(--bdr);border-radius:6px;
-  font:400 .68rem/1 var(--mono);color:var(--t1);padding:.28rem .5rem;
-  transition:border-color .15s;
-}
+.periodo-inputs input[type=date],.periodo-inputs input[type=month],.periodo-inputs input[type=number]{
+  width:100%;background:#fff;border:1px solid var(--bdr);border-radius:6px;font:400 .68rem/1 var(--mono);color:var(--t1);padding:.28rem .5rem;transition:border-color .15s}
 .periodo-inputs input:focus{outline:none;border-color:var(--blue)}
-
 .periodo-rango-row{display:flex;align-items:center;gap:.3rem}
 .periodo-rango-row input{flex:1}
 .periodo-rango-sep{font-size:.6rem;color:var(--t3);flex-shrink:0}
-
-/* badge de días calculados */
-.dias-badge{
-  display:inline-flex;align-items:center;gap:.25rem;
-  background:var(--blue-lt);color:var(--blue);
-  font:600 .6rem/1 var(--sans);
-  padding:.18rem .5rem;border-radius:99px;
-  width:fit-content;
-}
+.dias-badge{display:inline-flex;align-items:center;gap:.25rem;background:var(--blue-lt);color:var(--blue);font:600 .6rem/1 var(--sans);padding:.18rem .5rem;border-radius:99px;width:fit-content}
 .dias-badge-warn{background:#fff8e6;color:#b07800}
-
-/* botón "usar como viajes" */
-.btn-usar-dias{
-  background:transparent;border:1px solid var(--blue);color:var(--blue);
-  border-radius:99px;font:500 .55rem/1 var(--sans);padding:.15rem .5rem;
-  cursor:pointer;transition:all .15s;white-space:nowrap;
-}
+.btn-usar-dias{background:transparent;border:1px solid var(--blue);color:var(--blue);border-radius:99px;font:500 .55rem/1 var(--sans);padding:.15rem .5rem;cursor:pointer;transition:all .15s;white-space:nowrap}
 .btn-usar-dias:hover{background:var(--blue);color:#fff}
+
+/* TABLA ÍTEMS ADICIONALES */
+.extras-wrap{padding:.8rem 2rem 1.2rem}
+.extras-table{width:100%;border-collapse:collapse;font-size:.76rem}
+.extras-table thead th{background:#fdf8f0;font:600 .56rem/1 var(--sans);letter-spacing:.4px;text-transform:uppercase;color:#966320;padding:.6rem .5rem;text-align:center;white-space:nowrap;border-bottom:1px solid #f0e4cc}
+.extras-table thead th:first-child{text-align:left;padding-left:.9rem}
+.extras-table thead th:last-child{width:2.2rem}
+.extras-table tbody tr{position:relative;transition:background .12s}
+.extras-table tbody tr:hover{background:#fffdf8}
+.extras-table tbody tr+tr::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,#f0d8a0,transparent)}
+.extras-table tbody td{padding:.5rem .4rem;text-align:center;vertical-align:middle}
+.extras-table tbody td:first-child{text-align:left;padding-left:.9rem}
+.extras-table tbody td input[type=text],.extras-table tbody td input[type=number]{
+  width:100%;background:transparent;border:1px solid transparent;font:400 .76rem/1 var(--sans);
+  color:var(--t1);text-align:center;padding:.38rem .3rem;border-radius:7px;transition:all .15s}
+.extras-table tbody td:first-child input{text-align:left}
+.extras-table tbody td input:hover{background:#fdf5e6}
+.extras-table tbody td input:focus{outline:none;background:#fff;border-color:#e0a030}
+.extras-table td.num input,.extras-table td.num{font-family:var(--mono);font-size:.74rem}
+.extras-table .total-cell{font-family:var(--mono);font-weight:500;font-size:.76rem}
+/* tipo de ítem extra */
+.tipo-extra-wrap{display:flex;gap:2px;background:#eaecf0;border-radius:7px;padding:2px;width:fit-content;margin:0 auto}
+.tipo-extra-pill{padding:.2rem .45rem;border:none;border-radius:5px;cursor:pointer;font:600 .55rem/1 var(--sans);color:var(--t3);background:transparent;transition:all .15s;white-space:nowrap}
+.tipo-extra-pill.act{background:#fff;color:#966320;box-shadow:0 1px 4px rgba(0,0,0,.08)}
+
+.btn-add-extra{display:inline-flex;align-items:center;gap:.3rem;background:#fff9ee;border:1px solid #f0d8a0;
+  color:#966320;border-radius:99px;font:500 .68rem/1 var(--sans);padding:.35rem .8rem;cursor:pointer;transition:all .15s;margin-top:.6rem}
+.btn-add-extra:hover{background:#fff3d4;border-color:#e0a030}
 
 /* FOOTER */
 .doc-footer{display:grid;grid-template-columns:1fr auto;gap:1.5rem;align-items:end;padding:1.3rem 2rem 1.8rem}
@@ -173,10 +171,12 @@ td.num input,td.num{font-family:var(--mono);font-size:.74rem}
 .iva-toggle input[type=checkbox]{width:.95rem;height:.95rem;accent-color:var(--blue);cursor:pointer}
 .glosa{font-size:.6rem;line-height:1.65;color:var(--t2);max-width:520px;background:#f5f6f9;padding:.85rem 1rem;border-radius:12px;border-left:3px solid var(--blue)}
 .glosa strong{color:var(--t1);font-weight:600}
-.totales{background:#f5f6f9;border-radius:14px;padding:1rem 1.3rem;min-width:230px;border:1px solid var(--bdr)}
-.t-line{display:flex;justify-content:space-between;align-items:center;padding:.4rem 0;color:var(--t2);font-size:.76rem;border-bottom:1px solid var(--bdr)}
+.totales{background:#f5f6f9;border-radius:14px;padding:1rem 1.3rem;min-width:240px;border:1px solid var(--bdr)}
+.t-line{display:flex;justify-content:space-between;align-items:center;padding:.38rem 0;color:var(--t2);font-size:.76rem;border-bottom:1px solid var(--bdr)}
 .t-line:last-child{border-bottom:none}
 .t-line .amt{font-family:var(--mono);font-weight:500;color:var(--t1)}
+.t-line.extra-line{color:#966320}
+.t-line.extra-line .amt{color:#966320}
 .t-line.grand{margin-top:.35rem;padding-top:.8rem;border-top:1px solid var(--bdr)!important;font-size:.9rem;font-weight:700;color:var(--t1)}
 .t-line.grand .amt{font-size:1.1rem;font-weight:700;color:var(--blue)}
 
@@ -230,7 +230,11 @@ td.num input,td.num{font-family:var(--mono);font-size:.74rem}
 
 <div class="toolbar">
   <span class="toolbar-brand">Hauler · Estado de Pago</span>
-  <button class="btn" onclick="agregarFila()">➕ Agregar</button>
+  <div class="currency-wrap">
+    <label>💱</label>
+    <select id="currencySelect" onchange="cambiarMoneda(this.value)"></select>
+  </div>
+  <button class="btn" onclick="agregarFila()">➕ Servicio</button>
   <button class="btn" onclick="eliminarUltima()">➖ Quitar último</button>
   <button class="btn btn-red" onclick="limpiarTabla()">🗑 Limpiar</button>
   <button class="btn" onclick="abrirHistorial()">🕓 Historial</button>
@@ -241,6 +245,7 @@ td.num input,td.num{font-family:var(--mono);font-size:.74rem}
 
 <div class="doc" id="doc">
 
+  <!-- HEADER -->
   <div class="doc-header">
     <div class="logo-col">
       <div id="logoTexto"><div class="logo-text">HAULER</div><div class="logo-sub">Transporte de pasajeros</div></div>
@@ -267,6 +272,7 @@ td.num input,td.num{font-family:var(--mono);font-size:.74rem}
   </div>
   <div class="hdiv"></div>
 
+  <!-- INFO -->
   <div class="doc-info">
     <div class="info-block">
       <div class="block-title">
@@ -274,9 +280,7 @@ td.num input,td.num{font-family:var(--mono);font-size:.74rem}
         Mandante / Cliente
       </div>
       <div class="info-grid">
-        <div class="field f-full"><label>Cliente guardado</label>
-          <select id="clienteSelector" onchange="cargarCliente()"><option value="">— Seleccionar —</option></select>
-        </div>
+        <div class="field f-full"><label>Cliente guardado</label><select id="clienteSelector" onchange="cargarCliente()"><option value="">— Seleccionar —</option></select></div>
         <div class="field f-full"><label>Razón social</label><input type="text" id="cliNombre" value="Transportes del Sol Ltda."></div>
         <div class="field"><label>RUT</label><input type="text" id="cliRut" placeholder="12.345.678-9"></div>
         <div class="field"><label>Dirección</label><input type="text" id="cliDir" value="Av. Libertador 1234"></div>
@@ -303,28 +307,48 @@ td.num input,td.num{font-family:var(--mono);font-size:.74rem}
   </div>
   <div class="hdiv"></div>
 
+  <!-- TABLA SERVICIOS -->
   <div class="table-wrap">
-    <div class="section-label">
-      <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="3" y1="15" x2="21" y2="15"/><line x1="9" y1="9" x2="9" y2="21"/></svg>
-      Detalle de servicios
+    <div class="section-label-row">
+      <div class="section-label">
+        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="3" y1="15" x2="21" y2="15"/><line x1="9" y1="9" x2="9" y2="21"/></svg>
+        Detalle de servicios
+      </div>
     </div>
     <table>
       <thead><tr>
         <th style="text-align:left;padding-left:.9rem">Vehículo</th>
-        <th>Patente</th>
-        <th>Ruta</th>
-        <th>Período</th>
-        <th>Pasaj.</th>
-        <th>Viajes / Días</th>
-        <th>Valor unit.</th>
-        <th>Total</th>
-        <th></th>
+        <th>Patente</th><th>Ruta</th><th>Período</th>
+        <th>Pasaj.</th><th>Viajes/Días</th><th>Valor unit.</th><th>Total</th><th></th>
       </tr></thead>
       <tbody id="tbody"></tbody>
     </table>
   </div>
   <div class="hdiv"></div>
 
+  <!-- ÍTEMS ADICIONALES -->
+  <div class="extras-wrap">
+    <div class="section-label-row">
+      <div class="section-label" style="color:#966320">
+        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#966320" stroke-width="1.8"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
+        Ítems adicionales
+      </div>
+    </div>
+    <table class="extras-table">
+      <thead><tr>
+        <th style="text-align:left;padding-left:.9rem">Descripción</th>
+        <th>Tipo</th><th>Cantidad / Días</th><th>Valor unit.</th><th>Total</th><th></th>
+      </tr></thead>
+      <tbody id="extrasBody"></tbody>
+    </table>
+    <button class="btn-add-extra" onclick="agregarExtra()">
+      <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+      Agregar ítem
+    </button>
+  </div>
+  <div class="hdiv"></div>
+
+  <!-- FOOTER -->
   <div class="doc-footer">
     <div>
       <div class="iva-toggle">
@@ -336,9 +360,11 @@ td.num input,td.num{font-family:var(--mono);font-size:.74rem}
       </div>
     </div>
     <div class="totales">
-      <div class="t-line"><span>Subtotal neto</span><span class="amt">$&thinsp;<span id="tSubtotal">0</span></span></div>
-      <div class="t-line" id="ivaRow"><span>IVA 19%</span><span class="amt">$&thinsp;<span id="tIva">0</span></span></div>
-      <div class="t-line grand"><span>TOTAL</span><span class="amt">$&thinsp;<span id="tTotal">0</span></span></div>
+      <div class="t-line"><span>Subtotal servicios</span><span class="amt"><span id="tSubServ">0</span></span></div>
+      <div class="t-line extra-line" id="rowExtras" style="display:none"><span>Ítems adicionales</span><span class="amt"><span id="tSubExtras">0</span></span></div>
+      <div class="t-line"><span>Subtotal neto</span><span class="amt"><span id="tSubtotal">0</span></span></div>
+      <div class="t-line" id="ivaRow"><span>IVA 19%</span><span class="amt"><span id="tIva">0</span></span></div>
+      <div class="t-line grand"><span>TOTAL</span><span class="amt"><span id="tTotal">0</span></span></div>
     </div>
   </div>
 </div>
@@ -348,15 +374,10 @@ td.num input,td.num{font-family:var(--mono);font-size:.74rem}
 <!-- MODAL CLIENTES Y RUTAS -->
 <div id="modal" class="modal">
   <div class="modal-box">
-    <div class="modal-head">
-      <h3>👥 Clientes y Rutas</h3>
-      <button class="modal-close" onclick="cerrarModal('modal')">✕</button>
-    </div>
+    <div class="modal-head"><h3>👥 Clientes y Rutas</h3><button class="modal-close" onclick="cerrarModal('modal')">✕</button></div>
     <div class="modal-body">
       <div class="panel">
-        <h4>Clientes guardados</h4>
-        <div id="listaClientes"></div>
-        <hr class="panel-sep">
+        <h4>Clientes guardados</h4><div id="listaClientes"></div><hr class="panel-sep">
         <div class="form-g"><label>Razón social</label><input type="text" id="nCliNombre" placeholder="Empresa SA"></div>
         <div class="form-g"><label>RUT</label><input type="text" id="nCliRut" placeholder="12.345.678-9"></div>
         <div class="form-g"><label>Dirección</label><input type="text" id="nCliDir" placeholder="Calle #1234"></div>
@@ -364,9 +385,7 @@ td.num input,td.num{font-family:var(--mono);font-size:.74rem}
         <button class="btn-add" onclick="agregarCliente()">+ Agregar cliente</button>
       </div>
       <div class="panel">
-        <h4>Rutas guardadas</h4>
-        <div id="listaRutas"></div>
-        <hr class="panel-sep">
+        <h4>Rutas guardadas</h4><div id="listaRutas"></div><hr class="panel-sep">
         <div class="form-g"><label>Nombre de ruta</label><input type="text" id="nRutaNombre" placeholder="Ruta Centro – Norte"></div>
         <div class="form-g"><label>Descripción</label><input type="text" id="nRutaDesc" placeholder="Opcional"></div>
         <button class="btn-add" onclick="agregarRuta()">+ Agregar ruta</button>
@@ -378,20 +397,102 @@ td.num input,td.num{font-family:var(--mono);font-size:.74rem}
 <!-- MODAL HISTORIAL -->
 <div id="modalHist" class="modal">
   <div class="modal-box-hist">
-    <div class="modal-head">
-      <h3>🕓 Historial de Estados de Pago</h3>
-      <button class="modal-close" onclick="cerrarModal('modalHist')">✕</button>
-    </div>
+    <div class="modal-head"><h3>🕓 Historial de Estados de Pago</h3><button class="modal-close" onclick="cerrarModal('modalHist')">✕</button></div>
     <div class="hist-body" id="histBody"></div>
     <button class="hist-new-btn" onclick="nuevoEP()">+ Nuevo Estado de Pago en blanco</button>
   </div>
 </div>
 
 <script>
+/* ══ MONEDAS ═════════════════════════════════════════
+   Todas las monedas ISO 4217 principales.
+   sym   = símbolo a mostrar
+   code  = código ISO
+   dec   = decimales
+   locale= locale para formateo
+═══════════════════════════════════════════════════ */
+const CURRENCIES = [
+  {code:'CLP',sym:'$',name:'Peso chileno',dec:0,locale:'es-CL'},
+  {code:'ARS',sym:'$',name:'Peso argentino',dec:2,locale:'es-AR'},
+  {code:'BOB',sym:'Bs.',name:'Boliviano',dec:2,locale:'es-BO'},
+  {code:'BRL',sym:'R$',name:'Real brasileño',dec:2,locale:'pt-BR'},
+  {code:'CAD',sym:'CA$',name:'Dólar canadiense',dec:2,locale:'en-CA'},
+  {code:'CHF',sym:'Fr.',name:'Franco suizo',dec:2,locale:'de-CH'},
+  {code:'CNY',sym:'¥',name:'Yuan chino',dec:2,locale:'zh-CN'},
+  {code:'COP',sym:'$',name:'Peso colombiano',dec:0,locale:'es-CO'},
+  {code:'CRC',sym:'₡',name:'Colón costarricense',dec:2,locale:'es-CR'},
+  {code:'CUP',sym:'$',name:'Peso cubano',dec:2,locale:'es-CU'},
+  {code:'DKK',sym:'kr.',name:'Corona danesa',dec:2,locale:'da-DK'},
+  {code:'DOP',sym:'RD$',name:'Peso dominicano',dec:2,locale:'es-DO'},
+  {code:'EGP',sym:'E£',name:'Libra egipcia',dec:2,locale:'ar-EG'},
+  {code:'EUR',sym:'€',name:'Euro',dec:2,locale:'de-DE'},
+  {code:'GBP',sym:'£',name:'Libra esterlina',dec:2,locale:'en-GB'},
+  {code:'GTQ',sym:'Q',name:'Quetzal guatemalteco',dec:2,locale:'es-GT'},
+  {code:'HKD',sym:'HK$',name:'Dólar de Hong Kong',dec:2,locale:'zh-HK'},
+  {code:'HNL',sym:'L',name:'Lempira hondureño',dec:2,locale:'es-HN'},
+  {code:'HUF',sym:'Ft',name:'Forinto húngaro',dec:0,locale:'hu-HU'},
+  {code:'IDR',sym:'Rp',name:'Rupia indonesia',dec:0,locale:'id-ID'},
+  {code:'ILS',sym:'₪',name:'Nuevo séquel israelí',dec:2,locale:'he-IL'},
+  {code:'INR',sym:'₹',name:'Rupia india',dec:2,locale:'hi-IN'},
+  {code:'JPY',sym:'¥',name:'Yen japonés',dec:0,locale:'ja-JP'},
+  {code:'KRW',sym:'₩',name:'Won surcoreano',dec:0,locale:'ko-KR'},
+  {code:'MXN',sym:'$',name:'Peso mexicano',dec:2,locale:'es-MX'},
+  {code:'MYR',sym:'RM',name:'Ringgit malayo',dec:2,locale:'ms-MY'},
+  {code:'NIO',sym:'C$',name:'Córdoba nicaragüense',dec:2,locale:'es-NI'},
+  {code:'NOK',sym:'kr',name:'Corona noruega',dec:2,locale:'nb-NO'},
+  {code:'NZD',sym:'NZ$',name:'Dólar neozelandés',dec:2,locale:'en-NZ'},
+  {code:'PAB',sym:'B/.',name:'Balboa panameño',dec:2,locale:'es-PA'},
+  {code:'PEN',sym:'S/',name:'Sol peruano',dec:2,locale:'es-PE'},
+  {code:'PHP',sym:'₱',name:'Peso filipino',dec:2,locale:'fil-PH'},
+  {code:'PLN',sym:'zł',name:'Esloti polaco',dec:2,locale:'pl-PL'},
+  {code:'PYG',sym:'₲',name:'Guaraní paraguayo',dec:0,locale:'es-PY'},
+  {code:'RON',sym:'lei',name:'Leu rumano',dec:2,locale:'ro-RO'},
+  {code:'RUB',sym:'₽',name:'Rublo ruso',dec:2,locale:'ru-RU'},
+  {code:'SAR',sym:'﷼',name:'Riyal saudí',dec:2,locale:'ar-SA'},
+  {code:'SEK',sym:'kr',name:'Corona sueca',dec:2,locale:'sv-SE'},
+  {code:'SGD',sym:'S$',name:'Dólar de Singapur',dec:2,locale:'en-SG'},
+  {code:'THB',sym:'฿',name:'Baht tailandés',dec:2,locale:'th-TH'},
+  {code:'TRY',sym:'₺',name:'Lira turca',dec:2,locale:'tr-TR'},
+  {code:'TWD',sym:'NT$',name:'Dólar taiwanés',dec:0,locale:'zh-TW'},
+  {code:'UAH',sym:'₴',name:'Grivna ucraniana',dec:2,locale:'uk-UA'},
+  {code:'USD',sym:'US$',name:'Dólar estadounidense',dec:2,locale:'en-US'},
+  {code:'UYU',sym:'$',name:'Peso uruguayo',dec:2,locale:'es-UY'},
+  {code:'VEF',sym:'Bs.F',name:'Bolívar venezolano',dec:2,locale:'es-VE'},
+  {code:'VND',sym:'₫',name:'Dong vietnamita',dec:0,locale:'vi-VN'},
+  {code:'ZAR',sym:'R',name:'Rand sudafricano',dec:2,locale:'en-ZA'},
+];
+
+let monedaActual = load('hMoneda','CLP');
+
+function initCurrencySelect(){
+  const sel=document.getElementById('currencySelect');
+  sel.innerHTML=CURRENCIES.map(c=>`<option value="${c.code}" ${c.code===monedaActual?'selected':''}>${c.sym} ${c.code} — ${c.name}</option>`).join('');
+}
+
+function cambiarMoneda(code){
+  monedaActual=code; save('hMoneda',code); calcular();
+  const c=getCur(); toast(`💱 Moneda: ${c.sym} ${c.code} — ${c.name}`);
+}
+
+function getCur(){return CURRENCIES.find(c=>c.code===monedaActual)||CURRENCIES[0]}
+
+function fmtM(n){
+  const c=getCur();
+  return c.sym+' '+Math.round(n*Math.pow(10,c.dec))/Math.pow(10,c.dec)
+    .toLocaleString(c.locale,{minimumFractionDigits:c.dec,maximumFractionDigits:c.dec});
+}
+
+function fmt(n){
+  const c=getCur();
+  const v=Math.round(n*Math.pow(10,c.dec))/Math.pow(10,c.dec);
+  return v.toLocaleString(c.locale,{minimumFractionDigits:c.dec,maximumFractionDigits:c.dec});
+}
+
 /* ══ ESTADO ═════════════════════════════════════════ */
 let filas      = [];
-let clientes   = load('hClientes', []);
-let rutas      = load('hRutas',    []);
+let extras     = [];  // ítems adicionales
+let clientes   = load('hClientes',[]);
+let rutas      = load('hRutas',[]);
 let rutaTarget = null;
 let epActualId = null;
 
@@ -400,6 +501,7 @@ function save(k,v){localStorage.setItem(k,JSON.stringify(v))}
 
 /* ══ INIT ═══════════════════════════════════════════ */
 (function(){
+  initCurrencySelect();
   const hoy=new Date(), v30=new Date(hoy); v30.setDate(v30.getDate()+30);
   document.getElementById('fechaEmision').value=iso(hoy);
   document.getElementById('fechaVence').value=iso(v30);
@@ -411,202 +513,181 @@ function save(k,v){localStorage.setItem(k,JSON.stringify(v))}
 
 function iso(d){return d.toISOString().slice(0,10)}
 
-/* ══ PERÍODO — lógica ══════════════════════════════ */
-// Tipos: 'dia' | 'rango' | 'mes' | 'anio'
-
+/* ══ PERÍODO ════════════════════════════════════════ */
 function calcDias(f){
-  const t = f.periodoTipo||'dia';
+  const t=f.periodoTipo||'dia';
   if(t==='dia') return 1;
-  if(t==='mes'){
-    if(!f.periodoMes) return 1;
-    const [y,m]=f.periodoMes.split('-').map(Number);
-    return new Date(y,m,0).getDate(); // días del mes
-  }
-  if(t==='anio'){
-    const y=parseInt(f.periodoAnio)||new Date().getFullYear();
-    return ((y%4===0&&y%100!==0)||(y%400===0))?366:365;
-  }
-  if(t==='rango'){
-    if(!f.periodoDesde||!f.periodoHasta) return 0;
-    const d1=new Date(f.periodoDesde), d2=new Date(f.periodoHasta);
-    if(d2<d1) return 0;
-    return Math.round((d2-d1)/(1000*60*60*24))+1; // inclusivo
-  }
+  if(t==='mes'){if(!f.periodoMes)return 1;const[y,m]=f.periodoMes.split('-').map(Number);return new Date(y,m,0).getDate()}
+  if(t==='anio'){const y=parseInt(f.periodoAnio)||new Date().getFullYear();return((y%4===0&&y%100!==0)||(y%400===0))?366:365}
+  if(t==='rango'){if(!f.periodoDesde||!f.periodoHasta)return 0;const d1=new Date(f.periodoDesde),d2=new Date(f.periodoHasta);if(d2<d1)return 0;return Math.round((d2-d1)/(864e5))+1}
   return 1;
 }
 
-function labelPeriodo(f){
-  const t=f.periodoTipo||'dia';
-  if(t==='dia') return f.periodoDesde||'—';
-  if(t==='mes'){
-    if(!f.periodoMes) return '—';
-    const [y,m]=f.periodoMes.split('-').map(Number);
-    return new Date(y,m-1,1).toLocaleDateString('es-CL',{month:'long',year:'numeric'});
-  }
-  if(t==='anio') return f.periodoAnio||'—';
-  if(t==='rango'){
-    if(!f.periodoDesde&&!f.periodoHasta) return '—';
-    return `${f.periodoDesde||'?'} → ${f.periodoHasta||'?'}`;
-  }
-  return '—';
-}
-
-/* Genera el HTML interno de la celda periodo */
 function periodoHTML(f){
-  const t=f.periodoTipo||'dia';
-  const dias=calcDias(f);
-  const id=f.id;
-
+  const t=f.periodoTipo||'dia', dias=calcDias(f), id=f.id;
   const pills=['dia','rango','mes','anio'].map(pt=>{
-    const labels={dia:'Día',rango:'Rango',mes:'Mes',anio:'Año'};
-    return `<button class="tipo-pill${t===pt?' act':''}" onclick="cambiarTipo(${id},'${pt}')">${labels[pt]}</button>`;
+    const lbl={dia:'Día',rango:'Rango',mes:'Mes',anio:'Año'};
+    return `<button class="tipo-pill${t===pt?' act':''}" onclick="cambiarTipo(${id},'${pt}')">${lbl[pt]}</button>`;
   }).join('');
-
-  let inputs='';
-  if(t==='dia'){
-    inputs=`<input type="date" value="${x(f.periodoDesde)}" onchange="setP(${id},'periodoDesde',this.value)">`;
-  } else if(t==='rango'){
-    const diasBadge=dias>0
-      ?`<span class="dias-badge">📅 ${dias} día${dias!==1?'s':''}</span><button class="btn-usar-dias" onclick="usarDias(${id})" title="Copiar en Viajes/Días">→ usar</button>`
+  let inp='';
+  if(t==='dia') inp=`<input type="date" value="${x(f.periodoDesde)}" onchange="setP(${id},'periodoDesde',this.value)">`;
+  else if(t==='rango'){
+    const badge=dias>0
+      ?`<span class="dias-badge">📅 ${dias} día${dias!==1?'s':''}</span><button class="btn-usar-dias" onclick="usarDias(${id})">→ usar</button>`
       :`<span class="dias-badge dias-badge-warn">Elige fechas</span>`;
-    inputs=`
-      <div class="periodo-rango-row">
-        <input type="date" value="${x(f.periodoDesde)}" onchange="setP(${id},'periodoDesde',this.value)" placeholder="Desde">
-        <span class="periodo-rango-sep">→</span>
-        <input type="date" value="${x(f.periodoHasta)}" onchange="setP(${id},'periodoHasta',this.value)" placeholder="Hasta">
-      </div>
-      <div style="display:flex;align-items:center;gap:.3rem;flex-wrap:wrap">${diasBadge}</div>`;
-  } else if(t==='mes'){
-    inputs=`<input type="month" value="${x(f.periodoMes)}" onchange="setP(${id},'periodoMes',this.value)">`;
-    if(f.periodoMes) inputs+=`<span class="dias-badge">📅 ${dias} días</span>`;
-  } else if(t==='anio'){
-    inputs=`<input type="number" min="2000" max="2099" value="${x(f.periodoAnio)||(new Date().getFullYear())}" style="width:80px" onchange="setP(${id},'periodoAnio',this.value)">`;
-    if(f.periodoAnio) inputs+=`<span class="dias-badge">📅 ${dias} días</span>`;
+    inp=`<div class="periodo-rango-row"><input type="date" value="${x(f.periodoDesde)}" onchange="setP(${id},'periodoDesde',this.value)"><span class="periodo-rango-sep">→</span><input type="date" value="${x(f.periodoHasta)}" onchange="setP(${id},'periodoHasta',this.value)"></div><div style="display:flex;align-items:center;gap:.3rem;flex-wrap:wrap">${badge}</div>`;
   }
-
-  return `<div class="periodo-wrap">
-    <div class="tipo-pills">${pills}</div>
-    <div class="periodo-inputs">${inputs}</div>
-  </div>`;
+  else if(t==='mes'){
+    inp=`<input type="month" value="${x(f.periodoMes)}" onchange="setP(${id},'periodoMes',this.value)">`;
+    if(f.periodoMes) inp+=`<span class="dias-badge">📅 ${dias} días</span>`;
+  }
+  else if(t==='anio'){
+    inp=`<input type="number" min="2000" max="2099" value="${x(f.periodoAnio)||(new Date().getFullYear())}" style="width:80px" onchange="setP(${id},'periodoAnio',this.value)">`;
+    if(f.periodoAnio) inp+=`<span class="dias-badge">📅 ${dias} días</span>`;
+  }
+  return `<div class="periodo-wrap"><div class="tipo-pills">${pills}</div><div class="periodo-inputs">${inp}</div></div>`;
 }
 
-function cambiarTipo(id, tipo){
-  const f=filas.find(f=>f.id===id); if(!f) return;
-  f.periodoTipo=tipo;
-  // reset period fields when switching
-  f.periodoHasta=''; f.periodoMes=''; f.periodoAnio='';
+function cambiarTipo(id,tipo){
+  const f=filas.find(f=>f.id===id);if(!f)return;
+  f.periodoTipo=tipo; f.periodoHasta=''; f.periodoMes=''; f.periodoAnio='';
   if(tipo==='anio') f.periodoAnio=String(new Date().getFullYear());
-  actualizarCeldaPeriodo(id);
-  calcular();
+  actualizarCeldaPeriodo(id); calcular();
 }
-
-function setP(id, campo, val){
-  const f=filas.find(f=>f.id===id); if(!f) return;
-  f[campo]=val;
-  actualizarCeldaPeriodo(id);
-  calcular();
-}
-
+function setP(id,k,v){const f=filas.find(f=>f.id===id);if(f)f[k]=v;actualizarCeldaPeriodo(id);calcular()}
 function usarDias(id){
-  const f=filas.find(f=>f.id===id); if(!f) return;
-  const d=calcDias(f);
-  f.viajes=d;
-  // update the viajes input in DOM
+  const f=filas.find(f=>f.id===id);if(!f)return;
+  const d=calcDias(f); f.viajes=d;
   const row=document.querySelector(`tr[data-id="${id}"]`);
-  if(row){
-    const inp=row.cells[5].querySelector('input');
-    if(inp) inp.value=d;
-  }
-  calcular();
-  toast(`📅 ${d} días copiados a Viajes/Días`);
+  if(row){const inp=row.cells[5].querySelector('input');if(inp)inp.value=d}
+  calcular(); toast(`📅 ${d} días → Viajes/Días`);
 }
-
 function actualizarCeldaPeriodo(id){
-  const row=document.querySelector(`tr[data-id="${id}"]`);
-  if(!row) return;
-  const f=filas.find(f=>f.id===id); if(!f) return;
+  const row=document.querySelector(`tr[data-id="${id}"]`);if(!row)return;
+  const f=filas.find(f=>f.id===id);if(!f)return;
   row.cells[3].innerHTML=periodoHTML(f);
 }
 
-/* ══ FILAS ═══════════════════════════════════════════ */
+/* ══ FILAS SERVICIOS ════════════════════════════════ */
 function agregarFila(data={}){
-  const f={
-    id:Date.now()+Math.random(),
-    periodoTipo:'dia',
-    periodoDesde:'', periodoHasta:'', periodoMes:'', periodoAnio:'',
-    vehiculo:'', patente:'', ruta:'', pasajeros:'', viajes:'', valorUnit:'',
-    ...data
-  };
-  filas.push(f); renderTabla();
+  filas.push({id:Date.now()+Math.random(),periodoTipo:'dia',periodoDesde:'',periodoHasta:'',periodoMes:'',periodoAnio:'',vehiculo:'',patente:'',ruta:'',pasajeros:'',viajes:'',valorUnit:'',...data});
+  renderTabla();
 }
-
 function eliminarFila(id){filas=filas.filter(f=>f.id!==id);renderTabla();calcular()}
 function eliminarUltima(){if(!filas.length)return;filas.pop();renderTabla();calcular()}
 function limpiarTabla(){if(!filas.length||confirm('¿Eliminar todos los servicios?')){filas=[];renderTabla();calcular()}}
 
 function renderTabla(){
-  const tbody=document.getElementById('tbody');
-  if(!filas.length){tbody.innerHTML='<tr class="empty-row"><td colspan="9">Sin servicios — haz clic en ➕ Agregar</td></tr>';return}
-  tbody.innerHTML=filas.map(f=>`
+  const tb=document.getElementById('tbody');
+  if(!filas.length){tb.innerHTML='<tr class="empty-row"><td colspan="9">Sin servicios — haz clic en ➕ Servicio</td></tr>';return}
+  tb.innerHTML=filas.map(f=>`
     <tr data-id="${f.id}">
       <td><input type="text" value="${x(f.vehiculo)}" placeholder="Bus · Van..." oninput="set(${f.id},'vehiculo',this.value)"></td>
       <td><input type="text" value="${x(f.patente)}" placeholder="AB-CD-12" style="max-width:80px" oninput="set(${f.id},'patente',this.value)"></td>
-      <td><div class="ruta-cell">
-        <input type="text" value="${x(f.ruta)}" placeholder="Ruta..." oninput="set(${f.id},'ruta',this.value)">
-        <button class="btn-ruta" onclick="selRuta(${f.id})" title="Elegir ruta">📍</button>
-      </div></td>
+      <td><div class="ruta-cell"><input type="text" value="${x(f.ruta)}" placeholder="Ruta..." oninput="set(${f.id},'ruta',this.value)"><button class="btn-ruta" onclick="selRuta(${f.id})" title="Elegir ruta">📍</button></div></td>
       <td class="periodo-cell">${periodoHTML(f)}</td>
       <td class="num"><input type="number" min="0" value="${x(f.pasajeros)}" placeholder="0" style="max-width:55px" oninput="set(${f.id},'pasajeros',this.value)"></td>
       <td class="num"><input type="number" min="0" value="${x(f.viajes)}" placeholder="0" style="max-width:60px" oninput="set(${f.id},'viajes',this.value);calcular()"></td>
-      <td class="num"><input type="number" min="0" value="${x(f.valorUnit)}" placeholder="0" style="max-width:90px" oninput="set(${f.id},'valorUnit',this.value);calcular()"></td>
-      <td class="total-cell">${linea(f)}</td>
-      <td><button class="btn-del" onclick="eliminarFila(${f.id})" title="Eliminar">✕</button></td>
+      <td class="num"><input type="number" min="0" value="${x(f.valorUnit)}" placeholder="0" style="max-width:95px" oninput="set(${f.id},'valorUnit',this.value);calcular()"></td>
+      <td class="total-cell">${lineaServ(f)}</td>
+      <td><button class="btn-del" onclick="eliminarFila(${f.id})">✕</button></td>
     </tr>`).join('');
 }
-
 function x(v){return v==null?'':String(v).replace(/"/g,'&quot;')}
 function set(id,k,v){const f=filas.find(f=>f.id===id);if(f)f[k]=v}
-function linea(f){const vi=parseFloat(f.viajes)||0,vu=parseFloat(f.valorUnit)||0;return vi&&vu?'$ '+fmt(vi*vu):'—'}
+function lineaServ(f){const vi=parseFloat(f.viajes)||0,vu=parseFloat(f.valorUnit)||0;return vi&&vu?getCur().sym+' '+fmt(vi*vu):'—'}
+
+/* ══ ÍTEMS ADICIONALES ══════════════════════════════
+   Tipo: 'unit' = por unidad fija | 'dia' = por día (cantidad = días)
+═══════════════════════════════════════════════════ */
+function agregarExtra(data={}){
+  extras.push({id:Date.now()+Math.random(),desc:'',tipo:'unit',cantidad:1,valorUnit:'',...data});
+  renderExtras();
+}
+function eliminarExtra(id){extras=extras.filter(e=>e.id!==id);renderExtras();calcular()}
+
+function renderExtras(){
+  const tb=document.getElementById('extrasBody');
+  if(!extras.length){tb.innerHTML='<tr class="empty-row"><td colspan="6" style="background:transparent;padding:1rem;color:#c8a060;font-size:.74rem">Sin ítems adicionales</td></tr>';calcular();return}
+  tb.innerHTML=extras.map(e=>`
+    <tr data-eid="${e.id}">
+      <td><input type="text" value="${x(e.desc)}" placeholder="Descripción del ítem..." oninput="setE(${e.id},'desc',this.value)"></td>
+      <td>
+        <div class="tipo-extra-wrap">
+          <button class="tipo-extra-pill${e.tipo==='unit'?' act':''}" onclick="setE(${e.id},'tipo','unit');renderExtras()">Por unidad</button>
+          <button class="tipo-extra-pill${e.tipo==='dia'?' act':''}" onclick="setE(${e.id},'tipo','dia');renderExtras()">Por día</button>
+        </div>
+      </td>
+      <td class="num"><input type="number" min="0" value="${x(e.cantidad)}" placeholder="${e.tipo==='dia'?'Días':'Cant.'}" style="max-width:65px" oninput="setE(${e.id},'cantidad',this.value);calcular()"></td>
+      <td class="num"><input type="number" min="0" value="${x(e.valorUnit)}" placeholder="0" style="max-width:100px" oninput="setE(${e.id},'valorUnit',this.value);calcular()"></td>
+      <td class="total-cell">${lineaExtra(e)}</td>
+      <td><button class="btn-del" onclick="eliminarExtra(${e.id})">✕</button></td>
+    </tr>`).join('');
+  calcular();
+}
+function setE(id,k,v){const e=extras.find(e=>e.id===id);if(e)e[k]=v}
+function lineaExtra(e){const q=parseFloat(e.cantidad)||0,vu=parseFloat(e.valorUnit)||0;return q&&vu?getCur().sym+' '+fmt(q*vu):'—'}
 
 /* ══ CALCULAR ════════════════════════════════════════ */
 function calcular(){
+  // sync servicios
   filas.forEach(f=>{
-    const row=document.querySelector(`tr[data-id="${f.id}"]`);
-    if(!row)return;
+    const row=document.querySelector(`tr[data-id="${f.id}"]`);if(!row)return;
     f.viajes=parseFloat(row.cells[5].querySelector('input')?.value)||0;
     f.valorUnit=parseFloat(row.cells[6].querySelector('input')?.value)||0;
-    row.cells[7].textContent=linea(f);
+    row.cells[7].textContent=lineaServ(f);
   });
-  const bruto=filas.reduce((s,f)=>s+(f.viajes*f.valorUnit||0),0);
+  // sync extras
+  extras.forEach(e=>{
+    const row=document.querySelector(`tr[data-eid="${e.id}"]`);if(!row)return;
+    e.cantidad=parseFloat(row.cells[2].querySelector('input')?.value)||0;
+    e.valorUnit=parseFloat(row.cells[3].querySelector('input')?.value)||0;
+    row.cells[4].textContent=lineaExtra(e);
+  });
+
+  const brutoServ=filas.reduce((s,f)=>s+(f.viajes*f.valorUnit||0),0);
+  const brutoExtra=extras.reduce((s,e)=>s+(e.cantidad*e.valorUnit||0),0);
+  const bruto=brutoServ+brutoExtra;
   const conIva=document.getElementById('chkIva').checked;
   const iva=conIva?Math.round(bruto*0.19):0;
-  document.getElementById('tSubtotal').textContent=fmt(bruto);
-  document.getElementById('tIva').textContent=fmt(iva);
-  document.getElementById('tTotal').textContent=fmt(bruto+iva);
+  const sym=getCur().sym;
+
+  sv2('tSubServ',   sym+' '+fmt(brutoServ));
+  sv2('tSubExtras', sym+' '+fmt(brutoExtra));
+  sv2('tSubtotal',  sym+' '+fmt(bruto));
+  sv2('tIva',       sym+' '+fmt(iva));
+  sv2('tTotal',     sym+' '+fmt(bruto+iva));
+
   document.getElementById('ivaRow').style.opacity=conIva?'1':'0.38';
+  document.getElementById('rowExtras').style.display=brutoExtra>0?'flex':'none';
 }
-function fmt(n){return Math.round(n).toLocaleString('es-CL')}
+function sv2(id,v){const el=document.getElementById(id);if(el)el.textContent=v}
 
 /* ══ GUARDAR / CARGAR EP ═════════════════════════════ */
 function capturarEstado(){
-  // sync filas
   filas.forEach(f=>{
-    const row=document.querySelector(`tr[data-id="${f.id}"]`);
-    if(!row)return;
-    f.vehiculo  =row.cells[0].querySelector('input')?.value||'';
-    f.patente   =row.cells[1].querySelector('input')?.value||'';
-    f.ruta      =row.cells[2].querySelector('input')?.value||'';
-    f.pasajeros =row.cells[4].querySelector('input')?.value||'';
-    f.viajes    =parseFloat(row.cells[5].querySelector('input')?.value)||0;
-    f.valorUnit =parseFloat(row.cells[6].querySelector('input')?.value)||0;
+    const row=document.querySelector(`tr[data-id="${f.id}"]`);if(!row)return;
+    f.vehiculo=row.cells[0].querySelector('input')?.value||'';
+    f.patente=row.cells[1].querySelector('input')?.value||'';
+    f.ruta=row.cells[2].querySelector('input')?.value||'';
+    f.pasajeros=row.cells[4].querySelector('input')?.value||'';
+    f.viajes=parseFloat(row.cells[5].querySelector('input')?.value)||0;
+    f.valorUnit=parseFloat(row.cells[6].querySelector('input')?.value)||0;
   });
-  return{
-    id:epActualId||Date.now(), savedAt:new Date().toISOString(),
-    numDoc:gv('numDoc'), fechaEmision:gv('fechaEmision'), fechaVence:gv('fechaVence'),
-    cliNombre:gv('cliNombre'), cliRut:gv('cliRut'), cliDir:gv('cliDir'),
-    cliCiudad:gv('cliCiudad'), cliContrato:gv('cliContrato'), cliOC:gv('cliOC'),
+  extras.forEach(e=>{
+    const row=document.querySelector(`tr[data-eid="${e.id}"]`);if(!row)return;
+    e.desc=row.cells[0].querySelector('input')?.value||'';
+    e.cantidad=parseFloat(row.cells[2].querySelector('input')?.value)||0;
+    e.valorUnit=parseFloat(row.cells[3].querySelector('input')?.value)||0;
+  });
+  return{id:epActualId||Date.now(),savedAt:new Date().toISOString(),
+    numDoc:gv('numDoc'),fechaEmision:gv('fechaEmision'),fechaVence:gv('fechaVence'),
+    cliNombre:gv('cliNombre'),cliRut:gv('cliRut'),cliDir:gv('cliDir'),
+    cliCiudad:gv('cliCiudad'),cliContrato:gv('cliContrato'),cliOC:gv('cliOC'),
     conIva:document.getElementById('chkIva').checked,
+    moneda:monedaActual,
     filas:JSON.parse(JSON.stringify(filas)),
+    extras:JSON.parse(JSON.stringify(extras)),
     logoSrc:document.getElementById('imgTag').src||'',
     logoSize:document.getElementById('logoSize').value,
     tieneLogo:document.getElementById('logoImg').style.display!=='none',
@@ -614,16 +695,17 @@ function capturarEstado(){
 }
 
 function guardarEP(){
-  const estado=capturarEstado(); epActualId=estado.id;
+  const e=capturarEstado(); epActualId=e.id;
   let hist=load('hEPs',[]);
-  const idx=hist.findIndex(e=>e.id===estado.id);
-  if(idx>=0) hist[idx]=estado; else hist.push(estado);
+  const idx=hist.findIndex(h=>h.id===e.id);
+  if(idx>=0) hist[idx]=e; else hist.push(e);
   if(hist.length>50) hist=hist.slice(-50);
   save('hEPs',hist); toast('💾 Estado de Pago guardado');
 }
 
 function cargarEP(ep){
   epActualId=ep.id;
+  if(ep.moneda){monedaActual=ep.moneda;save('hMoneda',monedaActual);document.getElementById('currencySelect').value=monedaActual}
   sv('numDoc',ep.numDoc||''); sv('fechaEmision',ep.fechaEmision||''); sv('fechaVence',ep.fechaVence||'');
   sv('cliNombre',ep.cliNombre||''); sv('cliRut',ep.cliRut||''); sv('cliDir',ep.cliDir||'');
   sv('cliCiudad',ep.cliCiudad||''); sv('cliContrato',ep.cliContrato||''); sv('cliOC',ep.cliOC||'');
@@ -636,11 +718,9 @@ function cargarEP(ep){
     document.getElementById('btnQuitarLogo').style.display='inline-flex';
     ajustarLogo(ep.logoSize||56); document.getElementById('logoSize').value=ep.logoSize||56;
   } else quitarLogo();
-  filas=(ep.filas||[]).map(f=>({
-    periodoTipo:'dia', periodoDesde:'', periodoHasta:'', periodoMes:'', periodoAnio:'',
-    ...f, id:f.id||Date.now()+Math.random()
-  }));
-  renderTabla(); calcular();
+  filas=(ep.filas||[]).map(f=>({periodoTipo:'dia',periodoDesde:'',periodoHasta:'',periodoMes:'',periodoAnio:'',...f,id:f.id||Date.now()+Math.random()}));
+  extras=(ep.extras||[]).map(e=>({tipo:'unit',cantidad:1,valorUnit:'',...e,id:e.id||Date.now()+Math.random()}));
+  renderTabla(); renderExtras(); calcular();
 }
 
 function nuevoEP(){
@@ -651,26 +731,26 @@ function nuevoEP(){
   sv('fechaEmision',iso(hoy)); sv('fechaVence',iso(v30));
   ['cliNombre','cliRut','cliDir','cliCiudad','cliContrato','cliOC'].forEach(id=>sv(id,''));
   document.getElementById('chkIva').checked=true;
-  quitarLogo(); filas=[]; renderTabla(); calcular();
+  quitarLogo(); filas=[]; extras=[]; renderTabla(); renderExtras(); calcular();
   cerrarModal('modalHist'); agregarFila(); toast('📄 Nuevo EP creado');
 }
 
 /* ══ HISTORIAL ═══════════════════════════════════════ */
 function abrirHistorial(){renderHistorial();document.getElementById('modalHist').classList.add('open')}
-
 function renderHistorial(){
-  const hist=load('hEPs',[]), el=document.getElementById('histBody');
-  if(!hist.length){el.innerHTML='<div class="hist-empty">Sin estados de pago guardados.<br>Haz clic en 💾 Guardar para guardar el actual.</div>';return}
+  const hist=load('hEPs',[]),el=document.getElementById('histBody');
+  if(!hist.length){el.innerHTML='<div class="hist-empty">Sin estados de pago guardados.<br>Haz clic en 💾 Guardar.</div>';return}
   el.innerHTML=[...hist].reverse().map(ep=>{
     const fecha=ep.savedAt?new Date(ep.savedAt).toLocaleString('es-CL',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'}):'—';
-    const bruto=(ep.filas||[]).reduce((s,f)=>s+((f.viajes||0)*(f.valorUnit||0)),0);
+    const bruto=(ep.filas||[]).reduce((s,f)=>s+((f.viajes||0)*(f.valorUnit||0)),0)+(ep.extras||[]).reduce((s,e)=>s+((e.cantidad||0)*(e.valorUnit||0)),0);
     const total=ep.conIva!==false?Math.round(bruto*1.19):bruto;
+    const cur=CURRENCIES.find(c=>c.code===(ep.moneda||'CLP'))||CURRENCIES[0];
     const esAct=ep.id===epActualId;
     return `<div class="hist-item" onclick="seleccionarEP(${ep.id})">
       <div class="hist-icon">${esAct?'📂':'📄'}</div>
       <div class="hist-info">
         <div class="hist-title">${ep.numDoc||'Sin número'}${esAct?' <span style="font-size:.58rem;background:var(--blue);color:#fff;padding:1px 6px;border-radius:99px;margin-left:4px">actual</span>':''}</div>
-        <div class="hist-sub"><span>👤 ${ep.cliNombre||'Sin cliente'}</span><span>📅 ${ep.fechaEmision||'—'}</span><span>💰 $${fmt(total)}</span><span>🕓 ${fecha}</span></div>
+        <div class="hist-sub"><span>👤 ${ep.cliNombre||'Sin cliente'}</span><span>📅 ${ep.fechaEmision||'—'}</span><span>💰 ${cur.sym} ${Math.round(total).toLocaleString(cur.locale)}</span><span>🕓 ${fecha}</span></div>
       </div>
       <div class="hist-actions" onclick="event.stopPropagation()">
         <button onclick="seleccionarEP(${ep.id})">✓</button>
@@ -679,18 +759,8 @@ function renderHistorial(){
     </div>`;
   }).join('');
 }
-
-function seleccionarEP(id){
-  const ep=load('hEPs',[]).find(e=>e.id===id); if(!ep)return;
-  cargarEP(ep); cerrarModal('modalHist'); toast('📂 EP cargado: '+ep.numDoc);
-}
-
-function eliminarEP(id){
-  if(!confirm('¿Eliminar del historial?'))return;
-  let hist=load('hEPs',[]).filter(e=>e.id!==id); save('hEPs',hist);
-  if(epActualId===id) epActualId=null;
-  renderHistorial(); toast('🗑 EP eliminado');
-}
+function seleccionarEP(id){const ep=load('hEPs',[]).find(e=>e.id===id);if(!ep)return;cargarEP(ep);cerrarModal('modalHist');toast('📂 EP cargado: '+ep.numDoc)}
+function eliminarEP(id){if(!confirm('¿Eliminar del historial?'))return;let h=load('hEPs',[]).filter(e=>e.id!==id);save('hEPs',h);if(epActualId===id)epActualId=null;renderHistorial();toast('🗑 EP eliminado')}
 
 /* ══ IMPRIMIR ════════════════════════════════════════ */
 function imprimirDoc(){
@@ -698,36 +768,34 @@ function imprimirDoc(){
   const logoSrc=document.getElementById('imgTag').src||'';
   const logoSize=document.getElementById('logoSize').value||'56';
   const conIva=document.getElementById('chkIva').checked;
-  const bruto=filas.reduce((s,f)=>s+(f.viajes*f.valorUnit||0),0);
+  const cur=getCur();
+  const brutoServ=filas.reduce((s,f)=>s+(f.viajes*f.valorUnit||0),0);
+  const brutoExtra=extras.reduce((s,e)=>s+(e.cantidad*e.valorUnit||0),0);
+  const bruto=brutoServ+brutoExtra;
   const iva=conIva?Math.round(bruto*0.19):0;
-
   const meses=['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
-
-  function periodoPrint(f){
-    const t=f.periodoTipo||'dia';
-    if(t==='dia') return f.periodoDesde||'—';
-    if(t==='rango') return `${f.periodoDesde||'?'} → ${f.periodoHasta||'?'}<br><small style="color:#9898a6">${calcDias(f)} días</small>`;
-    if(t==='mes'&&f.periodoMes){const[y,m]=f.periodoMes.split('-').map(Number);return meses[m-1]+' '+y;}
-    if(t==='anio') return f.periodoAnio||'—';
-    return '—';
-  }
+  function pd(f){const t=f.periodoTipo||'dia';if(t==='dia')return f.periodoDesde||'—';if(t==='rango')return`${f.periodoDesde||'?'} → ${f.periodoHasta||'?'} (${calcDias(f)}d)`;if(t==='mes'&&f.periodoMes){const[y,m]=f.periodoMes.split('-').map(Number);return meses[m-1]+' '+y}if(t==='anio')return f.periodoAnio||'—';return'—'}
 
   const filasHTML=filas.length
-    ?filas.map(f=>`<tr>
-        <td style="text-align:left">${f.vehiculo||''}</td>
-        <td>${f.patente||''}</td>
-        <td>${f.ruta||''}</td>
-        <td>${periodoPrint(f)}</td>
-        <td>${f.pasajeros||''}</td>
-        <td style="font-family:var(--mono)">${f.viajes||''}</td>
-        <td style="font-family:var(--mono)">${f.valorUnit?fmt(f.valorUnit):''}</td>
-        <td style="font-family:var(--mono)">${linea(f)}</td>
-      </tr>`).join('')
-    :'<tr><td colspan="8" style="text-align:center;color:#999;padding:1rem">Sin servicios</td></tr>';
+    ?filas.map(f=>`<tr><td style="text-align:left">${f.vehiculo||''}</td><td>${f.patente||''}</td><td>${f.ruta||''}</td><td>${pd(f)}</td><td>${f.pasajeros||''}</td><td style="font-family:var(--mono)">${f.viajes||''}</td><td style="font-family:var(--mono)">${f.valorUnit?fmt(f.valorUnit):''}</td><td style="font-family:var(--mono)">${lineaServ(f)}</td></tr>`).join('')
+    :'<tr><td colspan="8" style="text-align:center;color:#999;padding:.8rem">Sin servicios</td></tr>';
 
-  const logoHTML=tieneLogo
-    ?`<img src="${logoSrc}" style="max-height:${logoSize}px;object-fit:contain;max-width:200px">`
-    :`<div style="font-size:22pt;font-weight:700;letter-spacing:-.5px">HAULER</div><div style="font-size:7pt;font-weight:500;letter-spacing:2.5px;text-transform:uppercase;color:#999;margin-top:3px">Transporte de pasajeros</div>`;
+  const extrasHTML=extras.length?`
+    <div class="hdiv"></div>
+    <div class="table-wrap">
+      <div class="section-label" style="color:#966320">Ítems adicionales</div>
+      <table><thead><tr>
+        <th style="text-align:left;padding-left:3mm;background:#fdf8f0;color:#966320">Descripción</th>
+        <th style="background:#fdf8f0;color:#966320">Tipo</th>
+        <th style="background:#fdf8f0;color:#966320">Cant./Días</th>
+        <th style="background:#fdf8f0;color:#966320">Valor unit.</th>
+        <th style="background:#fdf8f0;color:#966320">Total</th>
+      </tr></thead><tbody>
+      ${extras.map(e=>`<tr><td style="text-align:left;padding-left:3mm">${e.desc||''}</td><td>${e.tipo==='dia'?'Por día':'Por unidad'}</td><td style="font-family:var(--mono)">${e.cantidad||''}</td><td style="font-family:var(--mono)">${e.valorUnit?fmt(e.valorUnit):''}</td><td style="font-family:var(--mono)">${lineaExtra(e)}</td></tr>`).join('')}
+      </tbody></table>
+    </div>`:'';
+
+  const logoHTML=tieneLogo?`<img src="${logoSrc}" style="max-height:${logoSize}px;object-fit:contain;max-width:200px">`:`<div style="font-size:22pt;font-weight:700;letter-spacing:-.5px">HAULER</div><div style="font-size:7pt;font-weight:500;letter-spacing:2.5px;text-transform:uppercase;color:#999;margin-top:3px">Transporte de pasajeros</div>`;
 
   const html=`<!DOCTYPE html><html lang="es"><head>
 <meta charset="UTF-8"><title>Estado de Pago · HAULER</title>
@@ -767,10 +835,11 @@ tbody td:first-child{text-align:left;padding-left:3mm}
 .doc-footer{display:grid;grid-template-columns:1fr auto;gap:8mm;align-items:end;padding:4mm 10mm 6mm}
 .glosa{font-size:7pt;line-height:1.6;color:var(--t2);background:#f8f9ff;padding:3mm 4mm;border-left:2pt solid #a0bff0}
 .glosa strong{color:var(--t1);font-weight:600}
-.totales{background:#f5f6f9;padding:3.5mm 5mm;width:52mm;border:1pt solid var(--bdr)}
+.totales{background:#f5f6f9;padding:3.5mm 5mm;min-width:55mm;border:1pt solid var(--bdr)}
 .t-line{display:flex;justify-content:space-between;align-items:center;padding:2mm 0;color:var(--t2);font-size:8pt;border-bottom:1pt solid var(--bdr)}
 .t-line:last-child{border-bottom:none}
 .t-line .amt{font:500 8pt/1 var(--mono);color:var(--t1)}
+.t-line.extra-line{color:#966320}.t-line.extra-line .amt{color:#966320}
 .t-line.grand{margin-top:2mm;padding-top:3mm;border-top:1pt solid var(--bdr)!important;font-size:9pt;font-weight:700}
 .t-line.grand .amt{font-size:11pt;font-weight:700;color:var(--blue)}
 </style></head><body>
@@ -812,19 +881,19 @@ tbody td:first-child{text-align:left;padding-left:3mm}
   <div class="table-wrap">
     <div class="section-label">Detalle de servicios</div>
     <table><thead><tr>
-      <th style="text-align:left;padding-left:3mm">Vehículo</th>
-      <th>Patente</th><th>Ruta</th><th>Período</th>
-      <th>Pasaj.</th><th>Viajes/Días</th><th>Valor unit.</th><th>Total</th>
-    </tr></thead>
-    <tbody>${filasHTML}</tbody></table>
+      <th style="text-align:left;padding-left:3mm">Vehículo</th><th>Patente</th><th>Ruta</th><th>Período</th><th>Pasaj.</th><th>Viajes/Días</th><th>Valor unit.</th><th>Total</th>
+    </tr></thead><tbody>${filasHTML}</tbody></table>
   </div>
+  ${extrasHTML}
   <div class="hdiv"></div>
   <div class="doc-footer">
     <div class="glosa"><strong>Importante:</strong> Este Estado de Pago constituye respaldo administrativo de los servicios prestados y antecedente para facturación. Los montos están sujetos a revisión. Observaciones deberán realizarse dentro de 5 días hábiles. La factura se regirá por la Ley de Pago a 30 Días.</div>
     <div class="totales">
-      <div class="t-line"><span>Subtotal neto</span><span class="amt">$ ${fmt(bruto)}</span></div>
-      ${conIva?`<div class="t-line"><span>IVA 19%</span><span class="amt">$ ${fmt(iva)}</span></div>`:''}
-      <div class="t-line grand"><span>TOTAL</span><span class="amt">$ ${fmt(bruto+iva)}</span></div>
+      <div class="t-line"><span>Subtotal servicios</span><span class="amt">${cur.sym} ${fmt(brutoServ)}</span></div>
+      ${brutoExtra>0?`<div class="t-line extra-line"><span>Ítems adicionales</span><span class="amt">${cur.sym} ${fmt(brutoExtra)}</span></div>`:''}
+      <div class="t-line"><span>Subtotal neto</span><span class="amt">${cur.sym} ${fmt(bruto)}</span></div>
+      ${conIva?`<div class="t-line"><span>IVA 19%</span><span class="amt">${cur.sym} ${fmt(iva)}</span></div>`:''}
+      <div class="t-line grand"><span>TOTAL</span><span class="amt">${cur.sym} ${fmt(bruto+iva)}</span></div>
     </div>
   </div>
 </div>
@@ -837,88 +906,34 @@ tbody td:first-child{text-align:left;padding-left:3mm}
 }
 
 /* ══ LOGO ════════════════════════════════════════════ */
-function cargarLogo(input){
-  const file=input.files[0];if(!file)return;
-  const reader=new FileReader();
-  reader.onload=e=>{
-    document.getElementById('imgTag').src=e.target.result;
-    document.getElementById('logoTexto').style.display='none';
-    document.getElementById('logoImg').style.display='flex';
-    document.getElementById('sizeWrap').style.display='flex';
-    document.getElementById('btnQuitarLogo').style.display='inline-flex';
-    ajustarLogo(document.getElementById('logoSize').value);
-  };
-  reader.readAsDataURL(file);
-}
+function cargarLogo(input){const file=input.files[0];if(!file)return;const r=new FileReader();r.onload=e=>{document.getElementById('imgTag').src=e.target.result;document.getElementById('logoTexto').style.display='none';document.getElementById('logoImg').style.display='flex';document.getElementById('sizeWrap').style.display='flex';document.getElementById('btnQuitarLogo').style.display='inline-flex';ajustarLogo(document.getElementById('logoSize').value)};r.readAsDataURL(file)}
 function ajustarLogo(v){document.getElementById('imgTag').style.maxHeight=v+'px';document.getElementById('sizePx').textContent=v+'px'}
-function quitarLogo(){
-  document.getElementById('logoTexto').style.display='block';
-  document.getElementById('logoImg').style.display='none';
-  document.getElementById('sizeWrap').style.display='none';
-  document.getElementById('btnQuitarLogo').style.display='none';
-  document.getElementById('imgTag').src='';
-}
+function quitarLogo(){document.getElementById('logoTexto').style.display='block';document.getElementById('logoImg').style.display='none';document.getElementById('sizeWrap').style.display='none';document.getElementById('btnQuitarLogo').style.display='none';document.getElementById('imgTag').src=''}
 
 /* ══ CLIENTES ════════════════════════════════════════ */
-function renderSelector(){
-  const sel=document.getElementById('clienteSelector');
-  sel.innerHTML='<option value="">— Seleccionar —</option>'+clientes.map((c,i)=>`<option value="${i}">${c.nombre}</option>`).join('');
-}
-function cargarCliente(){
-  const idx=document.getElementById('clienteSelector').value;if(idx==='')return;
-  const c=clientes[parseInt(idx)];if(!c)return;
-  sv('cliNombre',c.nombre||'');sv('cliRut',c.rut||'');sv('cliDir',c.dir||'');sv('cliCiudad',c.ciudad||'');
-}
-function agregarCliente(){
-  const nombre=g('nCliNombre');if(!nombre)return alert('Ingresa la razón social.');
-  clientes.push({nombre,rut:g('nCliRut'),dir:g('nCliDir'),ciudad:g('nCliCiudad')});
-  save('hClientes',clientes);
-  ['nCliNombre','nCliRut','nCliDir','nCliCiudad'].forEach(id=>document.getElementById(id).value='');
-  renderSelector();renderListaClientes();toast('✓ Cliente guardado');
-}
+function renderSelector(){const sel=document.getElementById('clienteSelector');sel.innerHTML='<option value="">— Seleccionar —</option>'+clientes.map((c,i)=>`<option value="${i}">${c.nombre}</option>`).join('')}
+function cargarCliente(){const idx=document.getElementById('clienteSelector').value;if(idx==='')return;const c=clientes[parseInt(idx)];if(!c)return;sv('cliNombre',c.nombre||'');sv('cliRut',c.rut||'');sv('cliDir',c.dir||'');sv('cliCiudad',c.ciudad||'')}
+function agregarCliente(){const n=g('nCliNombre');if(!n)return alert('Ingresa la razón social.');clientes.push({nombre:n,rut:g('nCliRut'),dir:g('nCliDir'),ciudad:g('nCliCiudad')});save('hClientes',clientes);['nCliNombre','nCliRut','nCliDir','nCliCiudad'].forEach(id=>document.getElementById(id).value='');renderSelector();renderListaClientes();toast('✓ Cliente guardado')}
 function eliminarCliente(i){clientes.splice(i,1);save('hClientes',clientes);renderSelector();renderListaClientes()}
-function usarCliente(i){
-  const c=clientes[i];sv('cliNombre',c.nombre||'');sv('cliRut',c.rut||'');sv('cliDir',c.dir||'');sv('cliCiudad',c.ciudad||'');
-  cerrarModal('modal');
-}
-function renderListaClientes(){
-  const el=document.getElementById('listaClientes');if(!el)return;
-  el.innerHTML=clientes.length
-    ?clientes.map((c,i)=>`<div class="list-item"><div class="item-info">${c.nombre}<small>${c.rut||''} ${c.ciudad?'· '+c.ciudad:''}</small></div><div class="item-btns"><button onclick="usarCliente(${i})">✓</button><button class="del" onclick="eliminarCliente(${i})">✕</button></div></div>`).join('')
-    :'<p style="font-size:.7rem;color:var(--t3);text-align:center;padding:.8rem">Sin clientes guardados</p>';
-}
+function usarCliente(i){const c=clientes[i];sv('cliNombre',c.nombre||'');sv('cliRut',c.rut||'');sv('cliDir',c.dir||'');sv('cliCiudad',c.ciudad||'');cerrarModal('modal')}
+function renderListaClientes(){const el=document.getElementById('listaClientes');if(!el)return;el.innerHTML=clientes.length?clientes.map((c,i)=>`<div class="list-item"><div class="item-info">${c.nombre}<small>${c.rut||''} ${c.ciudad?'· '+c.ciudad:''}</small></div><div class="item-btns"><button onclick="usarCliente(${i})">✓</button><button class="del" onclick="eliminarCliente(${i})">✕</button></div></div>`).join(''):'<p style="font-size:.7rem;color:var(--t3);text-align:center;padding:.8rem">Sin clientes</p>'}
 
 /* ══ RUTAS ═══════════════════════════════════════════ */
-function agregarRuta(){
-  const nombre=g('nRutaNombre');if(!nombre)return alert('Ingresa el nombre de la ruta.');
-  rutas.push({nombre,desc:g('nRutaDesc')});save('hRutas',rutas);
-  ['nRutaNombre','nRutaDesc'].forEach(id=>document.getElementById(id).value='');
-  renderListaRutas();toast('✓ Ruta guardada');
-}
+function agregarRuta(){const n=g('nRutaNombre');if(!n)return alert('Ingresa el nombre de la ruta.');rutas.push({nombre:n,desc:g('nRutaDesc')});save('hRutas',rutas);['nRutaNombre','nRutaDesc'].forEach(id=>document.getElementById(id).value='');renderListaRutas();toast('✓ Ruta guardada')}
 function eliminarRuta(i){rutas.splice(i,1);save('hRutas',rutas);renderListaRutas()}
-function usarRuta(i){
-  if(rutaTarget!=null){const f=filas.find(f=>f.id===rutaTarget);if(f){f.ruta=rutas[i].nombre;renderTabla();}rutaTarget=null;}
-  cerrarModal('modal');
-}
+function usarRuta(i){if(rutaTarget!=null){const f=filas.find(f=>f.id===rutaTarget);if(f){f.ruta=rutas[i].nombre;renderTabla();}rutaTarget=null}cerrarModal('modal')}
 function selRuta(filaId){rutaTarget=filaId;abrirModal()}
-function renderListaRutas(){
-  const el=document.getElementById('listaRutas');if(!el)return;
-  el.innerHTML=rutas.length
-    ?rutas.map((r,i)=>`<div class="list-item"><div class="item-info">${r.nombre}<small>${r.desc||''}</small></div><div class="item-btns"><button onclick="usarRuta(${i})">✓</button><button class="del" onclick="eliminarRuta(${i})">✕</button></div></div>`).join('')
-    :'<p style="font-size:.7rem;color:var(--t3);text-align:center;padding:.8rem">Sin rutas guardadas</p>';
-}
+function renderListaRutas(){const el=document.getElementById('listaRutas');if(!el)return;el.innerHTML=rutas.length?rutas.map((r,i)=>`<div class="list-item"><div class="item-info">${r.nombre}<small>${r.desc||''}</small></div><div class="item-btns"><button onclick="usarRuta(${i})">✓</button><button class="del" onclick="eliminarRuta(${i})">✕</button></div></div>`).join(''):'<p style="font-size:.7rem;color:var(--t3);text-align:center;padding:.8rem">Sin rutas</p>'}
 
 /* ══ MODALES ═════════════════════════════════════════ */
 function abrirModal(){renderListaClientes();renderListaRutas();document.getElementById('modal').classList.add('open')}
 function cerrarModal(id){document.getElementById(id).classList.remove('open');if(id==='modal')rutaTarget=null}
-['modal','modalHist'].forEach(id=>{
-  document.getElementById(id).addEventListener('click',e=>{if(e.target===e.currentTarget)cerrarModal(id)});
-});
+['modal','modalHist'].forEach(id=>{document.getElementById(id).addEventListener('click',e=>{if(e.target===e.currentTarget)cerrarModal(id)})});
 document.addEventListener('keydown',e=>{if(e.key==='Escape'){cerrarModal('modal');cerrarModal('modalHist')}});
 
 /* ══ TOAST ═══════════════════════════════════════════ */
 let toastT=null;
-function toast(msg){const el=document.getElementById('toast');el.textContent=msg;el.classList.add('show');clearTimeout(toastT);toastT=setTimeout(()=>el.classList.remove('show'),2200)}
+function toast(msg){const el=document.getElementById('toast');el.textContent=msg;el.classList.add('show');clearTimeout(toastT);toastT=setTimeout(()=>el.classList.remove('show'),2400)}
 
 /* ══ UTIL ════════════════════════════════════════════ */
 function g(id){return document.getElementById(id).value.trim()}
