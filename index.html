@@ -526,11 +526,17 @@ td.num input,td.num{font-family:var(--mono);font-size:.74rem}
     <div class="modal-body">
       <div class="panel">
         <h4>Clientes guardados</h4><div id="listaClientes"></div><hr class="panel-sep">
+        <div id="cliFormTitle" style="font-size:.56rem;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--blue);margin-bottom:.5rem">+ Nuevo cliente</div>
         <div class="form-g"><label>Razón social</label><input type="text" id="nCliNombre" placeholder="Empresa SA"></div>
         <div class="form-g"><label>RUT</label><input type="text" id="nCliRut" placeholder="12.345.678-9"></div>
+        <div class="form-g"><label>Giro / Actividad comercial</label><input type="text" id="nCliGiro" placeholder="Minería, Construcción..."></div>
         <div class="form-g"><label>Dirección</label><input type="text" id="nCliDir" placeholder="Calle #1234"></div>
         <div class="form-g"><label>Ciudad</label><input type="text" id="nCliCiudad" placeholder="Santiago"></div>
-        <button class="btn-add" onclick="agregarCliente()">+ Agregar cliente</button>
+        <input type="hidden" id="editCliIdx" value="">
+        <div style="display:flex;gap:.4rem">
+          <button class="btn-add" id="btnGuardarCli" onclick="guardarCliente()" style="flex:1">+ Agregar cliente</button>
+          <button id="btnCancelarEdit" onclick="cancelarEditCliente()" style="display:none;padding:.52rem .8rem;border-radius:99px;border:1px solid var(--bdr);background:#fff;font:600 .68rem/1 var(--sans);cursor:pointer;color:var(--t2)">Cancelar</button>
+        </div>
       </div>
       <div class="panel">
         <h4>Rutas guardadas</h4><div id="listaRutas"></div><hr class="panel-sep">
@@ -1193,11 +1199,63 @@ function quitarLogo(){document.getElementById('logoTexto').style.display='block'
 
 /* ══ CLIENTES ════════════════════════════════════════════════════════════ */
 function renderSelector(){const sel=document.getElementById('clienteSelector');sel.innerHTML='<option value="">— Seleccionar —</option>'+clientes.map((c,i)=>`<option value="${i}">${c.nombre}</option>`).join('')}
-function cargarCliente(){const idx=document.getElementById('clienteSelector').value;if(idx==='')return;const c=clientes[parseInt(idx)];if(!c)return;sv('cliNombre',c.nombre||'');sv('cliRut',c.rut||'');sv('cliDir',c.dir||'');sv('cliCiudad',c.ciudad||'')}
-function agregarCliente(){const n=g('nCliNombre');if(!n)return alert('Ingresa la razón social.');clientes.push({nombre:n,rut:g('nCliRut'),dir:g('nCliDir'),ciudad:g('nCliCiudad')});save('hClientes',clientes);['nCliNombre','nCliRut','nCliDir','nCliCiudad'].forEach(id=>document.getElementById(id).value='');renderSelector();renderListaClientes();toast('✓ Cliente guardado')}
-function eliminarCliente(i){clientes.splice(i,1);save('hClientes',clientes);renderSelector();renderListaClientes()}
-function usarCliente(i){const c=clientes[i];sv('cliNombre',c.nombre||'');sv('cliRut',c.rut||'');sv('cliDir',c.dir||'');sv('cliCiudad',c.ciudad||'');cerrarModal('modal')}
-function renderListaClientes(){const el=document.getElementById('listaClientes');if(!el)return;el.innerHTML=clientes.length?clientes.map((c,i)=>`<div class="list-item"><div class="item-info">${c.nombre}<small>${c.rut||''} ${c.ciudad?'· '+c.ciudad:''}</small></div><div class="item-btns"><button onclick="usarCliente(${i})">✓</button><button class="del" onclick="eliminarCliente(${i})">✕</button></div></div>`).join(''):'<p style="font-size:.7rem;color:var(--t3);text-align:center;padding:.8rem">Sin clientes</p>'}
+function cargarCliente(){const idx=document.getElementById('clienteSelector').value;if(idx==='')return;const c=clientes[parseInt(idx)];if(!c)return;sv('cliNombre',c.nombre||'');sv('cliRut',c.rut||'');sv('cliGiro',c.giro||'');sv('cliDir',c.dir||'');sv('cliCiudad',c.ciudad||'')}
+
+function guardarCliente(){
+  const n=g('nCliNombre');if(!n)return alert('Ingresa la razón social.');
+  const datos={nombre:n,rut:g('nCliRut'),giro:g('nCliGiro'),dir:g('nCliDir'),ciudad:g('nCliCiudad')};
+  const idx=document.getElementById('editCliIdx').value;
+  if(idx!==''){clientes[parseInt(idx)]=datos;toast('✏️ Cliente actualizado')}
+  else{clientes.push(datos);toast('✓ Cliente guardado')}
+  save('hClientes',clientes);
+  limpiarFormCli();renderSelector();renderListaClientes();
+}
+
+function editarCliente(i){
+  const c=clientes[i];
+  document.getElementById('nCliNombre').value=c.nombre||'';
+  document.getElementById('nCliRut').value=c.rut||'';
+  document.getElementById('nCliGiro').value=c.giro||'';
+  document.getElementById('nCliDir').value=c.dir||'';
+  document.getElementById('nCliCiudad').value=c.ciudad||'';
+  document.getElementById('editCliIdx').value=i;
+  document.getElementById('cliFormTitle').textContent='✏️ Editando cliente';
+  document.getElementById('cliFormTitle').style.color='#b07800';
+  document.getElementById('btnGuardarCli').textContent='💾 Guardar cambios';
+  document.getElementById('btnCancelarEdit').style.display='inline-flex';
+  document.getElementById('nCliNombre').focus();
+  document.getElementById('nCliNombre').scrollIntoView({behavior:'smooth',block:'nearest'});
+}
+
+function cancelarEditCliente(){limpiarFormCli()}
+
+function limpiarFormCli(){
+  ['nCliNombre','nCliRut','nCliGiro','nCliDir','nCliCiudad'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('editCliIdx').value='';
+  document.getElementById('cliFormTitle').textContent='+ Nuevo cliente';
+  document.getElementById('cliFormTitle').style.color='var(--blue)';
+  document.getElementById('btnGuardarCli').textContent='+ Agregar cliente';
+  document.getElementById('btnCancelarEdit').style.display='none';
+}
+
+function eliminarCliente(i){
+  if(!confirm('¿Eliminar cliente "'+clientes[i].nombre+'"?'))return;
+  clientes.splice(i,1);save('hClientes',clientes);renderSelector();renderListaClientes();
+  if(document.getElementById('editCliIdx').value==i) limpiarFormCli();
+}
+function usarCliente(i){const c=clientes[i];sv('cliNombre',c.nombre||'');sv('cliRut',c.rut||'');sv('cliGiro',c.giro||'');sv('cliDir',c.dir||'');sv('cliCiudad',c.ciudad||'');cerrarModal('modal')}
+function renderListaClientes(){
+  const el=document.getElementById('listaClientes');if(!el)return;
+  el.innerHTML=clientes.length?clientes.map((c,i)=>`
+    <div class="list-item">
+      <div class="item-info">${c.nombre}<small>${[c.rut,c.giro,c.ciudad].filter(Boolean).join(' · ')}</small></div>
+      <div class="item-btns">
+        <button onclick="usarCliente(${i})" title="Usar en documento">✓</button>
+        <button onclick="editarCliente(${i})" title="Editar">✏️</button>
+        <button class="del" onclick="eliminarCliente(${i})" title="Eliminar">✕</button>
+      </div>
+    </div>`).join(''):'<p style="font-size:.7rem;color:var(--t3);text-align:center;padding:.8rem">Sin clientes</p>'
+}
 
 /* ══ RUTAS ═══════════════════════════════════════════════════════════════ */
 function agregarRuta(){const n=g('nRutaNombre');if(!n)return alert('Ingresa el nombre de la ruta.');rutas.push({nombre:n,desc:g('nRutaDesc')});save('hRutas',rutas);['nRutaNombre','nRutaDesc'].forEach(id=>document.getElementById(id).value='');renderListaRutas();toast('✓ Ruta guardada')}
