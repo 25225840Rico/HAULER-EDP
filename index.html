@@ -1864,7 +1864,10 @@ function abrirModal() {
 }
 function cerrarModal(id){document.getElementById(id).classList.remove('open');if(id==='modal')rutaTarget=null}
 ['modal','modalHist','modalConvertir','modalBackup'].forEach(id=>{document.getElementById(id).addEventListener('click',e=>{if(e.target===e.currentTarget)cerrarModal(id)})});
-document.addEventListener('keydown',e=>{if(e.key==='Escape'){['modal','modalHist','modalConvertir','modalBackup'].forEach(id=>cerrarModal(id))}});
+document.addEventListener('keydown',e=>{
+  if(e.key==='Escape'){['modal','modalHist','modalConvertir','modalBackup'].forEach(id=>cerrarModal(id))}
+  if((e.ctrlKey||e.metaKey)&&e.key==='p'){e.preventDefault();imprimirDoc();}
+});
 
 /* ══ TOAST ════════════════════════════════════════════════════════════════ */
 let toastT=null;
