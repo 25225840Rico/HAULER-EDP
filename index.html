@@ -1138,8 +1138,27 @@ function imprimirDoc(){
       ${gv('condNotas')?`<div class="cond-notas"><strong>Notas:</strong> ${gv('condNotas')}</div>`:''}
     </div>`:'';
 
+  // ── NOMBRE PROFESIONAL DEL PDF ──────────────────────────────────────────
+  // Formato: TIPO_NUMERO · CLIENTE · RUTA(S) · FECHA_EMISION
+  // Ej: EP-2401 · Transportes del Sol · Ruta Centro-Norte · 2025-06-15
+  var pdfCliente  = (gv('cliNombre') || 'Sin Cliente').replace(/[^a-zA-Z0-9áéíóúÁÉÍÓÚñÑüÜ\.\-\ ]/g,'').trim();
+  var pdfNumDoc   = (gv('numDoc') || (esCot ? 'COT' : 'EP')).trim();
+  var pdfFecha    = gv('fechaEmision') || new Date().toISOString().slice(0,10);
+  // Recoger rutas únicas de todas las filas (máx 2 para no hacer el nombre muy largo)
+  var rutasUnicas = [];
+  filas.forEach(function(f){ if(f.ruta && rutasUnicas.indexOf(f.ruta.trim())<0) rutasUnicas.push(f.ruta.trim()); });
+  var pdfRuta = rutasUnicas.slice(0,2).join(' + ') || '';
+  // Limpiar para nombre de archivo (sin caracteres problemáticos)
+  function limpio(s){ return s.replace(/[\/<>:"|?*\\]/g,'_').replace(/\s+/g,' ').trim(); }
+  var partes = [esCot ? 'Cotización' : 'Estado de Pago', pdfNumDoc, pdfCliente];
+  if(pdfRuta) partes.push(limpio(pdfRuta));
+  partes.push(pdfFecha);
+  var pdfTitle = partes.join(' · ');        // Título visible en el PDF
+  var pdfFilename = partes.join(' - ')      // Nombre de archivo (sin · que no sirve en algunos OS)
+    .replace(/·/g,'-').replace(/\s+/g,' ').replace(/ - /g,' - ');
+
   const html=`<!DOCTYPE html><html lang="es"><head>
-<meta charset="UTF-8"><title>${esCot?'Cotización':'Estado de Pago'} · HAULER</title>
+<meta charset="UTF-8"><title>${pdfTitle}</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
@@ -1150,7 +1169,14 @@ function imprimirDoc(){
   --grad:linear-gradient(90deg,transparent,#bdd0ff 50%,transparent);
   --mono:'JetBrains Mono','Courier New',monospace;
 }
-@page{size:letter portrait;margin:8mm 10mm}
+@page{
+  size:letter portrait;
+  margin:8mm 10mm 14mm 10mm;
+}
+/* Pie de página nativo del navegador mostrará el título (nombre del archivo) */
+@media print{
+  html,body{min-height:unset}
+}
 *{-webkit-print-color-adjust:exact;print-color-adjust:exact}
 html,body{font-family:'Inter',sans-serif;font-size:8.5pt;color:var(--t1);background:#fff}
 /* ── ESTRUCTURA ── */
@@ -1342,8 +1368,35 @@ tbody td:last-child{text-align:right;padding-right:2mm;font-family:var(--mono);f
     </div>
   </div>
 
+  <!-- PIE DE DOCUMENTO con nombre de archivo -->
+  <div style="padding:2.5mm 6mm;background:#f0f4ff;border-top:1pt solid #c8d8f8;display:flex;align-items:center;justify-content:space-between;gap:4mm">
+    <div style="display:flex;align-items:center;gap:3mm">
+      <span style="font-size:5pt;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:#0055FF">Hauler</span>
+      <span style="width:.4pt;height:8pt;background:#c8d8f8;display:inline-block"></span>
+      <span id="pdfFilenameDisplay" style="font-size:6pt;color:#5a5a66;font-family:'JetBrains Mono','Courier New',monospace"></span>
+    </div>
+    <div style="display:flex;align-items:center;gap:3mm">
+      <span style="font-size:5.5pt;color:#9898a6">Documento generado:</span>
+      <span id="pdfGenDate" style="font-size:6pt;color:#5a5a66;font-family:'JetBrains Mono','Courier New',monospace"></span>
+    </div>
+  </div>
+
 </div>
-<script>document.fonts.ready.then(()=>setTimeout(()=>window.print(),400));<\/script>
+<script>
+  // Inyectar nombre de archivo y fecha de generación
+  (function(){
+    var t = document.title;
+    var el = document.getElementById('pdfFilenameDisplay');
+    if(el) el.textContent = t + '.pdf';
+    var gd = document.getElementById('pdfGenDate');
+    if(gd){
+      var now = new Date();
+      var pad = function(n){return n<10?'0'+n:n};
+      gd.textContent = now.getFullYear()+'-'+pad(now.getMonth()+1)+'-'+pad(now.getDate())+' '+pad(now.getHours())+':'+pad(now.getMinutes());
+    }
+  })();
+  document.fonts.ready.then(function(){ setTimeout(function(){ window.print(); }, 450); });
+<\/script>
 </body></html>`;
 
   const w=window.open('','_blank','width=900,height=700');
