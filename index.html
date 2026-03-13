@@ -300,6 +300,26 @@ td.num input,td.num{font-family:var(--mono);font-size:.74rem}
   .cond-grid{grid-template-columns:1fr}
   .backup-banner{flex-direction:column;align-items:flex-start}
 }
+/* ── SYNC INDICATOR ── */
+.sync-dot{
+  display:inline-flex;align-items:center;gap:.35rem;
+  font-size:.62rem;font-weight:600;padding:.28rem .65rem;
+  border-radius:99px;border:1px solid var(--bdr);
+  transition:all .4s;white-space:nowrap;
+}
+.sync-dot::before{
+  content:'';width:7px;height:7px;border-radius:50%;flex-shrink:0;
+  transition:background .4s;
+}
+.sync-dot.idle  { color:#666; background:#f5f6f9; border-color:#e0e0e8; }
+.sync-dot.idle::before  { background:#bbb; }
+.sync-dot.saving{ color:#b07800; background:#fffae6; border-color:#f0d080; }
+.sync-dot.saving::before{ background:#f0a000; animation:pulse .7s infinite alternate; }
+.sync-dot.ok    { color:#1a7a3c; background:#edfaf3; border-color:#8fd4a8; }
+.sync-dot.ok::before    { background:#22bb66; }
+.sync-dot.err   { color:#c0392b; background:#fff0f0; border-color:#f5b0b0; }
+.sync-dot.err::before   { background:#e74c3c; }
+@keyframes pulse{ from{opacity:.4} to{opacity:1} }
 </style>
 </head>
 <body class="modo-cot">
@@ -307,7 +327,7 @@ td.num input,td.num{font-family:var(--mono);font-size:.74rem}
 <!-- TABS MODO -->
 <!-- BACKUP BANNER -->
 <div class="backup-banner" id="backupBanner">
-  <p>⚠️ <strong>Tus datos se guardan en el navegador.</strong> Si limpias los datos de navegación los perderás. Exporta una copia de seguridad regularmente.</p>
+  <p>☁ <strong>Tus datos se sincronizan automáticamente con Supabase.</strong> También puedes exportar una copia local de respaldo.</p>
   <div class="backup-banner-btns">
     <button class="btn-export" onclick="exportarDatos()">⬇ Exportar datos</button>
     <label class="btn-import-label">
@@ -350,6 +370,7 @@ td.num input,td.num{font-family:var(--mono);font-size:.74rem}
   <button class="btn btn-green" onclick="guardarDoc()">💾 Guardar</button>
   <button class="btn btn-blue" onclick="abrirModal()">👥 Clientes y Rutas</button>
   <button class="btn btn-blue" onclick="imprimirDoc()">🖨 Imprimir PDF</button>
+  <span class="sync-dot idle" id="syncDot" title="Estado de sincronización con Supabase">☁ Conectando…</span>
 </div>
 
 <!-- DOCUMENTO -->
@@ -668,8 +689,128 @@ let rutaTarget=null;
 let docActualId=null;
 let histFiltro='todos';
 
-function load(k,def){try{const v=localStorage.getItem(k);return v!==null?JSON.parse(v):def}catch{return def}}
-function save(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch{}}
+/* ══ SUPABASE CONFIG ════════════════════════════════════════════════════ */
+var SB_URL = 'https://yethnzmpiouffmeaqkhy.supabase.co';
+var SB_KEY = 'sb_publishable_tXCnGYE_OjoH0yrFVM-vpA_rqBPXPaU';
+
+function sbHeaders() {
+  return {
+    'Content-Type': 'application/json',
+    'apikey': SB_KEY,
+    'Authorization': 'Bearer ' + SB_KEY,
+    'Prefer': 'resolution=merge-duplicates'
+  };
+}
+
+// Leer una clave de Supabase
+function sbGet(clave) {
+  return fetch(SB_URL + '/rest/v1/hauler_store?clave=eq.' + encodeURIComponent(clave) + '&select=valor&limit=1', {
+    headers: { 'apikey': SB_KEY, 'Authorization': 'Bearer ' + SB_KEY }
+  })
+  .then(function(r){ return r.json(); })
+  .then(function(rows){ return (rows && rows.length) ? rows[0].valor : null; });
+}
+
+// Escribir una clave en Supabase (upsert)
+var _sbSaveTimer = {};
+function sbSet(clave, valor) {
+  // Debounce 800ms para no sobrecargar con escrituras rápidas
+  clearTimeout(_sbSaveTimer[clave]);
+  _sbSaveTimer[clave] = setTimeout(function() {
+    setSyncStatus('saving');
+    fetch(SB_URL + '/rest/v1/hauler_store', {
+      method: 'POST',
+      headers: sbHeaders(),
+      body: JSON.stringify({ clave: clave, valor: valor })
+    })
+    .then(function(r){
+      if (r.ok || r.status === 201 || r.status === 200) {
+        setSyncStatus('ok');
+      } else {
+        console.warn('Supabase upsert status:', r.status);
+        setSyncStatus('err');
+      }
+    })
+    .catch(function(e){
+      console.error('Supabase write error:', e);
+      setSyncStatus('err');
+    });
+  }, 800);
+}
+
+// Leer todas las claves de Supabase de una vez
+function sbGetAll() {
+  return fetch(SB_URL + '/rest/v1/hauler_store?select=clave,valor', {
+    headers: { 'apikey': SB_KEY, 'Authorization': 'Bearer ' + SB_KEY }
+  })
+  .then(function(r){ return r.json(); })
+  .catch(function(){ return []; });
+}
+
+function setSyncStatus(s) {
+  var el = document.getElementById('syncDot');
+  if (!el) return;
+  el.className = 'sync-dot ' + s;
+  var labels = { idle:'☁ Sin cambios', saving:'☁ Guardando…', ok:'☁ Sincronizado', err:'☁ Error de red' };
+  el.textContent = labels[s] || s;
+}
+
+/* ══ CACHE LOCAL (localStorage) + SUPABASE ══════════════════════════════ */
+function load(k, def) {
+  try {
+    var v = localStorage.getItem(k);
+    return v !== null ? JSON.parse(v) : def;
+  } catch(e) { return def; }
+}
+
+function save(k, v) {
+  // 1. Guardar en localStorage de inmediato (UX instantáneo)
+  try { localStorage.setItem(k, JSON.stringify(v)); } catch(e) {}
+  // 2. Sincronizar con Supabase en background
+  sbSet(k, v);
+}
+
+/* ══ SINCRONIZACIÓN INICIAL DESDE SUPABASE ══════════════════════════════ */
+function sincronizarDesdeSupabase() {
+  setSyncStatus('saving');
+  sbGetAll().then(function(rows) {
+    if (!rows || !Array.isArray(rows) || rows.length === 0) {
+      setSyncStatus('idle');
+      return;
+    }
+    var hubocambios = false;
+    rows.forEach(function(row) {
+      if (row.clave && row.valor !== undefined && row.valor !== null) {
+        var local = load(row.clave, null);
+        // Supabase gana si los datos son diferentes
+        var remoto = JSON.stringify(row.valor);
+        var localStr = JSON.stringify(local);
+        if (remoto !== localStr) {
+          try { localStorage.setItem(row.clave, JSON.stringify(row.valor)); } catch(e) {}
+          hubocambios = true;
+        }
+      }
+    });
+    setSyncStatus('ok');
+    if (hubocambios) {
+      // Recargar datos en memoria y re-renderizar
+      clientes = load('hClientes', []);
+      rutas    = load('hRutas',    []);
+      monedaActual = load('hMoneda', 'CLP');
+      modoActual   = load('hModo',   'cot');
+      renderSelector();
+      aplicarModo(modoActual, false);
+      var hist = load('hDocs', []);
+      if (hist.length) {
+        cargarDoc(hist[hist.length - 1]);
+        toast('☁ Datos sincronizados desde Supabase');
+      }
+    }
+  }).catch(function(e) {
+    console.warn('No se pudo conectar con Supabase:', e);
+    setSyncStatus('err');
+  });
+}
 
 function getCur(){return CURRENCIES.find(c=>c.code===monedaActual)||CURRENCIES[0]}
 function fmt(n){
@@ -691,9 +832,13 @@ function fmt(n){
   renderSelector();
   aplicarModo(modoActual,false);
 
-  const hist=load('hDocs',[]);
-  if(hist.length>0){cargarDoc(hist[hist.length-1]);toast('✓ Último documento cargado')}
+  // Cargar último doc del cache local primero (rápido)
+  var hist=load('hDocs',[]);
+  if(hist.length>0){cargarDoc(hist[hist.length-1]);}
   else agregarFila();
+
+  // Luego sincronizar con Supabase en background
+  setTimeout(sincronizarDesdeSupabase, 300);
 })();
 
 function iso(d){return d.toISOString().slice(0,10)}
