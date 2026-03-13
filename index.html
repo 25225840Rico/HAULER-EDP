@@ -372,6 +372,7 @@ td.num input,td.num{font-family:var(--mono);font-size:.74rem}
         <div class="field f-full"><label>Cliente guardado</label><select id="clienteSelector" onchange="cargarCliente()"><option value="">— Seleccionar —</option></select></div>
         <div class="field f-full"><label>Razón social</label><input type="text" id="cliNombre" placeholder="Empresa SA"></div>
         <div class="field"><label>RUT</label><input type="text" id="cliRut" placeholder="12.345.678-9"></div>
+        <div class="field"><label>Giro / Actividad comercial</label><input type="text" id="cliGiro" placeholder="Ej: Minería, Construcción..."></div>
         <div class="field"><label>Dirección</label><input type="text" id="cliDir" placeholder="Av. Ejemplo 1234"></div>
         <div class="field"><label>Ciudad</label><input type="text" id="cliCiudad" placeholder="Santiago"></div>
         <div class="field"><label>Email</label><input type="text" id="cliEmail" placeholder="contacto@empresa.cl"></div>
@@ -858,7 +859,7 @@ function capturarEstado(){
     modo:modoActual,
     numDoc:gv('numDoc'),fechaEmision:gv('fechaEmision'),fechaVence:gv('fechaVence'),
     // cliente
-    cliNombre:gv('cliNombre'),cliRut:gv('cliRut'),cliDir:gv('cliDir'),
+    cliNombre:gv('cliNombre'),cliRut:gv('cliRut'),cliGiro:gv('cliGiro'),cliDir:gv('cliDir'),
     cliCiudad:gv('cliCiudad'),cliEmail:gv('cliEmail'),cliTel:gv('cliTel'),
     cliContrato:gv('cliContrato'),cliOC:gv('cliOC'),cliContacto:gv('cliContacto'),
     // proveedor
@@ -897,7 +898,7 @@ function cargarDoc(d){
   sv('numDoc',d.numDoc||'');sv('fechaEmision',d.fechaEmision||'');sv('fechaVence',d.fechaVence||'');
   if(d.selValidez) sv('selValidez',d.selValidez);
   // cliente
-  sv('cliNombre',d.cliNombre||'');sv('cliRut',d.cliRut||'');sv('cliDir',d.cliDir||'');
+  sv('cliNombre',d.cliNombre||'');sv('cliRut',d.cliRut||'');sv('cliGiro',d.cliGiro||'');sv('cliDir',d.cliDir||'');
   sv('cliCiudad',d.cliCiudad||'');sv('cliEmail',d.cliEmail||'');sv('cliTel',d.cliTel||'');
   sv('cliContrato',d.cliContrato||'');sv('cliOC',d.cliOC||'');sv('cliContacto',d.cliContacto||'');
   // proveedor
@@ -930,7 +931,7 @@ function nuevoDoc(){
   const pre=modoActual==='cot'?'COT-':'EP-';
   sv('numDoc',pre+String(Date.now()).slice(-4));
   sv('fechaEmision',iso(hoy));sv('fechaVence',iso(v30));
-  ['cliNombre','cliRut','cliDir','cliCiudad','cliEmail','cliTel','cliContrato','cliOC','cliContacto',
+  ['cliNombre','cliRut','cliGiro','cliDir','cliCiudad','cliEmail','cliTel','cliContrato','cliOC','cliContacto',
    'condPago','condMonedaOferta','condReajuste','condNotas'].forEach(id=>sv(id,''));
   document.getElementById('chkIva').checked=true;
   quitarLogo();filas=[];extras=[];renderTabla();renderExtras();calcular();
@@ -1128,6 +1129,7 @@ tbody td:first-child{text-align:left;padding-left:2.5mm}
       <div class="info-grid">
         <div class="field f-full"><label>Razón social</label><span>${gv('cliNombre')}</span></div>
         <div class="field"><label>RUT</label><span>${gv('cliRut')}</span></div>
+        ${gv('cliGiro')?`<div class="field"><label>Giro / Actividad</label><span>${gv('cliGiro')}</span></div>`:''}
         <div class="field"><label>Dirección</label><span>${gv('cliDir')}</span></div>
         <div class="field"><label>Ciudad</label><span>${gv('cliCiudad')}</span></div>
         <div class="field"><label>Email</label><span>${gv('cliEmail')}</span></div>
