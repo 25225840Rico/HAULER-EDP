@@ -21,7 +21,8 @@
 }
 html{font-size:15px}
 body{font-family:var(--sans);background:var(--bg);min-height:100vh;color:var(--t1);
-  display:flex;flex-direction:column;align-items:center;padding:1.2rem;-webkit-font-smoothing:antialiased}
+  display:flex;flex-direction:column;align-items:center;padding:1.2rem;-webkit-font-smoothing:antialiased;
+  overflow-x:hidden;max-width:100vw}
 
 /* ── MODO TABS ── */
 .mode-tabs{display:flex;background:#fff;border:1px solid var(--bdr);border-radius:99px;padding:3px;gap:2px;margin-bottom:1.1rem;box-shadow:var(--sh)}
@@ -55,7 +56,7 @@ body{font-family:var(--sans);background:var(--bg);min-height:100vh;color:var(--t
   cursor:pointer;padding:.05rem .15rem;outline:none;max-width:120px}
 
 /* ── DOC ── */
-.doc{width:100%;max-width:1160px;background:var(--card);border-radius:18px;border:1px solid var(--bdr);box-shadow:var(--sh);overflow:hidden}
+.doc{width:100%;max-width:1160px;background:var(--card);border-radius:18px;border:1px solid var(--bdr);box-shadow:var(--sh);overflow:visible;box-sizing:border-box}
 .hdiv{height:1px;background:var(--grad);margin:0 2rem}
 .vdiv{width:1px;background:var(--grad);align-self:stretch}
 
@@ -112,12 +113,22 @@ body.modo-ep  .doc{border-top:3px solid var(--blue)}
 .validez-row select:focus{outline:none;border-color:var(--blue);background:#fff}
 
 /* ── TABLA SERVICIOS ── */
-.table-wrap{padding:1.3rem 2rem 1.1rem}
+.table-wrap{padding:1.3rem 2rem 1.1rem;overflow-x:auto;overflow-y:visible;-webkit-overflow-scrolling:touch;max-width:100%}
 .section-label{font-size:.48rem;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--t3);display:flex;align-items:center;gap:.35rem;margin-bottom:1rem}
 .section-label-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem}
 .section-label-row .section-label{margin-bottom:0}
-table{width:100%;border-collapse:collapse;font-size:.76rem}
-thead th{background:#f5f6f9;font:600 .56rem/1 var(--sans);letter-spacing:.4px;text-transform:uppercase;color:var(--t2);padding:.65rem .5rem;text-align:center;white-space:nowrap;border-bottom:1px solid var(--bdr)}
+table{width:100%;min-width:760px;border-collapse:collapse;font-size:.76rem;table-layout:fixed}
+thead th{background:#f5f6f9;font:600 .56rem/1 var(--sans);letter-spacing:.4px;text-transform:uppercase;color:var(--t2);padding:.65rem .5rem;text-align:center;white-space:nowrap;border-bottom:1px solid var(--bdr);overflow:hidden;text-overflow:ellipsis}
+/* anchos fijos de columnas: vehículo ruta período son más anchas */
+table th:nth-child(1){width:16%}   /* Vehículo */
+table th:nth-child(2){width:9%}    /* Patente */
+table th:nth-child(3){width:16%}   /* Ruta */
+table th:nth-child(4){width:18%}   /* Período */
+table th:nth-child(5){width:7%}    /* Pasaj */
+table th:nth-child(6){width:8%}    /* Viajes */
+table th:nth-child(7){width:11%}   /* Valor unit */
+table th:nth-child(8){width:10%}   /* Total */
+table th:nth-child(9){width:5%}    /* Del */
 thead th:first-child{text-align:left;padding-left:.9rem}
 thead th:last-child{width:2.2rem}
 tbody tr{position:relative;transition:background .12s}
@@ -126,13 +137,13 @@ tbody tr+tr::before{content:'';position:absolute;top:0;left:0;right:0;height:1px
 tbody td{padding:.5rem .4rem;text-align:center;vertical-align:middle}
 tbody td:first-child{text-align:left;padding-left:.9rem}
 tbody td input[type=text],tbody td input[type=number]{
-  width:100%;background:transparent;border:1px solid transparent;font:400 .76rem/1 var(--sans);
-  color:var(--t1);text-align:center;padding:.38rem .3rem;border-radius:7px;transition:all .15s}
+  width:100%;min-width:0;max-width:100%;background:transparent;border:1px solid transparent;font:400 .76rem/1 var(--sans);
+  color:var(--t1);text-align:center;padding:.38rem .3rem;border-radius:7px;transition:all .15s;box-sizing:border-box}
 tbody td:first-child input{text-align:left}
 tbody td input[type=text]:hover,tbody td input[type=number]:hover{background:#f5f6f9}
 tbody td input[type=text]:focus,tbody td input[type=number]:focus{outline:none;background:#fff;border-color:var(--blue)}
-.ruta-cell{display:flex;align-items:center;gap:.2rem}
-.ruta-cell input{flex:1}
+.ruta-cell{display:flex;align-items:center;gap:.2rem;min-width:0;overflow:hidden}
+.ruta-cell input{flex:1;min-width:0}
 .btn-ruta{background:transparent;border:1px solid var(--bdr);border-radius:99px;width:1.6rem;height:1.6rem;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:.8rem;color:var(--t3);flex-shrink:0;transition:all .15s}
 .btn-ruta:hover{background:var(--blue-lt);border-color:var(--blue);color:var(--blue)}
 td.num input,td.num{font-family:var(--mono);font-size:.74rem}
@@ -142,8 +153,8 @@ td.num input,td.num{font-family:var(--mono);font-size:.74rem}
 .empty-row td{padding:2.5rem;text-align:center;color:var(--t3);font-size:.76rem}
 
 /* ── PERÍODO ── */
-.periodo-cell{min-width:165px;padding:.4rem !important}
-.periodo-wrap{background:#f7f8fa;border:1px solid var(--bdr);border-radius:10px;padding:.4rem .5rem;display:flex;flex-direction:column;gap:.3rem;transition:border-color .15s}
+.periodo-cell{width:100%;padding:.4rem !important;overflow:hidden}
+.periodo-wrap{background:#f7f8fa;border:1px solid var(--bdr);border-radius:10px;padding:.4rem .5rem;display:flex;flex-direction:column;gap:.3rem;transition:border-color .15s;min-width:0;width:100%;box-sizing:border-box}
 .periodo-wrap:focus-within{border-color:var(--blue)}
 .tipo-pills{display:flex;gap:2px;background:#eaecf0;border-radius:7px;padding:2px}
 .tipo-pill{flex:1;padding:.2rem 0;border:none;border-radius:5px;cursor:pointer;font:600 .56rem/1 var(--sans);color:var(--t3);background:transparent;transition:all .15s}
@@ -162,7 +173,7 @@ td.num input,td.num{font-family:var(--mono);font-size:.74rem}
 
 /* ── EXTRAS ── */
 .extras-wrap{padding:.8rem 2rem 1.2rem}
-.extras-table{width:100%;border-collapse:collapse;font-size:.76rem}
+.extras-table{width:100%;min-width:580px;border-collapse:collapse;font-size:.76rem}
 .extras-table thead th{background:#fdf8f0;font:600 .56rem/1 var(--sans);letter-spacing:.4px;text-transform:uppercase;color:#966320;padding:.6rem .5rem;text-align:center;white-space:nowrap;border-bottom:1px solid #f0e4cc}
 .extras-table thead th:first-child{text-align:left;padding-left:.9rem}
 .extras-table thead th:last-child{width:2.2rem}
@@ -689,125 +700,130 @@ let rutaTarget=null;
 let docActualId=null;
 let histFiltro='todos';
 
-/* ══ SUPABASE CONFIG ════════════════════════════════════════════════════ */
+/* ══ SUPABASE ═══════════════════════════════════════════════════════════ */
 var SB_URL = 'https://yethnzmpiouffmeaqkhy.supabase.co';
 var SB_KEY = 'sb_publishable_tXCnGYE_OjoH0yrFVM-vpA_rqBPXPaU';
+var SB_H   = { 'Content-Type':'application/json', 'apikey':SB_KEY,
+               'Authorization':'Bearer '+SB_KEY, 'Prefer':'resolution=merge-duplicates' };
 
-function sbHeaders() {
-  return {
-    'Content-Type': 'application/json',
-    'apikey': SB_KEY,
-    'Authorization': 'Bearer ' + SB_KEY,
-    'Prefer': 'resolution=merge-duplicates'
-  };
-}
-
-// Leer una clave de Supabase
 function sbGet(clave) {
-  return fetch(SB_URL + '/rest/v1/hauler_store?clave=eq.' + encodeURIComponent(clave) + '&select=valor&limit=1', {
-    headers: { 'apikey': SB_KEY, 'Authorization': 'Bearer ' + SB_KEY }
-  })
-  .then(function(r){ return r.json(); })
-  .then(function(rows){ return (rows && rows.length) ? rows[0].valor : null; });
+  return fetch(SB_URL+'/rest/v1/hauler_store?clave=eq.'+encodeURIComponent(clave)+'&select=valor&limit=1',
+    { headers:{ 'apikey':SB_KEY, 'Authorization':'Bearer '+SB_KEY } })
+    .then(function(r){ return r.ok ? r.json() : []; })
+    .then(function(rows){ return (rows && rows.length) ? rows[0].valor : null; })
+    .catch(function(){ return null; });
 }
 
-// Escribir una clave en Supabase (upsert)
-var _sbSaveTimer = {};
+var _sbT = {};
 function sbSet(clave, valor) {
-  // Debounce 800ms para no sobrecargar con escrituras rápidas
-  clearTimeout(_sbSaveTimer[clave]);
-  _sbSaveTimer[clave] = setTimeout(function() {
+  clearTimeout(_sbT[clave]);
+  _sbT[clave] = setTimeout(function() {
     setSyncStatus('saving');
-    fetch(SB_URL + '/rest/v1/hauler_store', {
-      method: 'POST',
-      headers: sbHeaders(),
-      body: JSON.stringify({ clave: clave, valor: valor })
+    fetch(SB_URL+'/rest/v1/hauler_store', {
+      method:'POST', headers:SB_H,
+      body:JSON.stringify({ clave:clave, valor:valor })
     })
     .then(function(r){
-      if (r.ok || r.status === 201 || r.status === 200) {
-        setSyncStatus('ok');
-      } else {
-        console.warn('Supabase upsert status:', r.status);
-        setSyncStatus('err');
-      }
+      setSyncStatus(r.ok||r.status===201||r.status===200 ? 'ok' : 'err');
     })
-    .catch(function(e){
-      console.error('Supabase write error:', e);
-      setSyncStatus('err');
-    });
-  }, 800);
-}
-
-// Leer todas las claves de Supabase de una vez
-function sbGetAll() {
-  return fetch(SB_URL + '/rest/v1/hauler_store?select=clave,valor', {
-    headers: { 'apikey': SB_KEY, 'Authorization': 'Bearer ' + SB_KEY }
-  })
-  .then(function(r){ return r.json(); })
-  .catch(function(){ return []; });
+    .catch(function(){ setSyncStatus('err'); });
+  }, 600);
 }
 
 function setSyncStatus(s) {
-  var el = document.getElementById('syncDot');
-  if (!el) return;
-  el.className = 'sync-dot ' + s;
-  var labels = { idle:'☁ Sin cambios', saving:'☁ Guardando…', ok:'☁ Sincronizado', err:'☁ Error de red' };
-  el.textContent = labels[s] || s;
+  var el = document.getElementById('syncDot'); if(!el) return;
+  el.className = 'sync-dot '+s;
+  el.textContent = {idle:'☁ Sin cambios',saving:'☁ Guardando…',ok:'☁ Sincronizado',err:'☁ Error de red'}[s]||s;
 }
 
-/* ══ CACHE LOCAL (localStorage) + SUPABASE ══════════════════════════════ */
+/* ══ PERSISTENCIA: localStorage + Supabase con timestamps ═══════════════
+   Regla: el dato con timestamp más reciente gana.
+   - save(k,v)  → escribe en local Y en Supabase (con timestamp)
+   - load(k,d)  → lee desde local
+   - sync()     → al iniciar, compara timestamps y usa el más reciente
+   Claves con timestamp: hClientes_ts, hRutas_ts
+   hDocs se guarda SOLO local (no viaja a Supabase, es historial de sesión)
+═══════════════════════════════════════════════════════════════════════ */
+
 function load(k, def) {
-  try {
-    var v = localStorage.getItem(k);
-    return v !== null ? JSON.parse(v) : def;
-  } catch(e) { return def; }
+  try { var v=localStorage.getItem(k); return v!==null ? JSON.parse(v) : def; }
+  catch(e){ return def; }
 }
 
 function save(k, v) {
-  // 1. Siempre guardar en localStorage (instantáneo)
-  try { localStorage.setItem(k, JSON.stringify(v)); } catch(e) {}
-  // 2. Solo sincronizar clientes y rutas con Supabase
-  if (k === 'hClientes' || k === 'hRutas') {
-    sbSet(k, v);
+  // 1. localStorage inmediato
+  try { localStorage.setItem(k, JSON.stringify(v)); } catch(e){}
+  // 2. Supabase solo para clientes y rutas (con timestamp)
+  if (k==='hClientes' || k==='hRutas') {
+    var ts = Date.now();
+    try { localStorage.setItem(k+'_ts', ts); } catch(e){}
+    // Guardar el objeto junto con su timestamp para comparar en el otro dispositivo
+    sbSet(k, { data: v, ts: ts });
   }
 }
 
-/* ══ SINCRONIZACIÓN INICIAL DESDE SUPABASE ══════════════════════════════ */
+/* ══ SINCRONIZACIÓN AL INICIO ═══════════════════════════════════════════
+   Lógica correcta:
+   1. Supabase retorna null  → local gana siempre (nunca sobreescribir)
+   2. Supabase retorna []    → solo usar si local también está vacío
+   3. Supabase tiene datos   → comparar timestamps; el más reciente gana
+═══════════════════════════════════════════════════════════════════════ */
 function sincronizarDesdeSupabase() {
   setSyncStatus('saving');
-  // Solo pedimos clientes y rutas
-  Promise.all([
-    sbGet('hClientes'),
-    sbGet('hRutas')
-  ]).then(function(resultados) {
-    var remotoClientes = resultados[0];
-    var remotoRutas    = resultados[1];
-    var huboCambios = false;
+  Promise.all([ sbGet('hClientes'), sbGet('hRutas') ])
+  .then(function(res) {
+    var sbCli = res[0];  // puede ser null | {data:[...], ts:N} | [{...}] (legacy)
+    var sbRut = res[1];
+    var cambios = false;
 
-    if (remotoClientes !== null) {
-      var localStr = JSON.stringify(load('hClientes', []));
-      if (JSON.stringify(remotoClientes) !== localStr) {
-        try { localStorage.setItem('hClientes', JSON.stringify(remotoClientes)); } catch(e) {}
-        clientes = remotoClientes;
-        huboCambios = true;
+    function merge(sbRaw, localKey, memVar) {
+      if (sbRaw === null) return memVar; // Supabase sin dato → no tocar
+
+      // Soporte legacy: si es array directo (antes del timestamp)
+      var sbData = (sbRaw && sbRaw.data !== undefined) ? sbRaw.data : sbRaw;
+      var sbTs   = (sbRaw && sbRaw.ts)  ? sbRaw.ts   : 0;
+
+      var localData = load(localKey, null);
+      var localTs   = parseInt(load(localKey+'_ts', '0')) || 0;
+
+      // Si local no tiene dato, usar Supabase (siempre que no sea vacío)
+      if (localData === null) {
+        if (Array.isArray(sbData) && sbData.length > 0) {
+          try { localStorage.setItem(localKey, JSON.stringify(sbData)); } catch(e){}
+          try { localStorage.setItem(localKey+'_ts', sbTs); } catch(e){}
+          cambios = true;
+          return sbData;
+        }
+        return memVar;
       }
-    }
-    if (remotoRutas !== null) {
-      var localRStr = JSON.stringify(load('hRutas', []));
-      if (JSON.stringify(remotoRutas) !== localRStr) {
-        try { localStorage.setItem('hRutas', JSON.stringify(remotoRutas)); } catch(e) {}
-        rutas = remotoRutas;
-        huboCambios = true;
+
+      // Ambos tienen dato → el timestamp más reciente gana
+      // Si los datos son iguales → no hacer nada
+      if (JSON.stringify(sbData) === JSON.stringify(localData)) return localData;
+
+      if (sbTs > localTs && Array.isArray(sbData) && sbData.length > 0) {
+        // Supabase es más reciente
+        try { localStorage.setItem(localKey, JSON.stringify(sbData)); } catch(e){}
+        try { localStorage.setItem(localKey+'_ts', sbTs); } catch(e){}
+        cambios = true;
+        return sbData;
       }
+      // Local es más reciente o igual → subir local a Supabase para sincronizar
+      if (localTs >= sbTs) {
+        sbSet(localKey, { data: localData, ts: localTs });
+      }
+      return localData;
     }
+
+    clientes = merge(sbCli, 'hClientes', clientes);
+    rutas    = merge(sbRut, 'hRutas',    rutas);
 
     setSyncStatus('ok');
-    if (huboCambios) {
-      renderSelector();
-      toast('☁ Clientes y rutas sincronizados');
-    }
-  }).catch(function(e) {
-    console.warn('No se pudo conectar con Supabase:', e);
+    renderSelector();
+    if (cambios) toast('☁ Datos sincronizados desde Supabase');
+  })
+  .catch(function(e) {
+    console.warn('Supabase sync error:', e);
     setSyncStatus('err');
   });
 }
@@ -832,11 +848,11 @@ function fmt(n){
   renderSelector();
   aplicarModo(modoActual,false);
 
-  // Siempre iniciar con documento en blanco
+  // Iniciar con documento en blanco
   agregarFila();
 
-  // Sincronizar clientes y rutas desde Supabase en background
-  setTimeout(sincronizarDesdeSupabase, 300);
+  // Sincronizar clientes y rutas (y historial guardado) desde Supabase
+  setTimeout(sincronizarDesdeSupabase, 400);
 })();
 
 function iso(d){return d.toISOString().slice(0,10)}
@@ -963,9 +979,14 @@ function cambiarTipo(id,tipo){
 function setP(id,k,v){const f=filas.find(f=>f.id===id);if(f)f[k]=v;actualizarCeldaPeriodo(id);calcular()}
 function usarDias(id){
   const f=filas.find(f=>f.id===id);if(!f)return;
-  const d=calcDias(f);f.viajes=d;
+  const d=calcDias(f);
+  f.viajes=d;
+  // Update input: find the viajes input (data-field="viajes") in this row
   const row=document.querySelector(`tr[data-id="${id}"]`);
-  if(row){const inp=row.cells[5].querySelector('input');if(inp)inp.value=d}
+  if(row){
+    const inp=row.querySelector('input[data-field="viajes"]');
+    if(inp) inp.value=d;
+  }
   calcular();toast(`📅 ${d} días → Viajes/Días`);
 }
 function actualizarCeldaPeriodo(id){
@@ -976,7 +997,7 @@ function actualizarCeldaPeriodo(id){
 
 /* ══ FILAS ══════════════════════════════════════════════════════════════ */
 function agregarFila(data={}){
-  filas.push({id:Date.now()+Math.random(),periodoTipo:'dia',periodoDesde:'',periodoHasta:'',periodoMes:'',periodoAnio:'',vehiculo:'',patente:'',ruta:'',pasajeros:'',viajes:'',valorUnit:'',...data});
+  filas.push({id:Math.floor(Date.now())+filas.length,periodoTipo:'dia',periodoDesde:'',periodoHasta:'',periodoMes:'',periodoAnio:'',vehiculo:'',patente:'',ruta:'',pasajeros:'',viajes:'',valorUnit:'',...data});
   renderTabla();
 }
 function eliminarFila(id){filas=filas.filter(f=>f.id!==id);renderTabla();calcular()}
@@ -1020,19 +1041,23 @@ function renderTabla(){
       <td><div class="ruta-cell"><input type="text" value="${x(f.ruta)}" placeholder="Ruta..." oninput="set(${f.id},'ruta',this.value)"><button class="btn-ruta" onclick="selRuta(${f.id})" title="Elegir ruta">📍</button></div></td>
       <td class="periodo-cell">${periodoHTML(f)}</td>
       <td class="num"><input type="number" min="0" value="${x(f.pasajeros)}" placeholder="0" style="max-width:55px" oninput="set(${f.id},'pasajeros',this.value)"></td>
-      <td class="num"><input type="number" min="0" value="${x(f.viajes)}" placeholder="0" style="max-width:60px" oninput="set(${f.id},'viajes',this.value);calcular()"></td>
-      <td class="num"><input type="number" min="0" value="${x(f.valorUnit)}" placeholder="0" style="max-width:95px" oninput="set(${f.id},'valorUnit',this.value);calcular()"></td>
-      <td class="total-cell">${lineaServ(f)}</td>
+      <td class="num"><input type="number" min="0" id="inp-vi-${f.id}" value="${x(f.viajes)}" placeholder="0" style="max-width:60px" oninput="set(${f.id},'viajes',+this.value||0);calcular()"></td>
+      <td class="num"><input type="number" min="0" id="inp-vu-${f.id}" value="${x(f.valorUnit)}" placeholder="0" style="max-width:95px" oninput="set(${f.id},'valorUnit',+this.value||0);calcular()"></td>
+      <td class="num total-cell" id="tot-${f.id}">${lineaServ(f)}</td>
       <td><button class="btn-del" onclick="eliminarFila(${f.id})">✕</button></td>
     </tr>`).join('');
 }
 function x(v){return v==null?'':String(v).replace(/"/g,'&quot;')}
-function set(id,k,v){const f=filas.find(f=>f.id===id);if(f)f[k]=v}
+function set(id,k,v){
+  const f=filas.find(f=>f.id===id);
+  if(!f) return;
+  f[k] = (k==='viajes'||k==='valorUnit'||k==='pasajeros') ? (v===''||v===undefined ? '' : +v||0) : v;
+}
 function lineaServ(f){const vi=parseFloat(f.viajes)||0,vu=parseFloat(f.valorUnit)||0;return vi&&vu?getCur().sym+' '+fmt(vi*vu):'—'}
 
 /* ══ EXTRAS ═════════════════════════════════════════════════════════════ */
 function agregarExtra(data={}){
-  extras.push({id:Date.now()+Math.random(),desc:'',tipo:'unit',cantidad:1,valorUnit:'',...data});
+  extras.push({id:Math.floor(Date.now()*1000)+extras.length,desc:'',tipo:'unit',cantidad:1,valorUnit:'',...data});
   renderExtras();
 }
 function eliminarExtra(id){extras=extras.filter(e=>e.id!==id);renderExtras();calcular()}
@@ -1050,7 +1075,7 @@ function renderExtras(){
       </td>
       <td class="num"><input type="number" min="0" value="${x(e.cantidad)}" placeholder="${e.tipo==='dia'?'Días':'Cant.'}" style="max-width:65px" oninput="setE(${e.id},'cantidad',this.value);calcular()"></td>
       <td class="num"><input type="number" min="0" value="${x(e.valorUnit)}" placeholder="0" style="max-width:100px" oninput="setE(${e.id},'valorUnit',this.value);calcular()"></td>
-      <td class="total-cell">${lineaExtra(e)}</td>
+      <td class="num total-cell" id="tot-e-${e.id}">${lineaExtra(e)}</td>
       <td><button class="btn-del" onclick="eliminarExtra(${e.id})">✕</button></td>
     </tr>`).join('');
   calcular();
@@ -1060,52 +1085,52 @@ function lineaExtra(e){const q=parseFloat(e.cantidad)||0,vu=parseFloat(e.valorUn
 
 /* ══ CALCULAR ═══════════════════════════════════════════════════════════ */
 function calcular(){
-  filas.forEach(f=>{
-    const row=document.querySelector(`tr[data-id="${f.id}"]`);if(!row)return;
-    f.viajes=parseFloat(row.cells[5].querySelector('input')?.value)||0;
-    f.valorUnit=parseFloat(row.cells[6].querySelector('input')?.value)||0;
-    row.cells[7].textContent=lineaServ(f);
-  });
-  extras.forEach(e=>{
-    const row=document.querySelector(`tr[data-eid="${e.id}"]`);if(!row)return;
-    e.cantidad=parseFloat(row.cells[2].querySelector('input')?.value)||0;
-    e.valorUnit=parseFloat(row.cells[3].querySelector('input')?.value)||0;
-    row.cells[4].textContent=lineaExtra(e);
+  // Fuente de verdad: arrays filas[] y extras[].
+  // Actualiza celdas de total por ID único (no por índice de celda).
+  const sym = getCur().sym;
+
+  filas.forEach(function(f){
+    // Leer valores frescos directamente del input en el DOM
+    const inpVi = document.getElementById('inp-vi-'+f.id);
+    const inpVu = document.getElementById('inp-vu-'+f.id);
+    if(inpVi) f.viajes    = +inpVi.value || 0;
+    if(inpVu) f.valorUnit = +inpVu.value || 0;
+
+    const vi = +f.viajes    || 0;
+    const vu = +f.valorUnit || 0;
+    const cel = document.getElementById('tot-'+f.id);
+    if(cel) cel.textContent = (vi && vu) ? sym+' '+fmt(vi*vu) : '—';
   });
 
-  const brutoServ=filas.reduce((s,f)=>s+(f.viajes*f.valorUnit||0),0);
-  const brutoExtra=extras.reduce((s,e)=>s+(e.cantidad*e.valorUnit||0),0);
-  const bruto=brutoServ+brutoExtra;
-  const conIva=document.getElementById('chkIva').checked;
-  const iva=conIva?Math.round(bruto*0.19):0;
-  const sym=getCur().sym;
+  extras.forEach(function(e){
+    const q  = +e.cantidad  || 0;
+    const vu = +e.valorUnit || 0;
+    const cel = document.getElementById('tot-e-'+e.id);
+    if(cel) cel.textContent = (q && vu) ? sym+' '+fmt(q*vu) : '—';
+  });
 
-  document.getElementById('tSubServ').textContent=sym+' '+fmt(brutoServ);
-  document.getElementById('tSubExtras').textContent=sym+' '+fmt(brutoExtra);
-  document.getElementById('tSubtotal').textContent=sym+' '+fmt(bruto);
-  document.getElementById('tIva').textContent=sym+' '+fmt(iva);
-  document.getElementById('tTotal').textContent=sym+' '+fmt(bruto+iva);
-  document.getElementById('ivaRow').style.opacity=conIva?'1':'0.38';
-  document.getElementById('rowExtras').style.display=brutoExtra>0?'flex':'none';
+  const brutoServ  = filas.reduce(function(s,f){
+    return s + ((+f.viajes||0) * (+f.valorUnit||0));
+  }, 0);
+  const brutoExtra = extras.reduce(function(s,e){
+    return s + ((+e.cantidad||0) * (+e.valorUnit||0));
+  }, 0);
+  const bruto  = brutoServ + brutoExtra;
+  const conIva = document.getElementById('chkIva').checked;
+  const iva    = conIva ? Math.round(bruto * 0.19) : 0;
+
+  document.getElementById('tSubServ').textContent   = sym+' '+fmt(brutoServ);
+  document.getElementById('tSubExtras').textContent = sym+' '+fmt(brutoExtra);
+  document.getElementById('tSubtotal').textContent  = sym+' '+fmt(bruto);
+  document.getElementById('tIva').textContent       = sym+' '+fmt(iva);
+  document.getElementById('tTotal').textContent     = sym+' '+fmt(bruto+iva);
+  document.getElementById('ivaRow').style.opacity   = conIva ? '1' : '0.38';
+  document.getElementById('rowExtras').style.display = brutoExtra>0 ? 'flex' : 'none';
 }
 
 /* ══ CAPTURAR / GUARDAR / CARGAR ════════════════════════════════════════ */
 function capturarEstado(){
-  filas.forEach(f=>{
-    const row=document.querySelector(`tr[data-id="${f.id}"]`);if(!row)return;
-    f.vehiculo=row.cells[0].querySelector('input')?.value||'';
-    f.patente=row.cells[1].querySelector('input')?.value||'';
-    f.ruta=row.cells[2].querySelector('input')?.value||'';
-    f.pasajeros=row.cells[4].querySelector('input')?.value||'';
-    f.viajes=parseFloat(row.cells[5].querySelector('input')?.value)||0;
-    f.valorUnit=parseFloat(row.cells[6].querySelector('input')?.value)||0;
-  });
-  extras.forEach(e=>{
-    const row=document.querySelector(`tr[data-eid="${e.id}"]`);if(!row)return;
-    e.desc=row.cells[0].querySelector('input')?.value||'';
-    e.cantidad=parseFloat(row.cells[2].querySelector('input')?.value)||0;
-    e.valorUnit=parseFloat(row.cells[3].querySelector('input')?.value)||0;
-  });
+  // filas[] y extras[] ya actualizados via set()/setE()/oninput
   return{
     id:docActualId||Date.now(),
     savedAt:new Date().toISOString(),
@@ -1138,7 +1163,12 @@ function guardarDoc(){
   const idx=hist.findIndex(h=>h.id===e.id);
   if(idx>=0) hist[idx]=e; else hist.push(e);
   if(hist.length>100) hist=hist.slice(-100);
-  save('hDocs',hist);toast('💾 Documento guardado');
+  save('hDocs',hist);
+  // También persistir en Supabase con timestamp propio
+  var ts=Date.now();
+  try{localStorage.setItem('hDocs_ts',ts);}catch(e){}
+  sbSet('hDocs',{data:hist,ts:ts});
+  toast('💾 Documento guardado');
 }
 
 function cargarDoc(d){
@@ -1256,7 +1286,18 @@ function renderHistorial(){
   }).join('');
 }
 function seleccionarDoc(id){const d=load('hDocs',[]).find(e=>e.id===id);if(!d)return;cargarDoc(d);cerrarModal('modalHist');toast('📂 Documento cargado: '+d.numDoc)}
-function eliminarDoc(id){if(!confirm('¿Eliminar del historial?'))return;let h=load('hDocs',[]).filter(e=>e.id!==id);save('hDocs',h);if(docActualId===id)docActualId=null;renderHistorial();toast('🗑 Documento eliminado')}
+function eliminarDoc(id){
+  if(!confirm('¿Eliminar este documento del historial?'))return;
+  var h=load('hDocs',[]).filter(function(e){return e.id!==id;});
+  save('hDocs',h);
+  // Sincronizar historial en Supabase también
+  var ts=Date.now();
+  try{localStorage.setItem('hDocs_ts',ts);}catch(ex){}
+  sbSet('hDocs',{data:h,ts:ts});
+  if(docActualId===id) docActualId=null;
+  renderHistorial();
+  toast('🗑 Documento eliminado del historial');
+}
 
 /* ══ IMPRIMIR ═══════════════════════════════════════════════════════════ */
 function imprimirDoc(){
@@ -1275,22 +1316,23 @@ function imprimirDoc(){
   function pd(f){const t=f.periodoTipo||'dia';if(t==='dia')return f.periodoDesde||'—';if(t==='rango')return`${f.periodoDesde||'?'} → ${f.periodoHasta||'?'} (${calcDias(f)}d)`;if(t==='mes'&&f.periodoMes){const[y,m]=f.periodoMes.split('-').map(Number);return meses[m-1]+' '+y}if(t==='anio')return f.periodoAnio||'—';return'—'}
 
   const filasHTML=filas.length
-    ?filas.map(f=>`<tr><td style="text-align:left">${f.vehiculo||''}</td><td>${f.patente||''}</td><td>${f.ruta||''}</td><td>${pd(f)}</td><td>${f.pasajeros||''}</td><td style="font-family:monospace">${f.viajes||''}</td><td style="font-family:monospace">${f.valorUnit?fmt(f.valorUnit):''}</td><td style="font-family:monospace">${lineaServ(f)}</td></tr>`).join('')
-    :'<tr><td colspan="8" style="text-align:center;color:#999;padding:.8rem">Sin servicios</td></tr>';
+    ?filas.map(f=>`<tr><td>${f.vehiculo||''}</td><td class="n">${f.patente||''}</td><td>${f.ruta||''}</td><td>${pd(f)}</td><td class="n">${f.pasajeros||''}</td><td class="n">${f.viajes||''}</td><td class="n">${f.valorUnit?fmt(f.valorUnit):''}</td><td>${lineaServ(f)}</td></tr>`).join('')
+    :'<tr><td colspan="8" style="text-align:center;color:#aaa;padding:4mm;font-style:italic">Sin servicios registrados</td></tr>';
 
   const extrasHTML=extras.length?`
     <div class="hdiv"></div>
-    <div class="table-wrap">
-      <div class="section-label" style="color:#966320">Ítems adicionales</div>
-      <table><thead><tr>
-        <th style="text-align:left;padding-left:3mm;background:#fdf8f0;color:#966320">Descripción</th>
-        <th style="background:#fdf8f0;color:#966320">Tipo</th>
-        <th style="background:#fdf8f0;color:#966320">Cant./Días</th>
-        <th style="background:#fdf8f0;color:#966320">Valor unit.</th>
-        <th style="background:#fdf8f0;color:#966320">Total</th>
-      </tr></thead><tbody>
-      ${extras.map(e=>`<tr><td style="text-align:left;padding-left:3mm">${e.desc||''}</td><td>${e.tipo==='dia'?'Por día':'Por unidad'}</td><td style="font-family:monospace">${e.cantidad||''}</td><td style="font-family:monospace">${e.valorUnit?fmt(e.valorUnit):''}</td><td style="font-family:monospace">${lineaExtra(e)}</td></tr>`).join('')}
-      </tbody></table>
+    <div class="tbl-section no-break">
+      <div class="sec-title" style="color:var(--gold)">Ítems Adicionales</div>
+      <table>
+        <thead class="ext-head"><tr>
+          <th style="text-align:left;padding-left:2.5mm">Descripción</th>
+          <th>Tipo</th><th>Cant./Días</th><th>Valor unit.</th>
+          <th style="text-align:right;padding-right:2.5mm">Total</th>
+        </tr></thead>
+        <tbody>
+        ${extras.map(e=>`<tr class="ext-row"><td style="text-align:left;padding-left:2.5mm">${e.desc||''}</td><td>${e.tipo==='dia'?'Por día':'Por unidad'}</td><td class="n">${e.cantidad||''}</td><td class="n">${e.valorUnit?fmt(e.valorUnit):''}</td><td class="n ext-total">${lineaExtra(e)}</td></tr>`).join('')}
+        </tbody>
+      </table>
     </div>`:'';
 
   const logoHTML=tieneLogo?`<img src="${logoSrc}" style="max-height:${logoSize}px;object-fit:contain;max-width:200px">`:`<div style="font-size:22pt;font-weight:700;letter-spacing:-.5px">HAULER</div><div style="font-size:7pt;font-weight:500;letter-spacing:2.5px;text-transform:uppercase;color:#999;margin-top:3px">Transporte de pasajeros</div>`;
@@ -1298,14 +1340,14 @@ function imprimirDoc(){
   // Condiciones cotización
   const condHTML=esCot?`
     <div class="hdiv"></div>
-    <div class="cond-print">
-      <div class="section-label">Condiciones de la oferta</div>
-      <div class="cond-row">
-        <div class="cond-cell"><span class="cl">Forma de pago</span><span class="cv">${gv('condPago')||'—'}</span></div>
-        <div class="cond-cell"><span class="cl">Moneda</span><span class="cv">${gv('condMonedaOferta')||'—'}</span></div>
-        <div class="cond-cell"><span class="cl">Reajuste</span><span class="cv">${gv('condReajuste')||'Sin reajuste'}</span></div>
+    <div class="cond-section">
+      <div class="sec-title">Condiciones de la Oferta</div>
+      <div class="cond-grid">
+        <div class="cond-cell"><span class="cond-lbl">Forma de pago</span><span class="cond-val">${gv('condPago')||'—'}</span></div>
+        <div class="cond-cell"><span class="cond-lbl">Moneda</span><span class="cond-val">${gv('condMonedaOferta')||'—'}</span></div>
+        <div class="cond-cell"><span class="cond-lbl">Reajuste</span><span class="cond-val">${gv('condReajuste')||'Sin reajuste'}</span></div>
       </div>
-      ${gv('condNotas')?`<div class="cond-notas"><strong>Notas:</strong> ${gv('condNotas')}</div>`:''}
+      ${gv('condNotas')?`<div class="cond-notas"><strong>Notas adicionales:</strong> ${gv('condNotas')}</div>`:''}
     </div>`:'';
 
   // ── NOMBRE PROFESIONAL DEL PDF ──────────────────────────────────────────
@@ -1329,246 +1371,286 @@ function imprimirDoc(){
 
   const html=`<!DOCTYPE html><html lang="es"><head>
 <meta charset="UTF-8"><title>${pdfTitle}</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
 :root{
-  --blue:#0055FF;--blue-lt:#e6eeff;
-  --t1:#111115;--t2:#5a5a66;--t3:#9898a6;--bdr:#dde0e8;
-  --grad:linear-gradient(90deg,transparent,#bdd0ff 50%,transparent);
+  --blue:#0055FF;--blue-dk:#003ecc;--blue-lt:#dce8ff;
+  --t1:#0d0d12;--t2:#4a4a58;--t3:#8a8a9a;--bdr:#d8dce8;
+  --gold:#b07800;--gold-lt:#fff8e6;
   --mono:'JetBrains Mono','Courier New',monospace;
+  --sans:'Inter',-apple-system,sans-serif;
 }
 @page{
-  size:letter portrait;
-  margin:8mm 10mm 14mm 10mm;
+  size:Letter portrait;
+  margin:12mm 14mm 16mm 14mm;
 }
-/* Pie de página nativo del navegador mostrará el título (nombre del archivo) */
 @media print{
   html,body{min-height:unset}
+  .no-break{page-break-inside:avoid}
 }
 *{-webkit-print-color-adjust:exact;print-color-adjust:exact}
-html,body{font-family:'Inter',sans-serif;font-size:8.5pt;color:var(--t1);background:#fff}
-/* ── ESTRUCTURA ── */
-.doc{border:1pt solid #c8d8f8;border-top:3pt solid var(--blue);width:100%}
-.hdiv{height:.6pt;background:var(--grad);margin:0 6mm}
-.vdiv{width:.6pt;background:var(--grad);align-self:stretch;flex-shrink:0}
+html,body{font-family:var(--sans);font-size:9pt;color:var(--t1);background:#fff;line-height:1.4}
+
+/* ── WRAPPER ── */
+.doc{width:100%;border:1.2pt solid #b8c8f0;border-radius:3pt}
+
 /* ── HEADER ── */
-.doc-header{
+.hdr{
   display:grid;grid-template-columns:auto 1fr auto;
-  align-items:center;gap:5mm;padding:4mm 6mm;
-  background:linear-gradient(135deg,#fff 55%,#f4f7ff);
+  align-items:center;gap:6mm;padding:5mm 7mm 4mm;
+  border-bottom:1pt solid var(--bdr);
+  background:linear-gradient(135deg,#ffffff 50%,#f2f6ff 100%);
 }
-.logo-col{display:flex;flex-direction:column;justify-content:center}
-.doc-title{text-align:center}
-.doc-title h1{font-size:5.5pt;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:var(--t3);margin-bottom:2px}
-.doc-title h2{font-size:13pt;font-weight:300;letter-spacing:-.2px;line-height:1}
-.doc-title .badge{display:inline-block;margin-top:2px;padding:1.5px 6px;border-radius:99pt;font-size:5.5pt;font-weight:700;background:var(--blue-lt);color:var(--blue)}
-.meta-col{display:flex;flex-direction:column;gap:1.5mm}
-.meta-row{display:flex;align-items:baseline;justify-content:flex-end;gap:3mm}
-.meta-row label{font-size:5pt;font-weight:700;letter-spacing:.8px;text-transform:uppercase;color:var(--t3);white-space:nowrap}
-.meta-row span{font:8pt/1 var(--mono);color:var(--t1)}
-/* ── INFO CLIENTE / PROVEEDOR ── */
-.doc-info{display:grid;grid-template-columns:1fr auto 1fr}
-.info-block{padding:3mm 6mm}
-.block-title{
-  font-size:5pt;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;
-  color:var(--blue);border-bottom:1pt solid var(--bdr);padding-bottom:1.5mm;margin-bottom:2.5mm;
+.hdr-logo{}
+.hdr-center{text-align:center}
+.hdr-eyebrow{font-size:5.5pt;font-weight:600;letter-spacing:2.5px;text-transform:uppercase;color:var(--t3);margin-bottom:1.5mm}
+.hdr-tipo{font-size:16pt;font-weight:300;letter-spacing:-.3px;color:var(--t1)}
+.hdr-badge{
+  display:inline-block;margin-top:1.5mm;padding:1.5pt 7pt;
+  border-radius:99pt;font-size:6pt;font-weight:700;letter-spacing:.5px;
+  background:var(--blue-lt);color:var(--blue);border:1pt solid #b0c8ff;
 }
-/* tabla de campos compacta */
-.fields-table{width:100%;border-collapse:collapse}
-.fields-table tr td{padding:.8mm 0;vertical-align:top;line-height:1.3}
-.fields-table tr td:first-child{
-  font-size:5pt;font-weight:700;text-transform:uppercase;letter-spacing:.6px;
+.hdr-meta{display:flex;flex-direction:column;gap:1.8mm;align-items:flex-end}
+.meta-row{display:flex;align-items:baseline;gap:3mm}
+.meta-lbl{font-size:5pt;font-weight:700;letter-spacing:.8px;text-transform:uppercase;color:var(--t3);white-space:nowrap}
+.meta-val{font:600 9pt/1 var(--mono);color:var(--t1)}
+.meta-num{font-size:11pt;font-weight:700;color:var(--blue)}
+
+/* ── DIVIDERS ── */
+.hdiv{height:.6pt;background:linear-gradient(90deg,transparent,#a0b8e8 40%,#a0b8e8 60%,transparent)}
+
+/* ── SECCIÓN CLIENTE/PROVEEDOR ── */
+.parties{display:grid;grid-template-columns:1fr 1.5pt 1fr}
+.party{padding:4mm 7mm}
+.party-title{
+  font-size:5.5pt;font-weight:700;letter-spacing:1.8px;text-transform:uppercase;
+  color:var(--blue);padding-bottom:1.5mm;margin-bottom:2.5mm;
+  border-bottom:1.2pt solid var(--blue-lt);
+  display:flex;align-items:center;gap:2mm;
+}
+.party-divider{background:linear-gradient(180deg,transparent,#b0c8f0 20%,#b0c8f0 80%,transparent)}
+.ft{width:100%;border-collapse:collapse}
+.ft td{padding:.7mm 0;vertical-align:top;line-height:1.35}
+.ft td:first-child{
+  font-size:5pt;font-weight:700;text-transform:uppercase;letter-spacing:.5px;
   color:var(--t3);white-space:nowrap;padding-right:3mm;width:22mm;
 }
-.fields-table tr td:last-child{font-size:8pt;color:var(--t1)}
-.fields-table tr:not(:last-child) td{border-bottom:.4pt solid #f0f2f8}
-/* ── CONDICIONES COT ── */
-.cond-print{padding:2.5mm 6mm}
-.cond-row{display:flex;gap:0;border:1pt solid var(--bdr);border-radius:2pt;overflow:hidden}
-.cond-cell{flex:1;padding:1.5mm 2.5mm;border-right:1pt solid var(--bdr)}
-.cond-cell:last-child{border-right:none}
-.cond-cell .cl{display:block;font-size:5pt;font-weight:700;text-transform:uppercase;color:var(--t3);letter-spacing:.6px;margin-bottom:.5mm}
-.cond-cell .cv{display:block;font-size:8pt;color:var(--t1)}
-.cond-notas{margin-top:1.5mm;padding:1.5mm 2.5mm;background:#f8f9ff;border:1pt solid var(--bdr);border-radius:2pt;font-size:7.5pt;color:var(--t2);line-height:1.4}
-/* ── TABLA SERVICIOS ── */
-.table-wrap{padding:3mm 6mm 2.5mm}
-.section-label{
-  font-size:5pt;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;
-  color:var(--blue);margin-bottom:2mm;display:flex;align-items:center;gap:1.5mm;
+.ft td:last-child{font-size:8.5pt;color:var(--t1)}
+.ft tr td{border-bottom:.3pt solid #eff1f8}
+.ft tr:last-child td{border-bottom:none}
+.ft .val-strong{font-weight:600;color:var(--t1)}
+
+/* ── CONDICIONES ── */
+.cond-section{padding:3mm 7mm}
+.sec-title{
+  font-size:5.5pt;font-weight:700;letter-spacing:1.8px;text-transform:uppercase;
+  color:var(--blue);margin-bottom:2mm;display:flex;align-items:center;gap:2mm;
 }
-.section-label::after{content:'';flex:1;height:.5pt;background:var(--grad)}
-table{width:100%;border-collapse:collapse;font-size:7.5pt}
+.sec-title::after{content:'';flex:1;height:.5pt;background:linear-gradient(90deg,var(--blue-lt),transparent)}
+.cond-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:0;border:1pt solid var(--bdr);border-radius:2pt;overflow:hidden}
+.cond-cell{padding:2mm 3mm;border-right:1pt solid var(--bdr)}
+.cond-cell:last-child{border-right:none}
+.cond-lbl{font-size:5pt;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--t3);display:block;margin-bottom:.7mm}
+.cond-val{font-size:8.5pt;color:var(--t1)}
+.cond-notas{margin-top:2mm;padding:1.5mm 3mm;background:#f9faff;border:1pt solid var(--bdr);border-radius:2pt;font-size:7.5pt;color:var(--t2);line-height:1.5}
+
+/* ── TABLA SERVICIOS ── */
+.tbl-section{padding:3mm 7mm 2.5mm}
+table{width:100%;border-collapse:collapse}
 thead th{
-  background:#f0f4ff;font:700 5.5pt/1 sans-serif;letter-spacing:.3px;
+  background:#e8eeff;font-size:5.5pt;font-weight:700;letter-spacing:.4px;
   text-transform:uppercase;color:var(--blue);
-  padding:1.5mm 1mm;text-align:center;border-bottom:1pt solid #c8d8f8;
+  padding:2mm 1.5mm;text-align:center;
+  border-top:1pt solid #b0c8ff;border-bottom:1.2pt solid #b0c8ff;
   white-space:nowrap;
 }
-thead th:first-child{text-align:left;padding-left:2mm}
-thead th:last-child{text-align:right;padding-right:2mm}
-tbody tr:nth-child(even) td{background:#fafbff}
-tbody td{padding:1.2mm 1mm;text-align:center;border-bottom:.4pt solid #e8ecf8;vertical-align:middle}
-tbody td:first-child{text-align:left;padding-left:2mm}
-tbody td:last-child{text-align:right;padding-right:2mm;font-family:var(--mono);font-weight:600}
-/* extras table */
-.extras-table thead th{background:#fdf8f0;color:#966320;border-bottom:1pt solid #f0dfc0}
-.extras-table tbody td{border-bottom:.4pt solid #f8f0e0}
-.extras-table tbody tr:nth-child(even) td{background:#fffdf8}
-/* ── FOOTER ── */
-.doc-footer{display:grid;grid-template-columns:1fr auto;gap:5mm;align-items:end;padding:2.5mm 6mm 4mm}
-.glosa{font-size:6.5pt;line-height:1.5;color:var(--t3);padding:2mm 2.5mm;border-left:2pt solid #a0bff0;background:#f8f9ff}
-.glosa strong{color:var(--t2)}
-.totales{border:1pt solid var(--bdr);min-width:56mm;overflow:hidden}
-.t-line{
+thead th:first-child{text-align:left;padding-left:2.5mm}
+thead th:last-child{text-align:right;padding-right:2.5mm}
+tbody tr:nth-child(even) td{background:#f7f9ff}
+tbody td{padding:1.5mm 1.5mm;border-bottom:.4pt solid #e8edf8;font-size:8.5pt;text-align:center;vertical-align:middle}
+tbody td:first-child{text-align:left;padding-left:2.5mm}
+tbody td:last-child{text-align:right;padding-right:2.5mm;font-family:var(--mono);font-weight:600;color:var(--t1)}
+.n{font-family:var(--mono);font-size:8pt}
+/* extras */
+.ext-head th{background:#fdf6e8;color:var(--gold);border-top:1pt solid #f0d8a0;border-bottom:1.2pt solid #f0d8a0}
+.ext-row td{border-bottom:.4pt solid #f5edda}
+.ext-row:nth-child(even) td{background:#fffdf5}
+.ext-total{font-family:var(--mono);font-weight:600;color:var(--gold)!important}
+
+/* ── FOOTER TOTALES + GLOSA ── */
+.footer-grid{display:grid;grid-template-columns:1fr auto;gap:6mm;align-items:end;padding:3mm 7mm 5mm}
+.glosa-box{
+  border-left:2.5pt solid var(--blue);padding:2mm 3mm;
+  background:#f6f9ff;font-size:7pt;line-height:1.6;color:var(--t2);
+}
+.glosa-box strong{color:var(--t1);font-weight:600}
+.totales-box{min-width:62mm;border:1pt solid var(--bdr);overflow:hidden;border-radius:2pt}
+.t-row{
   display:flex;justify-content:space-between;align-items:center;
-  padding:1.5mm 2.5mm;font-size:7.5pt;color:var(--t2);
+  padding:1.8mm 3mm;font-size:8pt;color:var(--t2);
   border-bottom:.4pt solid var(--bdr);
 }
-.t-line:last-child{border-bottom:none}
-.t-line .amt{font:500 7.5pt/1 var(--mono);color:var(--t1)}
-.t-line.extra-line{color:#966320}.t-line.extra-line .amt{color:#966320}
-.t-line.grand{
-  background:var(--blue);color:#fff;padding:2mm 2.5mm;
-  font-size:9pt;font-weight:700;border-bottom:none;
+.t-row:last-child{border-bottom:none}
+.t-row .a{font:500 8pt/1 var(--mono);color:var(--t1)}
+.t-row.ext{color:var(--gold)}.t-row.ext .a{color:var(--gold)}
+.t-row.neto{border-top:1pt solid var(--bdr);font-weight:600;color:var(--t1)}.t-row.neto .a{font-weight:700}
+.t-row.grand{
+  background:var(--blue);color:#fff;padding:2.5mm 3mm;
+  font-size:10pt;font-weight:700;
 }
-.t-line.grand .amt{font-size:10pt;font-weight:700;color:#fff}
-/* ── FIRMA / PIE ── */
-.firma-row{display:grid;grid-template-columns:1fr 1fr;gap:8mm;padding:3mm 6mm 4mm}
-.firma-box{border-top:1pt solid var(--bdr);padding-top:1.5mm}
-.firma-box .fl{font-size:5pt;font-weight:700;text-transform:uppercase;letter-spacing:.7px;color:var(--t3)}
-.firma-box .fn{font-size:7.5pt;color:var(--t2);margin-top:.5mm}
+.t-row.grand .a{font-size:11pt;font-weight:700;color:#fff;font-family:var(--mono)}
+
+/* ── FIRMAS ── */
+.firma-section{padding:3mm 7mm 4mm;display:grid;grid-template-columns:1fr 1fr;gap:12mm}
+.firma-box{border-top:1pt solid var(--bdr);padding-top:1.5mm;margin-top:6mm}
+.firma-lbl{font-size:5pt;font-weight:700;text-transform:uppercase;letter-spacing:.7px;color:var(--t3)}
+.firma-nom{font-size:8pt;color:var(--t2);margin-top:.5mm}
+
+/* ── PIE DOCUMENTO ── */
+.doc-pie{
+  display:flex;align-items:center;justify-content:space-between;gap:4mm;
+  padding:2mm 7mm;
+  background:linear-gradient(135deg,#edf2ff,#f2f6ff);
+  border-top:1pt solid var(--blue-lt);
+}
+.pie-brand{font-size:6pt;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:var(--blue)}
+.pie-file{font-size:6pt;font-family:var(--mono);color:var(--t2)}
+.pie-date{font-size:6pt;color:var(--t3)}
 </style>
-</head><body>
+</head>
+<body>
 <div class="doc">
 
-  <!-- HEADER -->
-  <div class="doc-header">
-    <div class="logo-col">${logoHTML}</div>
-    <div class="doc-title">
-      <h1>${esCot?'Documento de oferta':'Documento de cobro'}</h1>
-      <h2>${esCot?'Cotización':'Estado de Pago'}</h2>
-      <span class="badge">${esCot?'📋 Propuesta Comercial':'✅ Cobro de Servicios'}</span>
-    </div>
-    <div class="meta-col">
-      <div class="meta-row"><label>${esCot?'N° Cot.':'N° Doc.'}</label><span>${gv('numDoc')}</span></div>
-      <div class="meta-row"><label>Emisión</label><span>${gv('fechaEmision')}</span></div>
-      <div class="meta-row"><label>${esCot?'Válida hasta':'Vencimiento'}</label><span>${gv('fechaVence')}</span></div>
-    </div>
+<!-- HEADER -->
+<div class="hdr">
+  <div class="hdr-logo">${logoHTML}</div>
+  <div class="hdr-center">
+    <div class="hdr-eyebrow">${esCot?'Documento de Oferta · Propuesta Comercial':'Documento de Cobro · Servicios de Transporte'}</div>
+    <div class="hdr-tipo">${esCot?'Cotización':'Estado de Pago'}</div>
+    <div class="hdr-badge">${esCot?'📋 COT':'✅ EP'}</div>
   </div>
-
-  <div class="hdiv"></div>
-
-  <!-- CLIENTE / PROVEEDOR -->
-  <div class="doc-info">
-    <div class="info-block">
-      <div class="block-title">${esCot?'Cliente / Destinatario':'Mandante / Cliente'}</div>
-      <table class="fields-table">
-        ${gv('cliNombre')?`<tr><td>Razón social</td><td><strong>${gv('cliNombre')}</strong></td></tr>`:''}
-        ${gv('cliRut')?`<tr><td>RUT</td><td>${gv('cliRut')}</td></tr>`:''}
-        ${gv('cliGiro')?`<tr><td>Giro</td><td>${gv('cliGiro')}</td></tr>`:''}
-        ${gv('cliDir')?`<tr><td>Dirección</td><td>${gv('cliDir')}${gv('cliCiudad')?' — '+gv('cliCiudad'):''}</td></tr>`:''}
-        ${gv('cliEmail')?`<tr><td>Email</td><td>${gv('cliEmail')}</td></tr>`:''}
-        ${gv('cliTel')?`<tr><td>Teléfono</td><td>${gv('cliTel')}</td></tr>`:''}
-        ${!esCot&&gv('cliContrato')?`<tr><td>Contrato</td><td>${gv('cliContrato')}</td></tr>`:''}
-        ${!esCot&&gv('cliOC')?`<tr><td>Orden de compra</td><td>${gv('cliOC')}</td></tr>`:''}
-        ${gv('cliContacto')?`<tr><td>Contacto</td><td>${gv('cliContacto')}</td></tr>`:''}
-      </table>
-    </div>
-    <div class="vdiv"></div>
-    <div class="info-block">
-      <div class="block-title">Proveedor / Oferente</div>
-      <table class="fields-table">
-        ${gv('prvNombre')?`<tr><td>Razón social</td><td><strong>${gv('prvNombre')}</strong></td></tr>`:''}
-        ${gv('prvRut')?`<tr><td>RUT</td><td>${gv('prvRut')}</td></tr>`:''}
-        ${gv('prvGiro')?`<tr><td>Giro</td><td>${gv('prvGiro')}</td></tr>`:''}
-        ${gv('prvDir')?`<tr><td>Dirección</td><td>${gv('prvDir')}${gv('prvCiudad')?' — '+gv('prvCiudad'):''}</td></tr>`:''}
-        ${gv('prvEmail')?`<tr><td>Email</td><td>${gv('prvEmail')}</td></tr>`:''}
-        ${gv('prvTel')?`<tr><td>Teléfono</td><td>${gv('prvTel')}</td></tr>`:''}
-        ${gv('prvContacto')?`<tr><td>Contacto</td><td>${gv('prvContacto')}</td></tr>`:''}
-      </table>
-    </div>
+  <div class="hdr-meta">
+    <div class="meta-row"><span class="meta-lbl">${esCot?'N° Cotización':'N° Documento'}</span><span class="meta-val meta-num">${gv('numDoc')}</span></div>
+    <div class="meta-row"><span class="meta-lbl">Emisión</span><span class="meta-val">${gv('fechaEmision')}</span></div>
+    <div class="meta-row"><span class="meta-lbl">${esCot?'Válida hasta':'Vencimiento'}</span><span class="meta-val">${gv('fechaVence')}</span></div>
   </div>
+</div>
 
-  ${condHTML}
-  <div class="hdiv"></div>
+<div class="hdiv"></div>
 
-  <!-- SERVICIOS -->
-  <div class="table-wrap">
-    <div class="section-label">Detalle de servicios</div>
-    <table>
-      <thead><tr>
-        <th style="text-align:left;padding-left:2mm">Vehículo</th>
-        <th>Patente</th><th>Ruta</th><th>Período</th>
-        <th>Pasaj.</th><th>Viajes/Días</th><th>Valor unit.</th><th>Total</th>
-      </tr></thead>
-      <tbody>${filasHTML}</tbody>
+<!-- CLIENTE / PROVEEDOR -->
+<div class="parties">
+  <div class="party">
+    <div class="party-title">▸ ${esCot?'Cliente / Destinatario':'Mandante / Cliente'}</div>
+    <table class="ft">
+      ${gv('cliNombre')?`<tr><td>Razón social</td><td class="val-strong">${gv('cliNombre')}</td></tr>`:''}
+      ${gv('cliRut')?`<tr><td>RUT</td><td>${gv('cliRut')}</td></tr>`:''}
+      ${gv('cliGiro')?`<tr><td>Giro</td><td>${gv('cliGiro')}</td></tr>`:''}
+      ${(gv('cliDir')||gv('cliCiudad'))?`<tr><td>Dirección</td><td>${[gv('cliDir'),gv('cliCiudad')].filter(Boolean).join(', ')}</td></tr>`:''}
+      ${gv('cliEmail')?`<tr><td>Email</td><td>${gv('cliEmail')}</td></tr>`:''}
+      ${gv('cliTel')?`<tr><td>Teléfono</td><td>${gv('cliTel')}</td></tr>`:''}
+      ${gv('cliContacto')?`<tr><td>Contacto</td><td>${gv('cliContacto')}</td></tr>`:''}
+      ${!esCot&&gv('cliContrato')?`<tr><td>Contrato</td><td><strong>${gv('cliContrato')}</strong></td></tr>`:''}
+      ${!esCot&&gv('cliOC')?`<tr><td>OC</td><td><strong>${gv('cliOC')}</strong></td></tr>`:''}
     </table>
   </div>
+  <div class="party-divider"></div>
+  <div class="party">
+    <div class="party-title">▸ Proveedor / Oferente</div>
+    <table class="ft">
+      ${gv('prvNombre')?`<tr><td>Razón social</td><td class="val-strong">${gv('prvNombre')}</td></tr>`:''}
+      ${gv('prvRut')?`<tr><td>RUT</td><td>${gv('prvRut')}</td></tr>`:''}
+      ${gv('prvGiro')?`<tr><td>Giro</td><td>${gv('prvGiro')}</td></tr>`:''}
+      ${(gv('prvDir')||gv('prvCiudad'))?`<tr><td>Dirección</td><td>${[gv('prvDir'),gv('prvCiudad'),gv('prvRegion')].filter(Boolean).join(', ')}</td></tr>`:''}
+      ${gv('prvEmail')?`<tr><td>Email</td><td>${gv('prvEmail')}</td></tr>`:''}
+      ${gv('prvTel')?`<tr><td>Teléfono</td><td>${gv('prvTel')}</td></tr>`:''}
+      ${gv('prvContacto')?`<tr><td>Contacto</td><td>${gv('prvContacto')}</td></tr>`:''}
+    </table>
+  </div>
+</div>
 
-  ${extrasHTML}
-  <div class="hdiv"></div>
+${condHTML}
+<div class="hdiv"></div>
 
-  <!-- FOOTER TOTALES + GLOSA -->
-  <div class="doc-footer">
-    <div class="glosa">${esCot
-      ?'<strong>Nota:</strong> Oferta comercial sin validez tributaria. Precios sujetos a variación. Válida según plazo indicado.'
-      :'<strong>Importante:</strong> Respaldo administrativo de servicios prestados. Observaciones dentro de 5 días hábiles. Factura según Ley de Pago a 30 Días.'
-    }</div>
-    <div class="totales">
-      <div class="t-line"><span>Subtotal servicios</span><span class="amt">${cur.sym} ${fmt(brutoServ)}</span></div>
-      ${brutoExtra>0?`<div class="t-line extra-line"><span>Ítems adicionales</span><span class="amt">${cur.sym} ${fmt(brutoExtra)}</span></div>`:''}
-      <div class="t-line"><span>Subtotal neto</span><span class="amt">${cur.sym} ${fmt(bruto)}</span></div>
-      ${conIva?`<div class="t-line"><span>IVA 19%</span><span class="amt">${cur.sym} ${fmt(iva)}</span></div>`:''}
-      <div class="t-line grand"><span>${esCot?'TOTAL COTIZACIÓN':'TOTAL A PAGAR'}</span><span class="amt">${cur.sym} ${fmt(bruto+iva)}</span></div>
+<!-- SERVICIOS -->
+<div class="tbl-section no-break">
+  <div class="sec-title">Detalle de Servicios</div>
+  <table>
+    <thead class="serv-head"><tr>
+      <th style="text-align:left;padding-left:2.5mm;width:20%">Vehículo</th>
+      <th style="width:9%">Patente</th>
+      <th style="width:18%">Ruta / Recorrido</th>
+      <th style="width:16%">Período</th>
+      <th style="width:7%">Pasaj.</th>
+      <th style="width:9%">Viajes / Días</th>
+      <th style="width:11%">Valor unit.</th>
+      <th style="text-align:right;padding-right:2.5mm;width:10%">Total línea</th>
+    </tr></thead>
+    <tbody>${filasHTML}</tbody>
+  </table>
+</div>
+
+${extrasHTML}
+<div class="hdiv"></div>
+
+<!-- FOOTER -->
+<div class="footer-grid no-break">
+  <div class="glosa-box">${esCot
+    ?'<strong>Nota:</strong> Este documento es una oferta comercial referencial y no constituye factura ni documento tributario. Los valores pueden estar sujetos a variaciones por combustible, peajes u otros costos operacionales. La oferta es válida según el plazo indicado.'
+    :'<strong>Importante:</strong> Este Estado de Pago es respaldo administrativo de servicios efectivamente prestados. Observaciones deben realizarse dentro de 5 días hábiles desde su recepción. La facturación se rige por la Ley N° 19.983 de Pago a 30 Días.'
+  }</div>
+  <div class="totales-box">
+    <div class="t-row"><span>Subtotal servicios</span><span class="a">${cur.sym} ${fmt(brutoServ)}</span></div>
+    ${brutoExtra>0?`<div class="t-row ext"><span>Ítems adicionales</span><span class="a">${cur.sym} ${fmt(brutoExtra)}</span></div>`:''}
+    <div class="t-row neto"><span>Subtotal neto</span><span class="a">${cur.sym} ${fmt(bruto)}</span></div>
+    ${conIva?`<div class="t-row"><span>IVA 19%</span><span class="a">${cur.sym} ${fmt(iva)}</span></div>`:''}
+    <div class="t-row grand">
+      <span>${esCot?'TOTAL COTIZACIÓN':'TOTAL A PAGAR'}</span>
+      <span class="a">${cur.sym} ${fmt(bruto+iva)}</span>
     </div>
   </div>
+</div>
 
-  <!-- FIRMAS -->
-  <div class="hdiv"></div>
-  <div class="firma-row">
+<div class="hdiv"></div>
+
+<!-- FIRMAS -->
+<div class="firma-section">
+  <div>
     <div class="firma-box">
-      <div class="fl">Firma y timbre Proveedor</div>
-      <div class="fn">${gv('prvNombre')} · ${gv('prvRut')}</div>
+      <div class="firma-lbl">Firma y timbre — Proveedor / Oferente</div>
+      <div class="firma-nom">${gv('prvNombre')}${gv('prvRut')?' · '+gv('prvRut'):''}</div>
     </div>
+  </div>
+  <div>
     <div class="firma-box">
-      <div class="fl">Firma y timbre ${esCot?'Cliente':'Mandante'}</div>
-      <div class="fn">${gv('cliNombre')} · ${gv('cliRut')}</div>
+      <div class="firma-lbl">Firma y timbre — ${esCot?'Cliente':'Mandante'}</div>
+      <div class="firma-nom">${gv('cliNombre')}${gv('cliRut')?' · '+gv('cliRut'):''}</div>
     </div>
   </div>
+</div>
 
-  <!-- PIE DE DOCUMENTO con nombre de archivo -->
-  <div style="padding:2.5mm 6mm;background:#f0f4ff;border-top:1pt solid #c8d8f8;display:flex;align-items:center;justify-content:space-between;gap:4mm">
-    <div style="display:flex;align-items:center;gap:3mm">
-      <span style="font-size:5pt;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:#0055FF">Hauler</span>
-      <span style="width:.4pt;height:8pt;background:#c8d8f8;display:inline-block"></span>
-      <span id="pdfFilenameDisplay" style="font-size:6pt;color:#5a5a66;font-family:'JetBrains Mono','Courier New',monospace"></span>
-    </div>
-    <div style="display:flex;align-items:center;gap:3mm">
-      <span style="font-size:5.5pt;color:#9898a6">Documento generado:</span>
-      <span id="pdfGenDate" style="font-size:6pt;color:#5a5a66;font-family:'JetBrains Mono','Courier New',monospace"></span>
-    </div>
-  </div>
+<!-- PIE DEL DOCUMENTO -->
+<div class="doc-pie">
+  <span class="pie-brand">HAULER</span>
+  <span class="pie-file" id="pdfFilenameDisplay"></span>
+  <span class="pie-date" id="pdfGenDate"></span>
+</div>
 
 </div>
 <script>
-  // Inyectar nombre de archivo y fecha de generación
-  (function(){
-    var t = document.title;
-    var el = document.getElementById('pdfFilenameDisplay');
-    if(el) el.textContent = t + '.pdf';
-    var gd = document.getElementById('pdfGenDate');
-    if(gd){
-      var now = new Date();
-      var pad = function(n){return n<10?'0'+n:n};
-      gd.textContent = now.getFullYear()+'-'+pad(now.getMonth()+1)+'-'+pad(now.getDate())+' '+pad(now.getHours())+':'+pad(now.getMinutes());
-    }
-  })();
-  document.fonts.ready.then(function(){ setTimeout(function(){ window.print(); }, 450); });
+(function(){
+  var el=document.getElementById('pdfFilenameDisplay');
+  if(el) el.textContent=document.title+'.pdf';
+  var gd=document.getElementById('pdfGenDate');
+  if(gd){
+    var n=new Date(),p=function(x){return x<10?'0'+x:x};
+    gd.textContent='Generado: '+n.getFullYear()+'-'+p(n.getMonth()+1)+'-'+p(n.getDate())+' '+p(n.getHours())+':'+p(n.getMinutes());
+  }
+})();
+document.fonts.ready.then(function(){setTimeout(function(){window.print();},500);});
 <\/script>
-</body></html>`;
-
+</body></html>`
   const w=window.open('','_blank','width=900,height=700');
   if(!w){alert('Permite las ventanas emergentes para imprimir.');return}
   w.document.open();w.document.write(html);w.document.close();
@@ -1876,13 +1958,15 @@ function toast(msg){const el=document.getElementById('toast');el.textContent=msg
 /* ══ EXPORTAR / IMPORTAR ════════════════════════════════════════════════ */
 function exportarDatos() {
   var datos = {
-    version: 2,
+    version: 3,
     exportadoEn: new Date().toISOString(),
-    hDocs:     load('hDocs',     []),
-    hClientes: load('hClientes', []),
-    hRutas:    load('hRutas',    []),
-    hMoneda:   load('hMoneda',   'CLP'),
-    hModo:     load('hModo',     'cot')
+    hDocs:        load('hDocs',        []),
+    hClientes:    load('hClientes',    []),
+    hRutas:       load('hRutas',       []),
+    hClientes_ts: load('hClientes_ts', 0),
+    hRutas_ts:    load('hRutas_ts',    0),
+    hMoneda:      load('hMoneda',      'CLP'),
+    hModo:        load('hModo',        'cot')
   };
   var json   = JSON.stringify(datos, null, 2);
   var blob   = new Blob([json], { type: 'application/json' });
