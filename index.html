@@ -365,7 +365,7 @@ td.num input,td.num{font-family:var(--mono);font-size:.74rem}
   </div>
   <button class="btn" onclick="agregarFila()">➕ Servicio</button>
   <button class="btn" onclick="eliminarUltima()">➖ Quitar último</button>
-  <button class="btn btn-red" onclick="limpiarTabla()">🗑 Limpiar</button>
+  <button class="btn btn-red" onclick="limpiarTodo()">🗑 Limpiar todo</button>
   <button class="btn" onclick="abrirHistorial()">🕓 Historial</button>
   <button class="btn btn-green" onclick="guardarDoc()">💾 Guardar</button>
   <button class="btn btn-blue" onclick="abrirModal()">👥 Clientes y Rutas</button>
@@ -764,47 +764,47 @@ function load(k, def) {
 }
 
 function save(k, v) {
-  // 1. Guardar en localStorage de inmediato (UX instantáneo)
+  // 1. Siempre guardar en localStorage (instantáneo)
   try { localStorage.setItem(k, JSON.stringify(v)); } catch(e) {}
-  // 2. Sincronizar con Supabase en background
-  sbSet(k, v);
+  // 2. Solo sincronizar clientes y rutas con Supabase
+  if (k === 'hClientes' || k === 'hRutas') {
+    sbSet(k, v);
+  }
 }
 
 /* ══ SINCRONIZACIÓN INICIAL DESDE SUPABASE ══════════════════════════════ */
 function sincronizarDesdeSupabase() {
   setSyncStatus('saving');
-  sbGetAll().then(function(rows) {
-    if (!rows || !Array.isArray(rows) || rows.length === 0) {
-      setSyncStatus('idle');
-      return;
+  // Solo pedimos clientes y rutas
+  Promise.all([
+    sbGet('hClientes'),
+    sbGet('hRutas')
+  ]).then(function(resultados) {
+    var remotoClientes = resultados[0];
+    var remotoRutas    = resultados[1];
+    var huboCambios = false;
+
+    if (remotoClientes !== null) {
+      var localStr = JSON.stringify(load('hClientes', []));
+      if (JSON.stringify(remotoClientes) !== localStr) {
+        try { localStorage.setItem('hClientes', JSON.stringify(remotoClientes)); } catch(e) {}
+        clientes = remotoClientes;
+        huboCambios = true;
+      }
     }
-    var hubocambios = false;
-    rows.forEach(function(row) {
-      if (row.clave && row.valor !== undefined && row.valor !== null) {
-        var local = load(row.clave, null);
-        // Supabase gana si los datos son diferentes
-        var remoto = JSON.stringify(row.valor);
-        var localStr = JSON.stringify(local);
-        if (remoto !== localStr) {
-          try { localStorage.setItem(row.clave, JSON.stringify(row.valor)); } catch(e) {}
-          hubocambios = true;
-        }
+    if (remotoRutas !== null) {
+      var localRStr = JSON.stringify(load('hRutas', []));
+      if (JSON.stringify(remotoRutas) !== localRStr) {
+        try { localStorage.setItem('hRutas', JSON.stringify(remotoRutas)); } catch(e) {}
+        rutas = remotoRutas;
+        huboCambios = true;
       }
-    });
+    }
+
     setSyncStatus('ok');
-    if (hubocambios) {
-      // Recargar datos en memoria y re-renderizar
-      clientes = load('hClientes', []);
-      rutas    = load('hRutas',    []);
-      monedaActual = load('hMoneda', 'CLP');
-      modoActual   = load('hModo',   'cot');
+    if (huboCambios) {
       renderSelector();
-      aplicarModo(modoActual, false);
-      var hist = load('hDocs', []);
-      if (hist.length) {
-        cargarDoc(hist[hist.length - 1]);
-        toast('☁ Datos sincronizados desde Supabase');
-      }
+      toast('☁ Clientes y rutas sincronizados');
     }
   }).catch(function(e) {
     console.warn('No se pudo conectar con Supabase:', e);
@@ -832,12 +832,10 @@ function fmt(n){
   renderSelector();
   aplicarModo(modoActual,false);
 
-  // Cargar último doc del cache local primero (rápido)
-  var hist=load('hDocs',[]);
-  if(hist.length>0){cargarDoc(hist[hist.length-1]);}
-  else agregarFila();
+  // Siempre iniciar con documento en blanco
+  agregarFila();
 
-  // Luego sincronizar con Supabase en background
+  // Sincronizar clientes y rutas desde Supabase en background
   setTimeout(sincronizarDesdeSupabase, 300);
 })();
 
@@ -984,6 +982,33 @@ function agregarFila(data={}){
 function eliminarFila(id){filas=filas.filter(f=>f.id!==id);renderTabla();calcular()}
 function eliminarUltima(){if(!filas.length)return;filas.pop();renderTabla();calcular()}
 function limpiarTabla(){if(!filas.length||confirm('¿Eliminar todos los servicios?')){filas=[];renderTabla();calcular()}}
+
+/* ══ LIMPIAR TODO EL DOCUMENTO ══════════════════════════════════════════ */
+function limpiarTodo(){
+  if(!confirm('¿Dejar el documento completamente en blanco?\nSe borrarán todos los campos, servicios y notas.')) return;
+  docActualId = null;
+  var hoy = new Date();
+  var v30 = new Date(hoy); v30.setDate(v30.getDate()+30);
+  sv('fechaEmision', iso(hoy));
+  sv('fechaVence',   iso(v30));
+  var pre = modoActual === 'cot' ? 'COT-' : 'EP-';
+  sv('numDoc', pre + String(Date.now()).slice(-4));
+  sv('selValidez', '30');
+  ['cliNombre','cliRut','cliGiro','cliDir','cliCiudad',
+   'cliEmail','cliTel','cliContrato','cliOC','cliContacto'].forEach(function(id){ sv(id,''); });
+  ['prvNombre','prvRut','prvGiro','prvDir','prvCiudad',
+   'prvRegion','prvEmail','prvTel','prvContacto'].forEach(function(id){ sv(id,''); });
+  ['condPago','condMonedaOferta','condReajuste','condNotas'].forEach(function(id){ sv(id,''); });
+  filas  = [];
+  extras = [];
+  renderTabla();
+  renderExtras();
+  document.getElementById('chkIva').checked = true;
+  quitarLogo();
+  aplicarModo(modoActual, false);
+  calcular();
+  toast('🗑 Documento en blanco');
+}
 
 function renderTabla(){
   const tb=document.getElementById('tbody');
