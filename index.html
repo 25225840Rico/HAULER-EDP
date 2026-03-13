@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Estado de Pago · HAULER</title>
+<title>HAULER · Documentos</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
@@ -14,6 +14,8 @@
   --bg:#eef0f4;--card:#fff;
   --t1:#111115;--t2:#5a5a66;--t3:#9898a6;--bdr:#dde0e8;
   --blue:#0055FF;--blue-lt:#e6eeff;
+  --green:#12a150;--green-lt:#e6f7ee;
+  --amber:#b07800;--amber-lt:#fff8e6;
   --grad:linear-gradient(90deg,transparent 0%,#bdd0ff 40%,#bdd0ff 60%,transparent 100%);
   --sh:0 2px 16px rgba(0,0,0,.06),0 1px 3px rgba(0,0,0,.04);
 }
@@ -21,9 +23,19 @@ html{font-size:15px}
 body{font-family:var(--sans);background:var(--bg);min-height:100vh;color:var(--t1);
   display:flex;flex-direction:column;align-items:center;padding:1.2rem;-webkit-font-smoothing:antialiased}
 
-/* TOOLBAR */
-.toolbar{width:100%;max-width:1160px;display:flex;align-items:center;gap:.4rem;margin-bottom:1.1rem;flex-wrap:wrap}
-.toolbar-brand{font-size:.65rem;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--t3);margin-right:auto}
+/* ── MODO TABS ── */
+.mode-tabs{display:flex;background:#fff;border:1px solid var(--bdr);border-radius:99px;padding:3px;gap:2px;margin-bottom:1.1rem;box-shadow:var(--sh)}
+.mode-tab{display:inline-flex;align-items:center;gap:.4rem;padding:.42rem 1.1rem;border-radius:99px;border:none;
+  font:600 .7rem/1 var(--sans);cursor:pointer;transition:all .2s;color:var(--t3);background:transparent}
+.mode-tab.act{background:var(--blue);color:#fff;box-shadow:0 2px 8px rgba(0,85,255,.3)}
+.mode-tab.act-green{background:var(--blue);color:#fff;box-shadow:0 2px 8px rgba(0,85,255,.3)}
+
+/* ── TOOLBAR ── */
+.toolbar{width:100%;max-width:1160px;display:flex;align-items:center;gap:.4rem;margin-bottom:.8rem;flex-wrap:wrap}
+.toolbar-brand{font-size:.6rem;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--t3);margin-right:auto;display:flex;align-items:center;gap:.4rem}
+.doc-badge{padding:.2rem .6rem;border-radius:99px;font:700 .58rem/1 var(--sans);letter-spacing:.5px;text-transform:uppercase}
+.doc-badge-cot{background:var(--blue-lt);color:var(--blue)}
+.doc-badge-ep{background:var(--blue-lt);color:var(--blue)}
 .btn{display:inline-flex;align-items:center;gap:.35rem;padding:.42rem .9rem;border-radius:99px;
   border:1px solid transparent;font:500 .7rem/1 var(--sans);cursor:pointer;transition:all .15s;
   background:rgba(255,255,255,.8);color:var(--t2);backdrop-filter:blur(4px)}
@@ -32,27 +44,32 @@ body{font-family:var(--sans);background:var(--bg);min-height:100vh;color:var(--t
 .btn-blue:hover{background:#003ecc}
 .btn-red{color:#d93030}
 .btn-red:hover{background:rgba(217,48,48,.07);border-color:rgba(217,48,48,.2)}
-.btn-green{background:#12a150;color:#fff;border-color:transparent;box-shadow:0 2px 10px rgba(18,161,80,.25)}
-.btn-green:hover{background:#0d8040}
-
-/* Selector de moneda en toolbar */
+.btn-green{background:var(--blue);color:#fff;border-color:transparent;box-shadow:0 2px 10px rgba(0,85,255,.3)}
+.btn-green:hover{background:#003ecc}
+.btn-amber{background:#b07800;color:#fff;border-color:transparent}
+.btn-amber:hover{background:#8a5c00}
 .currency-wrap{display:inline-flex;align-items:center;gap:.4rem;background:rgba(255,255,255,.8);
   border:1px solid var(--bdr);border-radius:99px;padding:.3rem .75rem;backdrop-filter:blur(4px)}
 .currency-wrap label{font-size:.6rem;font-weight:700;letter-spacing:.5px;text-transform:uppercase;color:var(--t3)}
 .currency-wrap select{background:transparent;border:none;font:600 .72rem/1 var(--sans);color:var(--t1);
   cursor:pointer;padding:.05rem .15rem;outline:none;max-width:120px}
 
-/* DOC */
+/* ── DOC ── */
 .doc{width:100%;max-width:1160px;background:var(--card);border-radius:18px;border:1px solid var(--bdr);box-shadow:var(--sh);overflow:hidden}
 .hdiv{height:1px;background:var(--grad);margin:0 2rem}
 .vdiv{width:1px;background:var(--grad);align-self:stretch}
 
-/* HEADER */
+/* Acento de color según modo */
+body.modo-cot .doc{border-top:3px solid var(--blue)}
+body.modo-ep  .doc{border-top:3px solid var(--blue)}
+
+/* ── HEADER ── */
 .doc-header{display:grid;grid-template-columns:auto 1fr auto;align-items:stretch;gap:1.5rem;padding:1.6rem 2rem;background:linear-gradient(150deg,#fff 60%,#f6f8ff);min-height:100px}
 .logo-col{display:flex;flex-direction:column;justify-content:center}
 .doc-title{display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center}
 .doc-title h1{font-size:.52rem;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:var(--t3);margin-bottom:4px}
 .doc-title h2{font-size:1.25rem;font-weight:300;letter-spacing:-.2px}
+.doc-title .doc-type-badge{display:inline-flex;align-items:center;gap:.3rem;margin-top:.4rem;padding:.18rem .7rem;border-radius:99px;font:600 .58rem/1 var(--sans);letter-spacing:.5px}
 .meta-col{display:flex;flex-direction:column;justify-content:center}
 .meta-row{display:flex;align-items:center;justify-content:flex-end;gap:.55rem;margin-bottom:.4rem}
 .meta-row:last-child{margin-bottom:0}
@@ -74,7 +91,7 @@ body{font-family:var(--sans);background:var(--bg);min-height:100vh;color:var(--t
 .size-wrap input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:13px;height:13px;border-radius:50%;background:var(--blue);cursor:pointer}
 .size-wrap span{font:400 .58rem/1 var(--mono);color:var(--t3);min-width:30px}
 
-/* INFO */
+/* ── INFO GRID ── */
 .doc-info{display:grid;grid-template-columns:1fr auto 1fr}
 .info-block{padding:1.3rem 2rem}
 .block-title{font-size:.48rem;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--t3);display:flex;align-items:center;gap:.35rem;margin-bottom:.9rem}
@@ -87,7 +104,14 @@ body{font-family:var(--sans);background:var(--bg);min-height:100vh;color:var(--t
 .field input:focus,.field select:focus{outline:none;border-bottom-color:var(--blue)}
 .field input:disabled{color:var(--t2);font-weight:600}
 
-/* TABLA SERVICIOS */
+/* ── VALIDEZ (solo cotización) ── */
+.validez-row{display:flex;align-items:center;justify-content:flex-end;gap:.55rem;margin-bottom:.4rem}
+.validez-row label{font-size:.5rem;font-weight:700;letter-spacing:.8px;text-transform:uppercase;color:var(--t3)}
+.validez-row select{background:#f5f6f9;border:1px solid var(--bdr);border-radius:7px;color:var(--t1);
+  font:400 .68rem/1 var(--mono);padding:.32rem .7rem;width:130px;transition:all .15s;cursor:pointer}
+.validez-row select:focus{outline:none;border-color:var(--blue);background:#fff}
+
+/* ── TABLA SERVICIOS ── */
 .table-wrap{padding:1.3rem 2rem 1.1rem}
 .section-label{font-size:.48rem;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--t3);display:flex;align-items:center;gap:.35rem;margin-bottom:1rem}
 .section-label-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem}
@@ -117,7 +141,7 @@ td.num input,td.num{font-family:var(--mono);font-size:.74rem}
 .btn-del:hover{background:rgba(217,48,48,.1);color:#d93030}
 .empty-row td{padding:2.5rem;text-align:center;color:var(--t3);font-size:.76rem}
 
-/* PERÍODO */
+/* ── PERÍODO ── */
 .periodo-cell{min-width:165px;padding:.4rem !important}
 .periodo-wrap{background:#f7f8fa;border:1px solid var(--bdr);border-radius:10px;padding:.4rem .5rem;display:flex;flex-direction:column;gap:.3rem;transition:border-color .15s}
 .periodo-wrap:focus-within{border-color:var(--blue)}
@@ -136,7 +160,7 @@ td.num input,td.num{font-family:var(--mono);font-size:.74rem}
 .btn-usar-dias{background:transparent;border:1px solid var(--blue);color:var(--blue);border-radius:99px;font:500 .55rem/1 var(--sans);padding:.15rem .5rem;cursor:pointer;transition:all .15s;white-space:nowrap}
 .btn-usar-dias:hover{background:var(--blue);color:#fff}
 
-/* TABLA ÍTEMS ADICIONALES */
+/* ── EXTRAS ── */
 .extras-wrap{padding:.8rem 2rem 1.2rem}
 .extras-table{width:100%;border-collapse:collapse;font-size:.76rem}
 .extras-table thead th{background:#fdf8f0;font:600 .56rem/1 var(--sans);letter-spacing:.4px;text-transform:uppercase;color:#966320;padding:.6rem .5rem;text-align:center;white-space:nowrap;border-bottom:1px solid #f0e4cc}
@@ -155,16 +179,14 @@ td.num input,td.num{font-family:var(--mono);font-size:.74rem}
 .extras-table tbody td input:focus{outline:none;background:#fff;border-color:#e0a030}
 .extras-table td.num input,.extras-table td.num{font-family:var(--mono);font-size:.74rem}
 .extras-table .total-cell{font-family:var(--mono);font-weight:500;font-size:.76rem}
-/* tipo de ítem extra */
 .tipo-extra-wrap{display:flex;gap:2px;background:#eaecf0;border-radius:7px;padding:2px;width:fit-content;margin:0 auto}
 .tipo-extra-pill{padding:.2rem .45rem;border:none;border-radius:5px;cursor:pointer;font:600 .55rem/1 var(--sans);color:var(--t3);background:transparent;transition:all .15s;white-space:nowrap}
 .tipo-extra-pill.act{background:#fff;color:#966320;box-shadow:0 1px 4px rgba(0,0,0,.08)}
-
 .btn-add-extra{display:inline-flex;align-items:center;gap:.3rem;background:#fff9ee;border:1px solid #f0d8a0;
   color:#966320;border-radius:99px;font:500 .68rem/1 var(--sans);padding:.35rem .8rem;cursor:pointer;transition:all .15s;margin-top:.6rem}
 .btn-add-extra:hover{background:#fff3d4;border-color:#e0a030}
 
-/* FOOTER */
+/* ── FOOTER ── */
 .doc-footer{display:grid;grid-template-columns:1fr auto;gap:1.5rem;align-items:end;padding:1.3rem 2rem 1.8rem}
 .iva-toggle{display:flex;align-items:center;gap:.65rem;background:#f5f6f9;border:1px solid var(--bdr);border-radius:99px;padding:.4rem .9rem;width:fit-content;margin-bottom:1rem}
 .iva-toggle label{font-size:.72rem;font-weight:500;cursor:pointer}
@@ -180,11 +202,26 @@ td.num input,td.num{font-family:var(--mono);font-size:.74rem}
 .t-line.grand{margin-top:.35rem;padding-top:.8rem;border-top:1px solid var(--bdr)!important;font-size:.9rem;font-weight:700;color:var(--t1)}
 .t-line.grand .amt{font-size:1.1rem;font-weight:700;color:var(--blue)}
 
-/* TOAST */
+/* ── CONVERTIR ── */
+.convert-banner{display:flex;align-items:center;justify-content:space-between;padding:.7rem 1.5rem;border-radius:12px;margin-bottom:.8rem;width:100%;max-width:1160px}
+.convert-banner-cot{background:linear-gradient(135deg,#e6eeff,#f0f5ff);border:1px solid #c0d0ff}
+.convert-banner-ep{background:linear-gradient(135deg,#e6eeff,#f0f5ff);border:1px solid #c0d0ff}
+.convert-banner p{font-size:.72rem;color:var(--t2)}
+.convert-banner strong{color:var(--t1)}
+
+/* ── CONDICIONES COTIZACIÓN ── */
+.cond-wrap{padding:.8rem 2rem 1.2rem}
+.cond-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:.8rem 1.2rem}
+.cond-item{display:flex;flex-direction:column;gap:.2rem}
+.cond-item label{font-size:.45rem;font-weight:700;text-transform:uppercase;letter-spacing:.7px;color:var(--t3)}
+.cond-item input,.cond-item select,.cond-item textarea{background:transparent;border:none;border-bottom:1px solid var(--bdr);font:400 .76rem/1.2 var(--sans);color:var(--t1);padding:.3rem 0 .2rem;width:100%;transition:border-color .15s;resize:none}
+.cond-item textarea{min-height:2.5rem;border:1px solid var(--bdr);border-radius:8px;padding:.4rem .6rem}
+.cond-item input:focus,.cond-item select:focus,.cond-item textarea:focus{outline:none;border-bottom-color:var(--blue)}
+.cond-item textarea:focus{border-color:var(--blue)}
+
+/* ── TOAST / MODAL ── */
 .toast{position:fixed;bottom:1.5rem;left:50%;transform:translateX(-50%) translateY(20px);background:var(--t1);color:#fff;padding:.6rem 1.2rem;border-radius:99px;font-size:.72rem;font-weight:500;opacity:0;transition:all .3s;pointer-events:none;z-index:9999;white-space:nowrap;box-shadow:0 4px 16px rgba(0,0,0,.2)}
 .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
-
-/* MODAL */
 .modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.22);backdrop-filter:blur(5px);align-items:center;justify-content:center;z-index:1000}
 .modal.open{display:flex}
 .modal-box{background:#fff;border-radius:22px;width:90%;max-width:800px;max-height:84vh;overflow:hidden;box-shadow:0 28px 56px rgba(0,0,0,.12);display:flex;flex-direction:column;border:1px solid var(--bdr)}
@@ -208,6 +245,9 @@ td.num input,td.num{font-family:var(--mono);font-size:.74rem}
 .hist-empty{text-align:center;padding:2rem;color:var(--t3);font-size:.8rem}
 .hist-new-btn{margin:.3rem 1.3rem 1.3rem;background:var(--blue);color:#fff;border:none;padding:.55rem 1rem;border-radius:99px;font:600 .72rem/1 var(--sans);cursor:pointer;transition:background .15s}
 .hist-new-btn:hover{background:#003ecc}
+.hist-filter{display:flex;gap:.3rem;padding:.5rem 1.3rem 0;flex-shrink:0}
+.hist-filter button{padding:.3rem .8rem;border-radius:99px;border:1px solid var(--bdr);font:500 .65rem/1 var(--sans);cursor:pointer;background:#fff;color:var(--t3);transition:all .15s}
+.hist-filter button.act{background:var(--blue);color:#fff;border-color:var(--blue)}
 .panel{background:#f5f6f9;border-radius:14px;padding:.9rem}
 .panel h4{font-size:.6rem;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:1px;margin-bottom:.75rem}
 .panel-sep{border:none;border-top:1px solid var(--bdr);margin:.75rem 0}
@@ -224,12 +264,44 @@ td.num input,td.num{font-family:var(--mono);font-size:.74rem}
 .form-g input:focus{outline:none;border-color:var(--blue)}
 .btn-add{background:var(--blue);color:#fff;border:none;padding:.52rem 1rem;border-radius:99px;font:600 .68rem/1 var(--sans);cursor:pointer;width:100%;margin-top:.35rem;transition:background .15s}
 .btn-add:hover{background:#003ecc}
+
+/* ── CONVERTIR MODAL ── */
+.convert-modal-box{background:#fff;border-radius:22px;width:90%;max-width:480px;padding:2rem;box-shadow:0 28px 56px rgba(0,0,0,.12);border:1px solid var(--bdr);text-align:center}
+.convert-modal-box h3{font-size:1rem;font-weight:700;margin-bottom:.4rem}
+.convert-modal-box p{font-size:.76rem;color:var(--t2);margin-bottom:1.4rem;line-height:1.6}
+.convert-btns{display:flex;gap:.7rem;justify-content:center;flex-wrap:wrap}
+
+@media(max-width:600px){
+  .doc-header,.doc-info{grid-template-columns:1fr}
+  .vdiv{display:none}
+  .cond-grid{grid-template-columns:1fr}
+}
 </style>
 </head>
-<body>
+<body class="modo-cot">
 
+<!-- TABS MODO -->
+<div class="mode-tabs">
+  <button class="mode-tab act" id="tabCot" onclick="cambiarModo('cot')">📋 Cotización</button>
+  <button class="mode-tab" id="tabEP" onclick="cambiarModo('ep')">✅ Estado de Pago</button>
+</div>
+
+<!-- BANNER DE CONVERSIÓN -->
+<div class="convert-banner convert-banner-cot" id="bannerCot">
+  <p><strong>Modo Cotización</strong> — Documento de oferta de precios para el cliente. Puedes convertirlo a Estado de Pago una vez aprobado.</p>
+  <button class="btn btn-green" onclick="abrirConvertirModal()">⇄ Convertir a Estado de Pago</button>
+</div>
+<div class="convert-banner convert-banner-ep" id="bannerEP" style="display:none">
+  <p><strong>Modo Estado de Pago</strong> — Documento de cobro por servicios prestados. Puedes convertirlo a Cotización si necesitas.</p>
+  <button class="btn btn-blue" onclick="abrirConvertirModal()">⇄ Convertir a Cotización</button>
+</div>
+
+<!-- TOOLBAR -->
 <div class="toolbar">
-  <span class="toolbar-brand">Hauler · Estado de Pago</span>
+  <span class="toolbar-brand">
+    Hauler ·
+    <span class="doc-badge doc-badge-cot" id="toolbarBadge">Cotización</span>
+  </span>
   <div class="currency-wrap">
     <label>💱</label>
     <select id="currencySelect" onchange="cambiarMoneda(this.value)"></select>
@@ -238,11 +310,12 @@ td.num input,td.num{font-family:var(--mono);font-size:.74rem}
   <button class="btn" onclick="eliminarUltima()">➖ Quitar último</button>
   <button class="btn btn-red" onclick="limpiarTabla()">🗑 Limpiar</button>
   <button class="btn" onclick="abrirHistorial()">🕓 Historial</button>
-  <button class="btn btn-green" onclick="guardarEP()">💾 Guardar</button>
+  <button class="btn btn-green" onclick="guardarDoc()">💾 Guardar</button>
   <button class="btn btn-blue" onclick="abrirModal()">👥 Clientes y Rutas</button>
   <button class="btn btn-blue" onclick="imprimirDoc()">🖨 Imprimir PDF</button>
 </div>
 
+<!-- DOCUMENTO -->
 <div class="doc" id="doc">
 
   <!-- HEADER -->
@@ -263,52 +336,110 @@ td.num input,td.num{font-family:var(--mono);font-size:.74rem}
         <button class="btn" id="btnQuitarLogo" style="display:none;font-size:.6rem;padding:.25rem .7rem" onclick="quitarLogo()">✕ Quitar logo</button>
       </div>
     </div>
-    <div class="doc-title"><h1>Documento de cobro</h1><h2>Estado de Pago</h2></div>
+
+    <div class="doc-title">
+      <h1 id="docTipoLabel">Documento de oferta</h1>
+      <h2 id="docTipoH2">Cotización</h2>
+      <span class="doc-type-badge doc-badge-cot" id="docTypeBadge">📋 Propuesta Comercial</span>
+    </div>
+
     <div class="meta-col">
-      <div class="meta-row"><label>N° Doc.</label><input type="text" id="numDoc" value="EP-2401"></div>
+      <div class="meta-row"><label id="numLabel">N° Cot.</label><input type="text" id="numDoc" value="COT-2401"></div>
       <div class="meta-row"><label>Emisión</label><input type="date" id="fechaEmision"></div>
-      <div class="meta-row"><label>Vencimiento</label><input type="date" id="fechaVence"></div>
+      <div class="meta-row" id="rowVence"><label id="venceLabel">Vencimiento</label><input type="date" id="fechaVence"></div>
+      <div class="validez-row" id="rowValidez" style="display:none">
+        <label>Validez</label>
+        <select id="selValidez" onchange="actualizarValidez()">
+          <option value="15">15 días</option>
+          <option value="30" selected>30 días</option>
+          <option value="45">45 días</option>
+          <option value="60">60 días</option>
+          <option value="90">90 días</option>
+        </select>
+      </div>
     </div>
   </div>
   <div class="hdiv"></div>
 
-  <!-- INFO -->
+  <!-- INFO CLIENTE -->
   <div class="doc-info">
     <div class="info-block">
       <div class="block-title">
         <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/></svg>
-        Mandante / Cliente
+        <span id="labelMandante">Cliente / Destinatario</span>
       </div>
       <div class="info-grid">
         <div class="field f-full"><label>Cliente guardado</label><select id="clienteSelector" onchange="cargarCliente()"><option value="">— Seleccionar —</option></select></div>
-        <div class="field f-full"><label>Razón social</label><input type="text" id="cliNombre" value="Transportes del Sol Ltda."></div>
+        <div class="field f-full"><label>Razón social</label><input type="text" id="cliNombre" placeholder="Empresa SA"></div>
         <div class="field"><label>RUT</label><input type="text" id="cliRut" placeholder="12.345.678-9"></div>
-        <div class="field"><label>Dirección</label><input type="text" id="cliDir" value="Av. Libertador 1234"></div>
-        <div class="field"><label>Ciudad</label><input type="text" id="cliCiudad" value="Santiago"></div>
-        <div class="field"><label>Contrato</label><input type="text" id="cliContrato" value="Contrato escolar N° 24-05"></div>
-        <div class="field"><label>Orden de compra</label><input type="text" id="cliOC" value="OC-2025-128"></div>
+        <div class="field"><label>Dirección</label><input type="text" id="cliDir" placeholder="Av. Ejemplo 1234"></div>
+        <div class="field"><label>Ciudad</label><input type="text" id="cliCiudad" placeholder="Santiago"></div>
+        <div class="field"><label>Email</label><input type="text" id="cliEmail" placeholder="contacto@empresa.cl"></div>
+        <div class="field"><label>Teléfono</label><input type="text" id="cliTel" placeholder="+56 9 XXXX XXXX"></div>
+        <div class="field" id="rowContrato"><label>Contrato</label><input type="text" id="cliContrato" placeholder="N° contrato"></div>
+        <div class="field" id="rowOC"><label>Orden de compra</label><input type="text" id="cliOC" placeholder="OC-XXXX"></div>
+        <div class="field" id="rowContacto"><label>Persona de contacto</label><input type="text" id="cliContacto" placeholder="Nombre contacto"></div>
       </div>
     </div>
     <div class="vdiv"></div>
     <div class="info-block">
       <div class="block-title">
         <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="8" r="4"/><path d="M6 20v-2a4 4 0 0 1 4-4h4a4 4 0 0 1 4 4v2"/></svg>
-        Proveedor
+        Proveedor / Oferente
       </div>
       <div class="info-grid">
-        <div class="field f-full"><label>Razón social</label><input type="text" value="HAULER SPA" disabled></div>
-        <div class="field"><label>RUT</label><input type="text" value="76.123.456-7"></div>
-        <div class="field"><label>Giro</label><input type="text" value="Transporte terrestre"></div>
-        <div class="field f-full"><label>Dirección</label><input type="text" value="Uribe 636 Of. 302, C. de Negocios"></div>
-        <div class="field"><label>Comuna</label><input type="text" value="Antofagasta"></div>
-        <div class="field"><label>Región</label><input type="text" value="Antofagasta"></div>
-        <div class="field"><label>Email</label><input type="text" value="operaciones@hauler.cl"></div>
-        <div class="field"><label>Teléfono</label><input type="text" placeholder="+56 9 XXXX XXXX"></div>
-        <!-- Campo Cuenta bancaria eliminado -->
+        <div class="field f-full"><label>Razón social</label><input type="text" id="prvNombre" value="HAULER SPA"></div>
+        <div class="field"><label>RUT</label><input type="text" id="prvRut" value="76.123.456-7"></div>
+        <div class="field"><label>Giro</label><input type="text" id="prvGiro" value="Transporte terrestre"></div>
+        <div class="field f-full"><label>Dirección</label><input type="text" id="prvDir" value="Uribe 636 Of. 302, C. de Negocios"></div>
+        <div class="field"><label>Ciudad</label><input type="text" id="prvCiudad" value="Antofagasta"></div>
+        <div class="field"><label>Región</label><input type="text" id="prvRegion" value="Antofagasta"></div>
+        <div class="field"><label>Email</label><input type="text" id="prvEmail" value="operaciones@hauler.cl"></div>
+        <div class="field"><label>Teléfono</label><input type="text" id="prvTel" placeholder="+56 9 XXXX XXXX"></div>
+        <div class="field"><label>Persona de contacto</label><input type="text" id="prvContacto" placeholder="Nombre representante"></div>
       </div>
     </div>
   </div>
   <div class="hdiv"></div>
+
+  <!-- CONDICIONES COTIZACIÓN (solo visible en modo cotización) -->
+  <div id="seccionCondiciones">
+    <div class="cond-wrap">
+      <div class="section-label">
+        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+        Condiciones de la oferta
+      </div>
+      <div class="cond-grid">
+        <div class="cond-item">
+          <label>Forma de pago</label>
+          <select id="condPago">
+            <option>30 días factura</option>
+            <option>60 días factura</option>
+            <option>Pago anticipado</option>
+            <option>Contra entrega</option>
+            <option>Otro</option>
+          </select>
+        </div>
+        <div class="cond-item">
+          <label>Moneda de la oferta</label>
+          <select id="condMonedaOferta">
+            <option>Pesos chilenos (CLP)</option>
+            <option>UF</option>
+            <option>Dólares (USD)</option>
+          </select>
+        </div>
+        <div class="cond-item">
+          <label>Reajuste</label>
+          <input type="text" id="condReajuste" placeholder="Sin reajuste / IPC / UF…">
+        </div>
+        <div class="cond-item" style="grid-column:1/-1">
+          <label>Notas / Condiciones adicionales</label>
+          <textarea id="condNotas" placeholder="Ej: Precio incluye peajes y conductores. No incluye combustible…"></textarea>
+        </div>
+      </div>
+    </div>
+    <div class="hdiv"></div>
+  </div>
 
   <!-- TABLA SERVICIOS -->
   <div class="table-wrap">
@@ -358,21 +489,34 @@ td.num input,td.num{font-family:var(--mono);font-size:.74rem}
         <input type="checkbox" id="chkIva" checked onchange="calcular()">
         <label for="chkIva">Incluir IVA (19%)</label>
       </div>
-      <div class="glosa">
-        <strong>Importante:</strong> Este Estado de Pago constituye respaldo administrativo de los servicios prestados y antecedente para facturación. Los montos están sujetos a revisión. Observaciones deberán realizarse dentro de 5 días hábiles. La factura se regirá por la Ley de Pago a 30 Días.
+      <div class="glosa" id="glosaDoc">
+        <strong>Nota:</strong> Esta cotización tiene carácter de oferta comercial y no constituye factura ni documento tributario. Los precios son referenciales y están sujetos a variaciones en combustible, peajes u otros costos operativos. Válida según el plazo indicado en este documento.
       </div>
     </div>
     <div class="totales">
-      <div class="t-line"><span>Subtotal servicios</span><span class="amt"><span id="tSubServ">0</span></span></div>
-      <div class="t-line extra-line" id="rowExtras" style="display:none"><span>Ítems adicionales</span><span class="amt"><span id="tSubExtras">0</span></span></div>
-      <div class="t-line"><span>Subtotal neto</span><span class="amt"><span id="tSubtotal">0</span></span></div>
-      <div class="t-line" id="ivaRow"><span>IVA 19%</span><span class="amt"><span id="tIva">0</span></span></div>
-      <div class="t-line grand"><span>TOTAL</span><span class="amt"><span id="tTotal">0</span></span></div>
+      <div class="t-line"><span>Subtotal servicios</span><span class="amt" id="tSubServ">$ 0</span></div>
+      <div class="t-line extra-line" id="rowExtras" style="display:none"><span>Ítems adicionales</span><span class="amt" id="tSubExtras">$ 0</span></div>
+      <div class="t-line"><span>Subtotal neto</span><span class="amt" id="tSubtotal">$ 0</span></div>
+      <div class="t-line" id="ivaRow"><span>IVA 19%</span><span class="amt" id="tIva">$ 0</span></div>
+      <div class="t-line grand"><span id="totalLabel">TOTAL COTIZACIÓN</span><span class="amt" id="tTotal">$ 0</span></div>
     </div>
   </div>
 </div>
 
 <div class="toast" id="toast"></div>
+
+<!-- MODAL CONVERTIR -->
+<div id="modalConvertir" class="modal">
+  <div class="convert-modal-box">
+    <div style="font-size:2rem;margin-bottom:.6rem" id="convertIcon">⇄</div>
+    <h3 id="convertTitle">Convertir a Estado de Pago</h3>
+    <p id="convertDesc">Se creará una copia de esta cotización como Estado de Pago, conservando todos los datos del cliente, servicios y montos. ¿Deseas continuar?</p>
+    <div class="convert-btns">
+      <button class="btn" onclick="cerrarModal('modalConvertir')">Cancelar</button>
+      <button class="btn btn-green" id="convertBtn" onclick="ejecutarConversion()">✓ Convertir y cambiar</button>
+    </div>
+  </div>
+</div>
 
 <!-- MODAL CLIENTES Y RUTAS -->
 <div id="modal" class="modal">
@@ -400,21 +544,20 @@ td.num input,td.num{font-family:var(--mono);font-size:.74rem}
 <!-- MODAL HISTORIAL -->
 <div id="modalHist" class="modal">
   <div class="modal-box-hist">
-    <div class="modal-head"><h3>🕓 Historial de Estados de Pago</h3><button class="modal-close" onclick="cerrarModal('modalHist')">✕</button></div>
+    <div class="modal-head"><h3>🕓 Historial de Documentos</h3><button class="modal-close" onclick="cerrarModal('modalHist')">✕</button></div>
+    <div class="hist-filter">
+      <button class="act" id="filtTodos" onclick="filtrarHist('todos')">Todos</button>
+      <button id="filtCot" onclick="filtrarHist('cot')">📋 Cotizaciones</button>
+      <button id="filtEP" onclick="filtrarHist('ep')">✅ Estados de Pago</button>
+    </div>
     <div class="hist-body" id="histBody"></div>
-    <button class="hist-new-btn" onclick="nuevoEP()">+ Nuevo Estado de Pago en blanco</button>
+    <button class="hist-new-btn" onclick="nuevoDoc()">+ Nuevo documento en blanco</button>
   </div>
 </div>
 
 <script>
-/* ══ MONEDAS ═════════════════════════════════════════
-   Todas las monedas ISO 4217 principales.
-   sym   = símbolo a mostrar
-   code  = código ISO
-   dec   = decimales
-   locale= locale para formateo
-═══════════════════════════════════════════════════ */
-const CURRENCIES = [
+/* ══ MONEDAS ══════════════════════════════════════════════════════════ */
+const CURRENCIES=[
   {code:'CLP',sym:'$',name:'Peso chileno',dec:0,locale:'es-CL'},
   {code:'ARS',sym:'$',name:'Peso argentino',dec:2,locale:'es-AR'},
   {code:'BOB',sym:'Bs.',name:'Boliviano',dec:2,locale:'es-BO'},
@@ -423,100 +566,133 @@ const CURRENCIES = [
   {code:'CHF',sym:'Fr.',name:'Franco suizo',dec:2,locale:'de-CH'},
   {code:'CNY',sym:'¥',name:'Yuan chino',dec:2,locale:'zh-CN'},
   {code:'COP',sym:'$',name:'Peso colombiano',dec:0,locale:'es-CO'},
-  {code:'CRC',sym:'₡',name:'Colón costarricense',dec:2,locale:'es-CR'},
-  {code:'CUP',sym:'$',name:'Peso cubano',dec:2,locale:'es-CU'},
-  {code:'DKK',sym:'kr.',name:'Corona danesa',dec:2,locale:'da-DK'},
-  {code:'DOP',sym:'RD$',name:'Peso dominicano',dec:2,locale:'es-DO'},
-  {code:'EGP',sym:'E£',name:'Libra egipcia',dec:2,locale:'ar-EG'},
   {code:'EUR',sym:'€',name:'Euro',dec:2,locale:'de-DE'},
   {code:'GBP',sym:'£',name:'Libra esterlina',dec:2,locale:'en-GB'},
-  {code:'GTQ',sym:'Q',name:'Quetzal guatemalteco',dec:2,locale:'es-GT'},
-  {code:'HKD',sym:'HK$',name:'Dólar de Hong Kong',dec:2,locale:'zh-HK'},
-  {code:'HNL',sym:'L',name:'Lempira hondureño',dec:2,locale:'es-HN'},
-  {code:'HUF',sym:'Ft',name:'Forinto húngaro',dec:0,locale:'hu-HU'},
-  {code:'IDR',sym:'Rp',name:'Rupia indonesia',dec:0,locale:'id-ID'},
-  {code:'ILS',sym:'₪',name:'Nuevo séquel israelí',dec:2,locale:'he-IL'},
-  {code:'INR',sym:'₹',name:'Rupia india',dec:2,locale:'hi-IN'},
-  {code:'JPY',sym:'¥',name:'Yen japonés',dec:0,locale:'ja-JP'},
-  {code:'KRW',sym:'₩',name:'Won surcoreano',dec:0,locale:'ko-KR'},
   {code:'MXN',sym:'$',name:'Peso mexicano',dec:2,locale:'es-MX'},
-  {code:'MYR',sym:'RM',name:'Ringgit malayo',dec:2,locale:'ms-MY'},
-  {code:'NIO',sym:'C$',name:'Córdoba nicaragüense',dec:2,locale:'es-NI'},
-  {code:'NOK',sym:'kr',name:'Corona noruega',dec:2,locale:'nb-NO'},
-  {code:'NZD',sym:'NZ$',name:'Dólar neozelandés',dec:2,locale:'en-NZ'},
-  {code:'PAB',sym:'B/.',name:'Balboa panameño',dec:2,locale:'es-PA'},
   {code:'PEN',sym:'S/',name:'Sol peruano',dec:2,locale:'es-PE'},
-  {code:'PHP',sym:'₱',name:'Peso filipino',dec:2,locale:'fil-PH'},
-  {code:'PLN',sym:'zł',name:'Esloti polaco',dec:2,locale:'pl-PL'},
-  {code:'PYG',sym:'₲',name:'Guaraní paraguayo',dec:0,locale:'es-PY'},
-  {code:'RON',sym:'lei',name:'Leu rumano',dec:2,locale:'ro-RO'},
-  {code:'RUB',sym:'₽',name:'Rublo ruso',dec:2,locale:'ru-RU'},
-  {code:'SAR',sym:'﷼',name:'Riyal saudí',dec:2,locale:'ar-SA'},
-  {code:'SEK',sym:'kr',name:'Corona sueca',dec:2,locale:'sv-SE'},
-  {code:'SGD',sym:'S$',name:'Dólar de Singapur',dec:2,locale:'en-SG'},
-  {code:'THB',sym:'฿',name:'Baht tailandés',dec:2,locale:'th-TH'},
-  {code:'TRY',sym:'₺',name:'Lira turca',dec:2,locale:'tr-TR'},
-  {code:'TWD',sym:'NT$',name:'Dólar taiwanés',dec:0,locale:'zh-TW'},
-  {code:'UAH',sym:'₴',name:'Grivna ucraniana',dec:2,locale:'uk-UA'},
   {code:'USD',sym:'US$',name:'Dólar estadounidense',dec:2,locale:'en-US'},
   {code:'UYU',sym:'$',name:'Peso uruguayo',dec:2,locale:'es-UY'},
-  {code:'VEF',sym:'Bs.F',name:'Bolívar venezolano',dec:2,locale:'es-VE'},
-  {code:'VND',sym:'₫',name:'Dong vietnamita',dec:0,locale:'vi-VN'},
-  {code:'ZAR',sym:'R',name:'Rand sudafricano',dec:2,locale:'en-ZA'},
 ];
 
-let monedaActual = load('hMoneda','CLP');
+let monedaActual=load('hMoneda','CLP');
+let modoActual=load('hModo','cot'); // 'cot' | 'ep'
+let filas=[];
+let extras=[];
+let clientes=load('hClientes',[]);
+let rutas=load('hRutas',[]);
+let rutaTarget=null;
+let docActualId=null;
+let histFiltro='todos';
 
-function initCurrencySelect(){
-  const sel=document.getElementById('currencySelect');
-  sel.innerHTML=CURRENCIES.map(c=>`<option value="${c.code}" ${c.code===monedaActual?'selected':''}>${c.sym} ${c.code} — ${c.name}</option>`).join('');
-}
-
-function cambiarMoneda(code){
-  monedaActual=code; save('hMoneda',code); calcular();
-  const c=getCur(); toast(`💱 Moneda: ${c.sym} ${c.code} — ${c.name}`);
-}
+function load(k,def){try{const v=localStorage.getItem(k);return v!==null?JSON.parse(v):def}catch{return def}}
+function save(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch{}}
 
 function getCur(){return CURRENCIES.find(c=>c.code===monedaActual)||CURRENCIES[0]}
-
-function fmtM(n){
-  const c=getCur();
-  return c.sym+' '+Math.round(n*Math.pow(10,c.dec))/Math.pow(10,c.dec)
-    .toLocaleString(c.locale,{minimumFractionDigits:c.dec,maximumFractionDigits:c.dec});
-}
-
 function fmt(n){
   const c=getCur();
   const v=Math.round(n*Math.pow(10,c.dec))/Math.pow(10,c.dec);
   return v.toLocaleString(c.locale,{minimumFractionDigits:c.dec,maximumFractionDigits:c.dec});
 }
 
-/* ══ ESTADO ═════════════════════════════════════════ */
-let filas      = [];
-let extras     = [];  // ítems adicionales
-let clientes   = load('hClientes',[]);
-let rutas      = load('hRutas',[]);
-let rutaTarget = null;
-let epActualId = null;
-
-function load(k,def){try{return JSON.parse(localStorage.getItem(k))||def}catch{return def}}
-function save(k,v){localStorage.setItem(k,JSON.stringify(v))}
-
-/* ══ INIT ═══════════════════════════════════════════ */
+/* ══ INIT ══════════════════════════════════════════════════════════════ */
 (function(){
-  initCurrencySelect();
+  // Llenar selector moneda
+  const sel=document.getElementById('currencySelect');
+  sel.innerHTML=CURRENCIES.map(c=>`<option value="${c.code}"${c.code===monedaActual?' selected':''}>${c.sym} ${c.code} — ${c.name}</option>`).join('');
+
   const hoy=new Date(), v30=new Date(hoy); v30.setDate(v30.getDate()+30);
   document.getElementById('fechaEmision').value=iso(hoy);
   document.getElementById('fechaVence').value=iso(v30);
+
   renderSelector();
-  const hist=load('hEPs',[]);
-  if(hist.length>0){cargarEP(hist[hist.length-1]);toast('✓ Último EP cargado')}
+  aplicarModo(modoActual,false);
+
+  const hist=load('hDocs',[]);
+  if(hist.length>0){cargarDoc(hist[hist.length-1]);toast('✓ Último documento cargado')}
   else agregarFila();
 })();
 
 function iso(d){return d.toISOString().slice(0,10)}
 
-/* ══ PERÍODO ════════════════════════════════════════ */
+/* ══ MODO ══════════════════════════════════════════════════════════════ */
+function cambiarModo(modo){
+  if(modo===modoActual) return;
+  modoActual=modo;
+  save('hModo',modo);
+  aplicarModo(modo,true);
+}
+
+function aplicarModo(modo,conTransicion){
+  modoActual=modo;
+  const esCot=modo==='cot';
+
+  // Tabs
+  document.getElementById('tabCot').className='mode-tab'+(esCot?' act':'');
+  document.getElementById('tabEP').className='mode-tab'+(esCot?'':' act');
+
+  // Body class para acento
+  document.body.className=esCot?'modo-cot':'modo-ep';
+
+  // Banners
+  document.getElementById('bannerCot').style.display=esCot?'flex':'none';
+  document.getElementById('bannerEP').style.display=esCot?'none':'flex';
+
+  // Toolbar badge
+  const badge=document.getElementById('toolbarBadge');
+  badge.textContent=esCot?'Cotización':'Estado de Pago';
+  badge.className='doc-badge doc-badge-cot';
+
+  // Header doc
+  document.getElementById('docTipoLabel').textContent=esCot?'Documento de oferta':'Documento de cobro';
+  document.getElementById('docTipoH2').textContent=esCot?'Cotización':'Estado de Pago';
+  const typeBadge=document.getElementById('docTypeBadge');
+  typeBadge.textContent=esCot?'📋 Propuesta Comercial':'✅ Estado de Pago';
+  typeBadge.className='doc-type-badge doc-badge-cot';
+
+  // N° doc label
+  document.getElementById('numLabel').textContent=esCot?'N° Cot.':'N° Doc.';
+  if(conTransicion){
+    const num=document.getElementById('numDoc').value;
+    if(esCot&&num.startsWith('EP-')) document.getElementById('numDoc').value='COT-'+num.slice(3);
+    if(!esCot&&num.startsWith('COT-')) document.getElementById('numDoc').value='EP-'+num.slice(4);
+  }
+
+  // Vence vs Validez
+  document.getElementById('rowVence').style.display=esCot?'none':'flex';
+  document.getElementById('rowValidez').style.display=esCot?'flex':'none';
+  document.getElementById('venceLabel').textContent=esCot?'Validez':'Vencimiento';
+
+  // Label mandante
+  document.getElementById('labelMandante').textContent=esCot?'Cliente / Destinatario':'Mandante / Cliente';
+
+  // Campos específicos cliente
+  document.getElementById('rowContrato').style.display=esCot?'none':'block';
+  document.getElementById('rowOC').style.display=esCot?'none':'block';
+  document.getElementById('rowContacto').style.display='block';
+
+
+  // Condiciones solo en COT
+  document.getElementById('seccionCondiciones').style.display=esCot?'block':'none';
+
+  // Glosa
+  document.getElementById('glosaDoc').innerHTML=esCot
+    ?'<strong>Nota:</strong> Esta cotización tiene carácter de oferta comercial y no constituye factura ni documento tributario. Los precios son referenciales y están sujetos a variaciones en combustible, peajes u otros costos operativos. Válida según el plazo indicado en este documento.'
+    :'<strong>Importante:</strong> Este Estado de Pago constituye respaldo administrativo de los servicios prestados y antecedente para facturación. Los montos están sujetos a revisión. Observaciones deberán realizarse dentro de 5 días hábiles. La factura se regirá por la Ley de Pago a 30 Días.';
+
+  // Total label
+  document.getElementById('totalLabel').textContent=esCot?'TOTAL COTIZACIÓN':'TOTAL A PAGAR';
+}
+
+function actualizarValidez(){
+  const dias=parseInt(document.getElementById('selValidez').value)||30;
+  const emision=document.getElementById('fechaEmision').value;
+  if(emision){const d=new Date(emision);d.setDate(d.getDate()+dias);document.getElementById('fechaVence').value=iso(d)}
+}
+
+/* ══ MONEDA ════════════════════════════════════════════════════════════ */
+function cambiarMoneda(code){monedaActual=code;save('hMoneda',code);calcular();const c=getCur();toast('💱 Moneda: '+c.sym+' '+c.code+' — '+c.name)}
+
+/* ══ PERÍODO ═══════════════════════════════════════════════════════════ */
 function calcDias(f){
   const t=f.periodoTipo||'dia';
   if(t==='dia') return 1;
@@ -527,10 +703,10 @@ function calcDias(f){
 }
 
 function periodoHTML(f){
-  const t=f.periodoTipo||'dia', dias=calcDias(f), id=f.id;
+  const t=f.periodoTipo||'dia',dias=calcDias(f),id=f.id;
   const pills=['dia','rango','mes','anio'].map(pt=>{
     const lbl={dia:'Día',rango:'Rango',mes:'Mes',anio:'Año'};
-    return `<button class="tipo-pill${t===pt?' act':''}" onclick="cambiarTipo(${id},'${pt}')">${lbl[pt]}</button>`;
+    return`<button class="tipo-pill${t===pt?' act':''}" onclick="cambiarTipo(${id},'${pt}')">${lbl[pt]}</button>`;
   }).join('');
   let inp='';
   if(t==='dia') inp=`<input type="date" value="${x(f.periodoDesde)}" onchange="setP(${id},'periodoDesde',this.value)">`;
@@ -548,22 +724,22 @@ function periodoHTML(f){
     inp=`<input type="number" min="2000" max="2099" value="${x(f.periodoAnio)||(new Date().getFullYear())}" style="width:80px" onchange="setP(${id},'periodoAnio',this.value)">`;
     if(f.periodoAnio) inp+=`<span class="dias-badge">📅 ${dias} días</span>`;
   }
-  return `<div class="periodo-wrap"><div class="tipo-pills">${pills}</div><div class="periodo-inputs">${inp}</div></div>`;
+  return`<div class="periodo-wrap"><div class="tipo-pills">${pills}</div><div class="periodo-inputs">${inp}</div></div>`;
 }
 
 function cambiarTipo(id,tipo){
   const f=filas.find(f=>f.id===id);if(!f)return;
-  f.periodoTipo=tipo; f.periodoHasta=''; f.periodoMes=''; f.periodoAnio='';
+  f.periodoTipo=tipo;f.periodoHasta='';f.periodoMes='';f.periodoAnio='';
   if(tipo==='anio') f.periodoAnio=String(new Date().getFullYear());
-  actualizarCeldaPeriodo(id); calcular();
+  actualizarCeldaPeriodo(id);calcular();
 }
 function setP(id,k,v){const f=filas.find(f=>f.id===id);if(f)f[k]=v;actualizarCeldaPeriodo(id);calcular()}
 function usarDias(id){
   const f=filas.find(f=>f.id===id);if(!f)return;
-  const d=calcDias(f); f.viajes=d;
+  const d=calcDias(f);f.viajes=d;
   const row=document.querySelector(`tr[data-id="${id}"]`);
   if(row){const inp=row.cells[5].querySelector('input');if(inp)inp.value=d}
-  calcular(); toast(`📅 ${d} días → Viajes/Días`);
+  calcular();toast(`📅 ${d} días → Viajes/Días`);
 }
 function actualizarCeldaPeriodo(id){
   const row=document.querySelector(`tr[data-id="${id}"]`);if(!row)return;
@@ -571,7 +747,7 @@ function actualizarCeldaPeriodo(id){
   row.cells[3].innerHTML=periodoHTML(f);
 }
 
-/* ══ FILAS SERVICIOS ════════════════════════════════ */
+/* ══ FILAS ══════════════════════════════════════════════════════════════ */
 function agregarFila(data={}){
   filas.push({id:Date.now()+Math.random(),periodoTipo:'dia',periodoDesde:'',periodoHasta:'',periodoMes:'',periodoAnio:'',vehiculo:'',patente:'',ruta:'',pasajeros:'',viajes:'',valorUnit:'',...data});
   renderTabla();
@@ -600,15 +776,12 @@ function x(v){return v==null?'':String(v).replace(/"/g,'&quot;')}
 function set(id,k,v){const f=filas.find(f=>f.id===id);if(f)f[k]=v}
 function lineaServ(f){const vi=parseFloat(f.viajes)||0,vu=parseFloat(f.valorUnit)||0;return vi&&vu?getCur().sym+' '+fmt(vi*vu):'—'}
 
-/* ══ ÍTEMS ADICIONALES ══════════════════════════════
-   Tipo: 'unit' = por unidad fija | 'dia' = por día (cantidad = días)
-═══════════════════════════════════════════════════ */
+/* ══ EXTRAS ═════════════════════════════════════════════════════════════ */
 function agregarExtra(data={}){
   extras.push({id:Date.now()+Math.random(),desc:'',tipo:'unit',cantidad:1,valorUnit:'',...data});
   renderExtras();
 }
 function eliminarExtra(id){extras=extras.filter(e=>e.id!==id);renderExtras();calcular()}
-
 function renderExtras(){
   const tb=document.getElementById('extrasBody');
   if(!extras.length){tb.innerHTML='<tr class="empty-row"><td colspan="6" style="background:transparent;padding:1rem;color:#c8a060;font-size:.74rem">Sin ítems adicionales</td></tr>';calcular();return}
@@ -631,16 +804,14 @@ function renderExtras(){
 function setE(id,k,v){const e=extras.find(e=>e.id===id);if(e)e[k]=v}
 function lineaExtra(e){const q=parseFloat(e.cantidad)||0,vu=parseFloat(e.valorUnit)||0;return q&&vu?getCur().sym+' '+fmt(q*vu):'—'}
 
-/* ══ CALCULAR ════════════════════════════════════════ */
+/* ══ CALCULAR ═══════════════════════════════════════════════════════════ */
 function calcular(){
-  // sync servicios
   filas.forEach(f=>{
     const row=document.querySelector(`tr[data-id="${f.id}"]`);if(!row)return;
     f.viajes=parseFloat(row.cells[5].querySelector('input')?.value)||0;
     f.valorUnit=parseFloat(row.cells[6].querySelector('input')?.value)||0;
     row.cells[7].textContent=lineaServ(f);
   });
-  // sync extras
   extras.forEach(e=>{
     const row=document.querySelector(`tr[data-eid="${e.id}"]`);if(!row)return;
     e.cantidad=parseFloat(row.cells[2].querySelector('input')?.value)||0;
@@ -655,18 +826,16 @@ function calcular(){
   const iva=conIva?Math.round(bruto*0.19):0;
   const sym=getCur().sym;
 
-  sv2('tSubServ',   sym+' '+fmt(brutoServ));
-  sv2('tSubExtras', sym+' '+fmt(brutoExtra));
-  sv2('tSubtotal',  sym+' '+fmt(bruto));
-  sv2('tIva',       sym+' '+fmt(iva));
-  sv2('tTotal',     sym+' '+fmt(bruto+iva));
-
+  document.getElementById('tSubServ').textContent=sym+' '+fmt(brutoServ);
+  document.getElementById('tSubExtras').textContent=sym+' '+fmt(brutoExtra);
+  document.getElementById('tSubtotal').textContent=sym+' '+fmt(bruto);
+  document.getElementById('tIva').textContent=sym+' '+fmt(iva);
+  document.getElementById('tTotal').textContent=sym+' '+fmt(bruto+iva);
   document.getElementById('ivaRow').style.opacity=conIva?'1':'0.38';
   document.getElementById('rowExtras').style.display=brutoExtra>0?'flex':'none';
 }
-function sv2(id,v){const el=document.getElementById(id);if(el)el.textContent=v}
 
-/* ══ GUARDAR / CARGAR EP ═════════════════════════════ */
+/* ══ CAPTURAR / GUARDAR / CARGAR ════════════════════════════════════════ */
 function capturarEstado(){
   filas.forEach(f=>{
     const row=document.querySelector(`tr[data-id="${f.id}"]`);if(!row)return;
@@ -683,10 +852,22 @@ function capturarEstado(){
     e.cantidad=parseFloat(row.cells[2].querySelector('input')?.value)||0;
     e.valorUnit=parseFloat(row.cells[3].querySelector('input')?.value)||0;
   });
-  return{id:epActualId||Date.now(),savedAt:new Date().toISOString(),
+  return{
+    id:docActualId||Date.now(),
+    savedAt:new Date().toISOString(),
+    modo:modoActual,
     numDoc:gv('numDoc'),fechaEmision:gv('fechaEmision'),fechaVence:gv('fechaVence'),
+    // cliente
     cliNombre:gv('cliNombre'),cliRut:gv('cliRut'),cliDir:gv('cliDir'),
-    cliCiudad:gv('cliCiudad'),cliContrato:gv('cliContrato'),cliOC:gv('cliOC'),
+    cliCiudad:gv('cliCiudad'),cliEmail:gv('cliEmail'),cliTel:gv('cliTel'),
+    cliContrato:gv('cliContrato'),cliOC:gv('cliOC'),cliContacto:gv('cliContacto'),
+    // proveedor
+    prvNombre:gv('prvNombre'),prvRut:gv('prvRut'),prvGiro:gv('prvGiro'),
+    prvDir:gv('prvDir'),prvCiudad:gv('prvCiudad'),prvRegion:gv('prvRegion'),
+    prvEmail:gv('prvEmail'),prvTel:gv('prvTel'),prvContacto:gv('prvContacto'),
+    // condiciones
+    condPago:gv('condPago'),condMonedaOferta:gv('condMonedaOferta'),condReajuste:gv('condReajuste'),condNotas:gv('condNotas'),
+    selValidez:gv('selValidez'),
     conIva:document.getElementById('chkIva').checked,
     moneda:monedaActual,
     filas:JSON.parse(JSON.stringify(filas)),
@@ -697,76 +878,135 @@ function capturarEstado(){
   };
 }
 
-function guardarEP(){
-  const e=capturarEstado(); epActualId=e.id;
-  let hist=load('hEPs',[]);
+function guardarDoc(){
+  const e=capturarEstado();docActualId=e.id;
+  let hist=load('hDocs',[]);
   const idx=hist.findIndex(h=>h.id===e.id);
   if(idx>=0) hist[idx]=e; else hist.push(e);
-  if(hist.length>50) hist=hist.slice(-50);
-  save('hEPs',hist); toast('💾 Estado de Pago guardado');
+  if(hist.length>100) hist=hist.slice(-100);
+  save('hDocs',hist);toast('💾 Documento guardado');
 }
 
-function cargarEP(ep){
-  epActualId=ep.id;
-  if(ep.moneda){monedaActual=ep.moneda;save('hMoneda',monedaActual);document.getElementById('currencySelect').value=monedaActual}
-  sv('numDoc',ep.numDoc||''); sv('fechaEmision',ep.fechaEmision||''); sv('fechaVence',ep.fechaVence||'');
-  sv('cliNombre',ep.cliNombre||''); sv('cliRut',ep.cliRut||''); sv('cliDir',ep.cliDir||'');
-  sv('cliCiudad',ep.cliCiudad||''); sv('cliContrato',ep.cliContrato||''); sv('cliOC',ep.cliOC||'');
-  document.getElementById('chkIva').checked=ep.conIva!==false;
-  if(ep.tieneLogo&&ep.logoSrc){
-    document.getElementById('imgTag').src=ep.logoSrc;
+function cargarDoc(d){
+  docActualId=d.id;
+  if(d.moneda){monedaActual=d.moneda;save('hMoneda',monedaActual);document.getElementById('currencySelect').value=monedaActual}
+  const modo=d.modo||'ep';
+  modoActual=modo; save('hModo',modo);
+  aplicarModo(modo,false);
+  // header
+  sv('numDoc',d.numDoc||'');sv('fechaEmision',d.fechaEmision||'');sv('fechaVence',d.fechaVence||'');
+  if(d.selValidez) sv('selValidez',d.selValidez);
+  // cliente
+  sv('cliNombre',d.cliNombre||'');sv('cliRut',d.cliRut||'');sv('cliDir',d.cliDir||'');
+  sv('cliCiudad',d.cliCiudad||'');sv('cliEmail',d.cliEmail||'');sv('cliTel',d.cliTel||'');
+  sv('cliContrato',d.cliContrato||'');sv('cliOC',d.cliOC||'');sv('cliContacto',d.cliContacto||'');
+  // proveedor
+  sv('prvNombre',d.prvNombre||'HAULER SPA');sv('prvRut',d.prvRut||'76.123.456-7');
+  sv('prvGiro',d.prvGiro||'Transporte terrestre');sv('prvDir',d.prvDir||'');
+  sv('prvCiudad',d.prvCiudad||'Antofagasta');sv('prvRegion',d.prvRegion||'Antofagasta');
+  sv('prvEmail',d.prvEmail||'operaciones@hauler.cl');sv('prvTel',d.prvTel||'');
+  sv('prvContacto',d.prvContacto||'');
+  // condiciones
+  sv('condPago',d.condPago||'');sv('condMonedaOferta',d.condMonedaOferta||'');
+  sv('condReajuste',d.condReajuste||'');sv('condNotas',d.condNotas||'');
+  document.getElementById('chkIva').checked=d.conIva!==false;
+  if(d.tieneLogo&&d.logoSrc){
+    document.getElementById('imgTag').src=d.logoSrc;
     document.getElementById('logoTexto').style.display='none';
     document.getElementById('logoImg').style.display='flex';
     document.getElementById('sizeWrap').style.display='flex';
     document.getElementById('btnQuitarLogo').style.display='inline-flex';
-    ajustarLogo(ep.logoSize||56); document.getElementById('logoSize').value=ep.logoSize||56;
+    ajustarLogo(d.logoSize||56);document.getElementById('logoSize').value=d.logoSize||56;
   } else quitarLogo();
-  filas=(ep.filas||[]).map(f=>({periodoTipo:'dia',periodoDesde:'',periodoHasta:'',periodoMes:'',periodoAnio:'',...f,id:f.id||Date.now()+Math.random()}));
-  extras=(ep.extras||[]).map(e=>({tipo:'unit',cantidad:1,valorUnit:'',...e,id:e.id||Date.now()+Math.random()}));
-  renderTabla(); renderExtras(); calcular();
+  filas=(d.filas||[]).map(f=>({periodoTipo:'dia',periodoDesde:'',periodoHasta:'',periodoMes:'',periodoAnio:'',...f,id:f.id||Date.now()+Math.random()}));
+  extras=(d.extras||[]).map(e=>({tipo:'unit',cantidad:1,valorUnit:'',...e,id:e.id||Date.now()+Math.random()}));
+  renderTabla();renderExtras();calcular();
 }
 
-function nuevoEP(){
-  if(!confirm('¿Crear un nuevo EP en blanco? Los cambios no guardados se perderán.'))return;
-  epActualId=null;
-  const hoy=new Date(),v30=new Date(hoy); v30.setDate(v30.getDate()+30);
-  sv('numDoc','EP-'+String(Date.now()).slice(-4));
-  sv('fechaEmision',iso(hoy)); sv('fechaVence',iso(v30));
-  ['cliNombre','cliRut','cliDir','cliCiudad','cliContrato','cliOC'].forEach(id=>sv(id,''));
+function nuevoDoc(){
+  if(!confirm('¿Crear un nuevo documento en blanco? Los cambios no guardados se perderán.'))return;
+  docActualId=null;
+  const hoy=new Date(),v30=new Date(hoy);v30.setDate(v30.getDate()+30);
+  const pre=modoActual==='cot'?'COT-':'EP-';
+  sv('numDoc',pre+String(Date.now()).slice(-4));
+  sv('fechaEmision',iso(hoy));sv('fechaVence',iso(v30));
+  ['cliNombre','cliRut','cliDir','cliCiudad','cliEmail','cliTel','cliContrato','cliOC','cliContacto',
+   'condPago','condMonedaOferta','condReajuste','condNotas'].forEach(id=>sv(id,''));
   document.getElementById('chkIva').checked=true;
-  quitarLogo(); filas=[]; extras=[]; renderTabla(); renderExtras(); calcular();
-  cerrarModal('modalHist'); agregarFila(); toast('📄 Nuevo EP creado');
+  quitarLogo();filas=[];extras=[];renderTabla();renderExtras();calcular();
+  cerrarModal('modalHist');agregarFila();toast('📄 Nuevo documento creado');
 }
 
-/* ══ HISTORIAL ═══════════════════════════════════════ */
+/* ══ CONVERSIÓN ═════════════════════════════════════════════════════════ */
+function abrirConvertirModal(){
+  const esCot=modoActual==='cot';
+  document.getElementById('convertIcon').textContent=esCot?'✅':'📋';
+  document.getElementById('convertTitle').textContent=esCot?'Convertir a Estado de Pago':'Convertir a Cotización';
+  document.getElementById('convertDesc').textContent=esCot
+    ?'Se creará una copia de esta cotización como Estado de Pago, conservando todos los datos del cliente, servicios y montos. ¿Deseas continuar?'
+    ?'Se convertirá este Estado de Pago en una Cotización, conservando todos los datos. ¿Deseas continuar?':'Se convertirá este Estado de Pago en una Cotización, conservando todos los datos. ¿Deseas continuar?'
+    :'Se convertirá este Estado de Pago en una Cotización, conservando todos los datos. ¿Deseas continuar?';
+  const btn=document.getElementById('convertBtn');
+  btn.className='btn btn-blue';
+  btn.textContent=esCot?'✓ Convertir a EP':'✓ Convertir a Cotización';
+  document.getElementById('modalConvertir').classList.add('open');
+}
+function ejecutarConversion(){
+  capturarEstado(); // sync
+  const nuevoModo=modoActual==='cot'?'ep':'cot';
+  const pre=nuevoModo==='cot'?'COT-':'EP-';
+  const numActual=document.getElementById('numDoc').value;
+  // Cambiar prefijo del número
+  let numNuevo=numActual;
+  if(nuevoModo==='ep'&&numActual.startsWith('COT-')) numNuevo='EP-'+numActual.slice(4);
+  if(nuevoModo==='cot'&&numActual.startsWith('EP-')) numNuevo='COT-'+numActual.slice(3);
+  docActualId=Date.now(); // nuevo id
+  sv('numDoc',numNuevo);
+  modoActual=nuevoModo;save('hModo',nuevoModo);
+  aplicarModo(nuevoModo,false);
+  cerrarModal('modalConvertir');
+  toast(nuevoModo==='ep'?'✅ Convertido a Estado de Pago':'📋 Convertido a Cotización');
+}
+
+/* ══ HISTORIAL ══════════════════════════════════════════════════════════ */
 function abrirHistorial(){renderHistorial();document.getElementById('modalHist').classList.add('open')}
+function filtrarHist(f){
+  histFiltro=f;
+  ['filtTodos','filtCot','filtEP'].forEach(id=>document.getElementById(id).classList.remove('act'));
+  document.getElementById(f==='todos'?'filtTodos':f==='cot'?'filtCot':'filtEP').classList.add('act');
+  renderHistorial();
+}
 function renderHistorial(){
-  const hist=load('hEPs',[]),el=document.getElementById('histBody');
-  if(!hist.length){el.innerHTML='<div class="hist-empty">Sin estados de pago guardados.<br>Haz clic en 💾 Guardar.</div>';return}
-  el.innerHTML=[...hist].reverse().map(ep=>{
-    const fecha=ep.savedAt?new Date(ep.savedAt).toLocaleString('es-CL',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'}):'—';
-    const bruto=(ep.filas||[]).reduce((s,f)=>s+((f.viajes||0)*(f.valorUnit||0)),0)+(ep.extras||[]).reduce((s,e)=>s+((e.cantidad||0)*(e.valorUnit||0)),0);
-    const total=ep.conIva!==false?Math.round(bruto*1.19):bruto;
-    const cur=CURRENCIES.find(c=>c.code===(ep.moneda||'CLP'))||CURRENCIES[0];
-    const esAct=ep.id===epActualId;
-    return `<div class="hist-item" onclick="seleccionarEP(${ep.id})">
-      <div class="hist-icon">${esAct?'📂':'📄'}</div>
+  const todos=load('hDocs',[]);
+  const hist=histFiltro==='todos'?todos:todos.filter(d=>(d.modo||'ep')===histFiltro);
+  const el=document.getElementById('histBody');
+  if(!hist.length){el.innerHTML='<div class="hist-empty">Sin documentos guardados.</div>';return}
+  el.innerHTML=[...hist].reverse().map(d=>{
+    const fecha=d.savedAt?new Date(d.savedAt).toLocaleString('es-CL',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'}):'—';
+    const bruto=(d.filas||[]).reduce((s,f)=>s+((f.viajes||0)*(f.valorUnit||0)),0)+(d.extras||[]).reduce((s,e)=>s+((e.cantidad||0)*(e.valorUnit||0)),0);
+    const total=d.conIva!==false?Math.round(bruto*1.19):bruto;
+    const cur=CURRENCIES.find(c=>c.code===(d.moneda||'CLP'))||CURRENCIES[0];
+    const esAct=d.id===docActualId;
+    const esCot=(d.modo||'ep')==='cot';
+    return`<div class="hist-item" onclick="seleccionarDoc(${d.id})">
+      <div class="hist-icon">${esAct?(esCot?'📂':'📁'):esCot?'📋':'📄'}</div>
       <div class="hist-info">
-        <div class="hist-title">${ep.numDoc||'Sin número'}${esAct?' <span style="font-size:.58rem;background:var(--blue);color:#fff;padding:1px 6px;border-radius:99px;margin-left:4px">actual</span>':''}</div>
-        <div class="hist-sub"><span>👤 ${ep.cliNombre||'Sin cliente'}</span><span>📅 ${ep.fechaEmision||'—'}</span><span>💰 ${cur.sym} ${Math.round(total).toLocaleString(cur.locale)}</span><span>🕓 ${fecha}</span></div>
+        <div class="hist-title">${d.numDoc||'Sin número'} ${esCot?'<span style="background:#e6eeff;color:#0055ff;font-size:.55rem;padding:1px 5px;border-radius:99px">COT</span>':'<span style="background:#e6eeff;color:#0055ff;font-size:.55rem;padding:1px 5px;border-radius:99px">EP</span>'} ${esAct?'<span style="font-size:.55rem;background:var(--blue);color:#fff;padding:1px 6px;border-radius:99px;margin-left:4px">actual</span>':''}</div>
+        <div class="hist-sub"><span>👤 ${d.cliNombre||'Sin cliente'}</span><span>📅 ${d.fechaEmision||'—'}</span><span>💰 ${cur.sym} ${Math.round(total).toLocaleString(cur.locale)}</span><span>🕓 ${fecha}</span></div>
       </div>
       <div class="hist-actions" onclick="event.stopPropagation()">
-        <button onclick="seleccionarEP(${ep.id})">✓</button>
-        <button class="del" onclick="eliminarEP(${ep.id})">✕</button>
+        <button onclick="seleccionarDoc(${d.id})">✓</button>
+        <button class="del" onclick="eliminarDoc(${d.id})">✕</button>
       </div>
     </div>`;
   }).join('');
 }
-function seleccionarEP(id){const ep=load('hEPs',[]).find(e=>e.id===id);if(!ep)return;cargarEP(ep);cerrarModal('modalHist');toast('📂 EP cargado: '+ep.numDoc)}
-function eliminarEP(id){if(!confirm('¿Eliminar del historial?'))return;let h=load('hEPs',[]).filter(e=>e.id!==id);save('hEPs',h);if(epActualId===id)epActualId=null;renderHistorial();toast('🗑 EP eliminado')}
+function seleccionarDoc(id){const d=load('hDocs',[]).find(e=>e.id===id);if(!d)return;cargarDoc(d);cerrarModal('modalHist');toast('📂 Documento cargado: '+d.numDoc)}
+function eliminarDoc(id){if(!confirm('¿Eliminar del historial?'))return;let h=load('hDocs',[]).filter(e=>e.id!==id);save('hDocs',h);if(docActualId===id)docActualId=null;renderHistorial();toast('🗑 Documento eliminado')}
 
-/* ══ IMPRIMIR ════════════════════════════════════════ */
+/* ══ IMPRIMIR ═══════════════════════════════════════════════════════════ */
 function imprimirDoc(){
+  const esCot=modoActual==='cot';
   const tieneLogo=document.getElementById('logoImg').style.display!=='none';
   const logoSrc=document.getElementById('imgTag').src||'';
   const logoSize=document.getElementById('logoSize').value||'56';
@@ -777,10 +1017,11 @@ function imprimirDoc(){
   const bruto=brutoServ+brutoExtra;
   const iva=conIva?Math.round(bruto*0.19):0;
   const meses=['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
+
   function pd(f){const t=f.periodoTipo||'dia';if(t==='dia')return f.periodoDesde||'—';if(t==='rango')return`${f.periodoDesde||'?'} → ${f.periodoHasta||'?'} (${calcDias(f)}d)`;if(t==='mes'&&f.periodoMes){const[y,m]=f.periodoMes.split('-').map(Number);return meses[m-1]+' '+y}if(t==='anio')return f.periodoAnio||'—';return'—'}
 
   const filasHTML=filas.length
-    ?filas.map(f=>`<tr><td style="text-align:left">${f.vehiculo||''}</td><td>${f.patente||''}</td><td>${f.ruta||''}</td><td>${pd(f)}</td><td>${f.pasajeros||''}</td><td style="font-family:var(--mono)">${f.viajes||''}</td><td style="font-family:var(--mono)">${f.valorUnit?fmt(f.valorUnit):''}</td><td style="font-family:var(--mono)">${lineaServ(f)}</td></tr>`).join('')
+    ?filas.map(f=>`<tr><td style="text-align:left">${f.vehiculo||''}</td><td>${f.patente||''}</td><td>${f.ruta||''}</td><td>${pd(f)}</td><td>${f.pasajeros||''}</td><td style="font-family:monospace">${f.viajes||''}</td><td style="font-family:monospace">${f.valorUnit?fmt(f.valorUnit):''}</td><td style="font-family:monospace">${lineaServ(f)}</td></tr>`).join('')
     :'<tr><td colspan="8" style="text-align:center;color:#999;padding:.8rem">Sin servicios</td></tr>';
 
   const extrasHTML=extras.length?`
@@ -794,117 +1035,148 @@ function imprimirDoc(){
         <th style="background:#fdf8f0;color:#966320">Valor unit.</th>
         <th style="background:#fdf8f0;color:#966320">Total</th>
       </tr></thead><tbody>
-      ${extras.map(e=>`<tr><td style="text-align:left;padding-left:3mm">${e.desc||''}</td><td>${e.tipo==='dia'?'Por día':'Por unidad'}</td><td style="font-family:var(--mono)">${e.cantidad||''}</td><td style="font-family:var(--mono)">${e.valorUnit?fmt(e.valorUnit):''}</td><td style="font-family:var(--mono)">${lineaExtra(e)}</td></tr>`).join('')}
+      ${extras.map(e=>`<tr><td style="text-align:left;padding-left:3mm">${e.desc||''}</td><td>${e.tipo==='dia'?'Por día':'Por unidad'}</td><td style="font-family:monospace">${e.cantidad||''}</td><td style="font-family:monospace">${e.valorUnit?fmt(e.valorUnit):''}</td><td style="font-family:monospace">${lineaExtra(e)}</td></tr>`).join('')}
       </tbody></table>
     </div>`:'';
 
   const logoHTML=tieneLogo?`<img src="${logoSrc}" style="max-height:${logoSize}px;object-fit:contain;max-width:200px">`:`<div style="font-size:22pt;font-weight:700;letter-spacing:-.5px">HAULER</div><div style="font-size:7pt;font-weight:500;letter-spacing:2.5px;text-transform:uppercase;color:#999;margin-top:3px">Transporte de pasajeros</div>`;
 
+  // Condiciones cotización
+  const condHTML=esCot?`
+    <div class="hdiv"></div>
+    <div class="cond-print">
+      <div class="section-label">Condiciones de la oferta</div>
+      <div class="cond-grid-print">
+        <div><span class="cl">Forma de pago</span><span class="cv">${gv('condPago')||'—'}</span></div>
+        <div><span class="cl">Moneda</span><span class="cv">${gv('condMonedaOferta')||'—'}</span></div>
+        <div><span class="cl">Reajuste</span><span class="cv">${gv('condReajuste')||'Sin reajuste'}</span></div>
+        ${gv('condNotas')?`<div style="grid-column:1/-1"><span class="cl">Notas</span><span class="cv">${gv('condNotas')}</span></div>`:''}
+      </div>
+    </div>`:'';
+
   const html=`<!DOCTYPE html><html lang="es"><head>
-<meta charset="UTF-8"><title>Estado de Pago · HAULER</title>
+<meta charset="UTF-8"><title>${esCot?'Cotización':'Estado de Pago'} · HAULER</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
-:root{--sans:'Inter',sans-serif;--mono:'JetBrains Mono','Courier New',monospace;--blue:#0055FF;--t1:#111115;--t2:#5a5a66;--t3:#9898a6;--bdr:#dde0e8;--grad:linear-gradient(90deg,transparent,#bdd0ff 40%,#bdd0ff 60%,transparent)}
-@page{size:letter portrait;margin:12mm 14mm}
-html,body{font-family:var(--sans);font-size:10pt;color:var(--t1);background:#fff;-webkit-print-color-adjust:exact;print-color-adjust:exact}
-.doc{border:1pt solid #c0d0f0}
-.hdiv{height:1pt;background:var(--grad);margin:0 10mm}
+:root{--blue:#0055FF;--t1:#111115;--t2:#5a5a66;--t3:#9898a6;--bdr:#dde0e8;--grad:linear-gradient(90deg,transparent,#bdd0ff 40%,#bdd0ff 60%,transparent)}
+@page{size:letter portrait;margin:10mm 12mm}
+html,body{font-family:'Inter',sans-serif;font-size:10pt;color:var(--t1);background:#fff;
+  -webkit-print-color-adjust:exact;print-color-adjust:exact;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh}
+.doc{border:1pt solid #c0d0f0;border-top:3pt solid var(--blue);width:100%}
+.hdiv{height:1pt;background:var(--grad);margin:0 8mm}
 .vdiv{width:1pt;background:var(--grad)}
-.doc-header{display:grid;grid-template-columns:auto 1fr auto;align-items:stretch;gap:10mm;padding:7mm 10mm;min-height:20mm}
+.doc-header{display:grid;grid-template-columns:auto 1fr auto;align-items:stretch;gap:8mm;padding:6mm 8mm;min-height:18mm}
 .logo-col,.meta-col{display:flex;flex-direction:column;justify-content:center}
 .doc-title{display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center}
 .doc-title h1{font-size:6.5pt;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:var(--t3);margin-bottom:3px}
 .doc-title h2{font-size:14pt;font-weight:300}
-.meta-row{display:flex;align-items:center;justify-content:flex-end;gap:4mm;margin-bottom:2.5mm}
+.doc-title .badge{display:inline-block;margin-top:3px;padding:2px 8px;border-radius:99pt;font-size:6.5pt;font-weight:700;background:#e6eeff;color:var(--blue)}
+.meta-row{display:flex;align-items:center;justify-content:flex-end;gap:4mm;margin-bottom:2mm}
 .meta-row:last-child{margin-bottom:0}
 .meta-row label{font-size:6pt;font-weight:700;letter-spacing:.8px;text-transform:uppercase;color:var(--t3)}
-.meta-row span{font:9pt/1 var(--mono);color:var(--t1)}
+.meta-row span{font:9pt/1 'JetBrains Mono','Courier New',monospace;color:var(--t1)}
 .doc-info{display:grid;grid-template-columns:1fr auto 1fr}
-.info-block{padding:5mm 10mm}
-.block-title{font-size:6pt;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--t3);margin-bottom:4mm}
-.info-grid{display:grid;grid-template-columns:1fr 1fr;gap:3mm 5mm}
+.info-block{padding:4mm 8mm}
+.block-title{font-size:6pt;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--t3);margin-bottom:3mm}
+.info-grid{display:grid;grid-template-columns:1fr 1fr;gap:2.5mm 5mm}
 .f-full{grid-column:1/-1}
-.field label{font-size:5.5pt;font-weight:700;text-transform:uppercase;letter-spacing:.7px;color:var(--t3);display:block;margin-bottom:1mm}
-.field span{font-size:9pt;color:var(--t1);display:block;border-bottom:1pt solid var(--bdr);padding-bottom:1.5mm}
-.table-wrap{padding:5mm 10mm 4mm}
-.section-label{font-size:6pt;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--t3);margin-bottom:4mm}
+.field label{font-size:5.5pt;font-weight:700;text-transform:uppercase;letter-spacing:.7px;color:var(--t3);display:block;margin-bottom:.8mm}
+.field span{font-size:8.5pt;color:var(--t1);display:block;border-bottom:1pt solid var(--bdr);padding-bottom:1mm;min-height:4mm}
+.table-wrap{padding:4mm 8mm 3mm}
+.section-label{font-size:6pt;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--t3);margin-bottom:3mm}
 table{width:100%;border-collapse:collapse;font-size:8pt}
-thead th{background:#f5f6f9;font:700 6pt/1 var(--sans);letter-spacing:.3px;text-transform:uppercase;color:var(--t2);padding:2mm 1.5mm;text-align:center;white-space:nowrap;border-bottom:1pt solid var(--bdr)}
-thead th:first-child{text-align:left;padding-left:3mm}
-tbody td{padding:1.8mm 1.5mm;text-align:center;vertical-align:middle;border-bottom:1pt solid #eef}
-tbody td:first-child{text-align:left;padding-left:3mm}
-.doc-footer{display:grid;grid-template-columns:1fr auto;gap:8mm;align-items:end;padding:4mm 10mm 6mm}
-.glosa{font-size:7pt;line-height:1.6;color:var(--t2);background:#f8f9ff;padding:3mm 4mm;border-left:2pt solid #a0bff0}
-.glosa strong{color:var(--t1);font-weight:600}
-.totales{background:#f5f6f9;padding:3.5mm 5mm;min-width:55mm;border:1pt solid var(--bdr)}
-.t-line{display:flex;justify-content:space-between;align-items:center;padding:2mm 0;color:var(--t2);font-size:8pt;border-bottom:1pt solid var(--bdr)}
+thead th{background:#f5f6f9;font:700 6pt/1 sans-serif;letter-spacing:.3px;text-transform:uppercase;color:var(--t2);padding:2mm 1.5mm;text-align:center;border-bottom:1pt solid var(--bdr)}
+thead th:first-child{text-align:left;padding-left:2.5mm}
+tbody td{padding:1.5mm;text-align:center;border-bottom:1pt solid #eef}
+tbody td:first-child{text-align:left;padding-left:2.5mm}
+.doc-footer{display:grid;grid-template-columns:1fr auto;gap:6mm;align-items:end;padding:3mm 8mm 5mm}
+.glosa{font-size:7pt;line-height:1.55;color:var(--t2);background:#f8f9ff;padding:2.5mm 3.5mm;border-left:2pt solid #a0bff0}
+.glosa strong{color:var(--t1)}
+.totales{background:#f5f6f9;padding:3mm 4mm;min-width:52mm;border:1pt solid var(--bdr)}
+.t-line{display:flex;justify-content:space-between;padding:1.5mm 0;color:var(--t2);font-size:8pt;border-bottom:1pt solid var(--bdr)}
 .t-line:last-child{border-bottom:none}
-.t-line .amt{font:500 8pt/1 var(--mono);color:var(--t1)}
+.t-line .amt{font:500 8pt/1 monospace;color:var(--t1)}
 .t-line.extra-line{color:#966320}.t-line.extra-line .amt{color:#966320}
-.t-line.grand{margin-top:2mm;padding-top:3mm;border-top:1pt solid var(--bdr)!important;font-size:9pt;font-weight:700}
-.t-line.grand .amt{font-size:11pt;font-weight:700;color:var(--blue)}
+.t-line.grand{margin-top:1.5mm;padding-top:2mm;border-top:1pt solid var(--bdr)!important;font-size:9pt;font-weight:700}
+.t-line.grand .amt{font-size:10.5pt;font-weight:700;color:var(--blue)}
+.cond-print{padding:3mm 8mm}
+.cond-grid-print{display:grid;grid-template-columns:1fr 1fr 1fr;gap:2mm 5mm;margin-top:2mm}
+.cond-grid-print .cl{display:block;font-size:5.5pt;font-weight:700;text-transform:uppercase;color:var(--t3);letter-spacing:.7px;margin-bottom:.5mm}
+.cond-grid-print .cv{display:block;font-size:8.5pt;border-bottom:1pt solid var(--bdr);padding-bottom:1mm}
 </style></head><body>
 <div class="doc">
   <div class="doc-header">
     <div class="logo-col">${logoHTML}</div>
-    <div class="doc-title"><h1>Documento de cobro</h1><h2>Estado de Pago</h2></div>
+    <div class="doc-title">
+      <h1>${esCot?'Documento de oferta':'Documento de cobro'}</h1>
+      <h2>${esCot?'Cotización':'Estado de Pago'}</h2>
+      <span class="badge">${esCot?'📋 Propuesta Comercial':'✅ Estado de Pago'}</span>
+    </div>
     <div class="meta-col">
-      <div class="meta-row"><label>N° Doc.</label><span>${gv('numDoc')}</span></div>
+      <div class="meta-row"><label>${esCot?'N° Cot.':'N° Doc.'}</label><span>${gv('numDoc')}</span></div>
       <div class="meta-row"><label>Emisión</label><span>${gv('fechaEmision')}</span></div>
-      <div class="meta-row"><label>Vencimiento</label><span>${gv('fechaVence')}</span></div>
+      ${esCot?`<div class="meta-row"><label>Válida hasta</label><span>${gv('fechaVence')}</span></div>`:`<div class="meta-row"><label>Vencimiento</label><span>${gv('fechaVence')}</span></div>`}
     </div>
   </div>
   <div class="hdiv"></div>
   <div class="doc-info">
     <div class="info-block">
-      <div class="block-title">Mandante / Cliente</div>
+      <div class="block-title">${esCot?'Cliente / Destinatario':'Mandante / Cliente'}</div>
       <div class="info-grid">
         <div class="field f-full"><label>Razón social</label><span>${gv('cliNombre')}</span></div>
         <div class="field"><label>RUT</label><span>${gv('cliRut')}</span></div>
         <div class="field"><label>Dirección</label><span>${gv('cliDir')}</span></div>
         <div class="field"><label>Ciudad</label><span>${gv('cliCiudad')}</span></div>
-        <div class="field"><label>Contrato</label><span>${gv('cliContrato')}</span></div>
-        <div class="field"><label>OC</label><span>${gv('cliOC')}</span></div>
+        <div class="field"><label>Email</label><span>${gv('cliEmail')}</span></div>
+        <div class="field"><label>Teléfono</label><span>${gv('cliTel')}</span></div>
+        ${!esCot?`<div class="field"><label>Contrato</label><span>${gv('cliContrato')}</span></div><div class="field"><label>OC</label><span>${gv('cliOC')}</span></div>`:''}
+        <div class="field"><label>Contacto</label><span>${gv('cliContacto')}</span></div>
       </div>
     </div>
     <div class="vdiv"></div>
     <div class="info-block">
-      <div class="block-title">Proveedor</div>
+      <div class="block-title">Proveedor / Oferente</div>
       <div class="info-grid">
-        <div class="field f-full"><label>Razón social</label><span>HAULER SPA</span></div>
-        <div class="field"><label>RUT</label><span>76.123.456-7</span></div>
-        <div class="field"><label>Giro</label><span>Transporte terrestre</span></div>
-        <div class="field f-full"><label>Dirección</label><span>Uribe 636 Of. 302, C. de Negocios</span></div>
-        <div class="field"><label>Comuna</label><span>Antofagasta</span></div>
-        <div class="field"><label>Región</label><span>Antofagasta</span></div>
-        <div class="field"><label>Email</label><span>operaciones@hauler.cl</span></div>
-        <!-- En impresión tampoco se incluye cuenta bancaria -->
+        <div class="field f-full"><label>Razón social</label><span>${gv('prvNombre')}</span></div>
+        <div class="field"><label>RUT</label><span>${gv('prvRut')}</span></div>
+        <div class="field"><label>Giro</label><span>${gv('prvGiro')}</span></div>
+        <div class="field f-full"><label>Dirección</label><span>${gv('prvDir')}</span></div>
+        <div class="field"><label>Ciudad</label><span>${gv('prvCiudad')}</span></div>
+        <div class="field"><label>Región</label><span>${gv('prvRegion')}</span></div>
+        <div class="field"><label>Email</label><span>${gv('prvEmail')}</span></div>
+        <div class="field"><label>Teléfono</label><span>${gv('prvTel')}</span></div>
+        ${gv('prvContacto')?`<div class="field"><label>Contacto</label><span>${gv('prvContacto')}</span></div>`:''}
       </div>
     </div>
   </div>
+  ${condHTML}
   <div class="hdiv"></div>
   <div class="table-wrap">
     <div class="section-label">Detalle de servicios</div>
     <table><thead><tr>
-      <th style="text-align:left;padding-left:3mm">Vehículo</th><th>Patente</th><th>Ruta</th><th>Período</th><th>Pasaj.</th><th>Viajes/Días</th><th>Valor unit.</th><th>Total</th>
+      <th style="text-align:left;padding-left:2.5mm">Vehículo</th><th>Patente</th><th>Ruta</th><th>Período</th><th>Pasaj.</th><th>Viajes/Días</th><th>Valor unit.</th><th>Total</th>
     </tr></thead><tbody>${filasHTML}</tbody></table>
   </div>
   ${extrasHTML}
   <div class="hdiv"></div>
   <div class="doc-footer">
-    <div class="glosa"><strong>Importante:</strong> Este Estado de Pago constituye respaldo administrativo de los servicios prestados y antecedente para facturación. Los montos están sujetos a revisión. Observaciones deberán realizarse dentro de 5 días hábiles. La factura se regirá por la Ley de Pago a 30 Días.</div>
+    <div class="glosa">${esCot
+      ?'<strong>Nota:</strong> Esta cotización tiene carácter de oferta comercial y no constituye factura ni documento tributario. Los precios son referenciales y están sujetos a variaciones en combustible, peajes u otros costos operativos. Válida según el plazo indicado.'
+      :'<strong>Importante:</strong> Este Estado de Pago constituye respaldo administrativo de los servicios prestados y antecedente para facturación. Los montos están sujetos a revisión. Observaciones deberán realizarse dentro de 5 días hábiles. La factura se regirá por la Ley de Pago a 30 Días.'
+    }</div>
     <div class="totales">
       <div class="t-line"><span>Subtotal servicios</span><span class="amt">${cur.sym} ${fmt(brutoServ)}</span></div>
       ${brutoExtra>0?`<div class="t-line extra-line"><span>Ítems adicionales</span><span class="amt">${cur.sym} ${fmt(brutoExtra)}</span></div>`:''}
       <div class="t-line"><span>Subtotal neto</span><span class="amt">${cur.sym} ${fmt(bruto)}</span></div>
       ${conIva?`<div class="t-line"><span>IVA 19%</span><span class="amt">${cur.sym} ${fmt(iva)}</span></div>`:''}
-      <div class="t-line grand"><span>TOTAL</span><span class="amt">${cur.sym} ${fmt(bruto+iva)}</span></div>
+      <div class="t-line grand"><span>${esCot?'TOTAL COTIZACIÓN':'TOTAL A PAGAR'}</span><span class="amt">${cur.sym} ${fmt(bruto+iva)}</span></div>
     </div>
   </div>
 </div>
-<script>document.fonts.ready.then(()=>setTimeout(()=>window.print(),300));<\/script>
+<script>document.fonts.ready.then(()=>setTimeout(()=>window.print(),400));<\/script>
 </body></html>`;
 
   const w=window.open('','_blank','width=900,height=700');
@@ -912,12 +1184,12 @@ tbody td:first-child{text-align:left;padding-left:3mm}
   w.document.open();w.document.write(html);w.document.close();
 }
 
-/* ══ LOGO ════════════════════════════════════════════ */
+/* ══ LOGO ═══════════════════════════════════════════════════════════════ */
 function cargarLogo(input){const file=input.files[0];if(!file)return;const r=new FileReader();r.onload=e=>{document.getElementById('imgTag').src=e.target.result;document.getElementById('logoTexto').style.display='none';document.getElementById('logoImg').style.display='flex';document.getElementById('sizeWrap').style.display='flex';document.getElementById('btnQuitarLogo').style.display='inline-flex';ajustarLogo(document.getElementById('logoSize').value)};r.readAsDataURL(file)}
 function ajustarLogo(v){document.getElementById('imgTag').style.maxHeight=v+'px';document.getElementById('sizePx').textContent=v+'px'}
 function quitarLogo(){document.getElementById('logoTexto').style.display='block';document.getElementById('logoImg').style.display='none';document.getElementById('sizeWrap').style.display='none';document.getElementById('btnQuitarLogo').style.display='none';document.getElementById('imgTag').src=''}
 
-/* ══ CLIENTES ════════════════════════════════════════ */
+/* ══ CLIENTES ════════════════════════════════════════════════════════════ */
 function renderSelector(){const sel=document.getElementById('clienteSelector');sel.innerHTML='<option value="">— Seleccionar —</option>'+clientes.map((c,i)=>`<option value="${i}">${c.nombre}</option>`).join('')}
 function cargarCliente(){const idx=document.getElementById('clienteSelector').value;if(idx==='')return;const c=clientes[parseInt(idx)];if(!c)return;sv('cliNombre',c.nombre||'');sv('cliRut',c.rut||'');sv('cliDir',c.dir||'');sv('cliCiudad',c.ciudad||'')}
 function agregarCliente(){const n=g('nCliNombre');if(!n)return alert('Ingresa la razón social.');clientes.push({nombre:n,rut:g('nCliRut'),dir:g('nCliDir'),ciudad:g('nCliCiudad')});save('hClientes',clientes);['nCliNombre','nCliRut','nCliDir','nCliCiudad'].forEach(id=>document.getElementById(id).value='');renderSelector();renderListaClientes();toast('✓ Cliente guardado')}
@@ -925,24 +1197,24 @@ function eliminarCliente(i){clientes.splice(i,1);save('hClientes',clientes);rend
 function usarCliente(i){const c=clientes[i];sv('cliNombre',c.nombre||'');sv('cliRut',c.rut||'');sv('cliDir',c.dir||'');sv('cliCiudad',c.ciudad||'');cerrarModal('modal')}
 function renderListaClientes(){const el=document.getElementById('listaClientes');if(!el)return;el.innerHTML=clientes.length?clientes.map((c,i)=>`<div class="list-item"><div class="item-info">${c.nombre}<small>${c.rut||''} ${c.ciudad?'· '+c.ciudad:''}</small></div><div class="item-btns"><button onclick="usarCliente(${i})">✓</button><button class="del" onclick="eliminarCliente(${i})">✕</button></div></div>`).join(''):'<p style="font-size:.7rem;color:var(--t3);text-align:center;padding:.8rem">Sin clientes</p>'}
 
-/* ══ RUTAS ═══════════════════════════════════════════ */
+/* ══ RUTAS ═══════════════════════════════════════════════════════════════ */
 function agregarRuta(){const n=g('nRutaNombre');if(!n)return alert('Ingresa el nombre de la ruta.');rutas.push({nombre:n,desc:g('nRutaDesc')});save('hRutas',rutas);['nRutaNombre','nRutaDesc'].forEach(id=>document.getElementById(id).value='');renderListaRutas();toast('✓ Ruta guardada')}
 function eliminarRuta(i){rutas.splice(i,1);save('hRutas',rutas);renderListaRutas()}
 function usarRuta(i){if(rutaTarget!=null){const f=filas.find(f=>f.id===rutaTarget);if(f){f.ruta=rutas[i].nombre;renderTabla();}rutaTarget=null}cerrarModal('modal')}
 function selRuta(filaId){rutaTarget=filaId;abrirModal()}
 function renderListaRutas(){const el=document.getElementById('listaRutas');if(!el)return;el.innerHTML=rutas.length?rutas.map((r,i)=>`<div class="list-item"><div class="item-info">${r.nombre}<small>${r.desc||''}</small></div><div class="item-btns"><button onclick="usarRuta(${i})">✓</button><button class="del" onclick="eliminarRuta(${i})">✕</button></div></div>`).join(''):'<p style="font-size:.7rem;color:var(--t3);text-align:center;padding:.8rem">Sin rutas</p>'}
 
-/* ══ MODALES ═════════════════════════════════════════ */
+/* ══ MODALES ══════════════════════════════════════════════════════════════ */
 function abrirModal(){renderListaClientes();renderListaRutas();document.getElementById('modal').classList.add('open')}
 function cerrarModal(id){document.getElementById(id).classList.remove('open');if(id==='modal')rutaTarget=null}
-['modal','modalHist'].forEach(id=>{document.getElementById(id).addEventListener('click',e=>{if(e.target===e.currentTarget)cerrarModal(id)})});
-document.addEventListener('keydown',e=>{if(e.key==='Escape'){cerrarModal('modal');cerrarModal('modalHist')}});
+['modal','modalHist','modalConvertir'].forEach(id=>{document.getElementById(id).addEventListener('click',e=>{if(e.target===e.currentTarget)cerrarModal(id)})});
+document.addEventListener('keydown',e=>{if(e.key==='Escape'){['modal','modalHist','modalConvertir'].forEach(id=>cerrarModal(id))}});
 
-/* ══ TOAST ═══════════════════════════════════════════ */
+/* ══ TOAST ════════════════════════════════════════════════════════════════ */
 let toastT=null;
 function toast(msg){const el=document.getElementById('toast');el.textContent=msg;el.classList.add('show');clearTimeout(toastT);toastT=setTimeout(()=>el.classList.remove('show'),2400)}
 
-/* ══ UTIL ════════════════════════════════════════════ */
+/* ══ UTIL ══════════════════════════════════════════════════════════════════ */
 function g(id){return document.getElementById(id).value.trim()}
 function gv(id){const el=document.getElementById(id);return el?el.value:''}
 function sv(id,v){const el=document.getElementById(id);if(el)el.value=v}
