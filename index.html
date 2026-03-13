@@ -251,7 +251,8 @@ td.num input,td.num{font-family:var(--mono);font-size:.74rem}
 .panel{background:#f5f6f9;border-radius:14px;padding:.9rem}
 .panel h4{font-size:.6rem;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:1px;margin-bottom:.75rem}
 .panel-sep{border:none;border-top:1px solid var(--bdr);margin:.75rem 0}
-.list-item{background:#fff;border-radius:10px;padding:.65rem .8rem;margin-bottom:.4rem;border:1px solid var(--bdr);display:flex;justify-content:space-between;align-items:center}
+.list-item{background:#fff;border-radius:10px;padding:.65rem .8rem;margin-bottom:.4rem;border:1px solid var(--bdr);display:flex;justify-content:space-between;align-items:center;transition:all .15s}
+.list-item.selected{background:var(--blue-lt);border-color:var(--blue)}
 .item-info{font-size:.76rem;font-weight:500}
 .item-info small{display:block;font-size:.6rem;color:var(--t3);font-weight:400;margin-top:2px}
 .item-btns{display:flex;gap:.3rem}
@@ -539,10 +540,25 @@ td.num input,td.num{font-family:var(--mono);font-size:.74rem}
         </div>
       </div>
       <div class="panel">
-        <h4>Rutas guardadas</h4><div id="listaRutas"></div><hr class="panel-sep">
-        <div class="form-g"><label>Nombre de ruta</label><input type="text" id="nRutaNombre" placeholder="Ruta Centro – Norte"></div>
-        <div class="form-g"><label>Descripción</label><input type="text" id="nRutaDesc" placeholder="Opcional"></div>
-        <button class="btn-add" onclick="agregarRuta()">+ Agregar ruta</button>
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.75rem">
+          <h4 style="margin-bottom:0">Rutas del cliente</h4>
+          <span id="rutasClienteNombre" style="font-size:.65rem;color:var(--blue);font-weight:600;background:var(--blue-lt);padding:.15rem .55rem;border-radius:99px;display:none"></span>
+        </div>
+        <div id="sinClienteRutas" style="font-size:.7rem;color:var(--t3);text-align:center;padding:1rem .5rem;background:#f9f9fb;border-radius:10px;border:1px dashed var(--bdr)">
+          ← Selecciona un cliente para ver y gestionar sus rutas
+        </div>
+        <div id="panelRutas" style="display:none">
+          <div id="listaRutas"></div>
+          <hr class="panel-sep">
+          <div id="rutaFormTitle" style="font-size:.56rem;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--blue);margin-bottom:.5rem">+ Nueva ruta</div>
+          <div class="form-g"><label>Nombre de ruta</label><input type="text" id="nRutaNombre" placeholder="Ruta Centro – Norte"></div>
+          <div class="form-g"><label>Descripción</label><input type="text" id="nRutaDesc" placeholder="Opcional"></div>
+          <input type="hidden" id="editRutaIdx" value="">
+          <div style="display:flex;gap:.4rem">
+            <button class="btn-add" id="btnGuardarRuta" onclick="guardarRuta()" style="flex:1">+ Agregar ruta</button>
+            <button id="btnCancelarEditRuta" onclick="cancelarEditRuta()" style="display:none;padding:.52rem .8rem;border-radius:99px;border:1px solid var(--bdr);background:#fff;font:600 .68rem/1 var(--sans);cursor:pointer;color:var(--t2)">Cancelar</button>
+          </div>
+        </div>
       </div>
     </div>
   </div>
@@ -1247,9 +1263,12 @@ function usarCliente(i){const c=clientes[i];sv('cliNombre',c.nombre||'');sv('cli
 function renderListaClientes(){
   const el=document.getElementById('listaClientes');if(!el)return;
   el.innerHTML=clientes.length?clientes.map((c,i)=>`
-    <div class="list-item">
-      <div class="item-info">${c.nombre}<small>${[c.rut,c.giro,c.ciudad].filter(Boolean).join(' · ')}</small></div>
-      <div class="item-btns">
+    <div class="list-item${clienteActivoIdx===i?' selected':''}" onclick="seleccionarClienteModal(${i})" style="cursor:pointer">
+      <div class="item-info">
+        ${c.nombre}
+        <small>${[c.rut,c.giro,c.ciudad].filter(Boolean).join(' · ')} ${(c.rutas&&c.rutas.length)?'· <span style=\'color:var(--blue)\'>'+c.rutas.length+' ruta'+(c.rutas.length!==1?'s':'')+'</span>':''}</small>
+      </div>
+      <div class="item-btns" onclick="event.stopPropagation()">
         <button onclick="usarCliente(${i})" title="Usar en documento">✓</button>
         <button onclick="editarCliente(${i})" title="Editar">✏️</button>
         <button class="del" onclick="eliminarCliente(${i})" title="Eliminar">✕</button>
@@ -1257,15 +1276,122 @@ function renderListaClientes(){
     </div>`).join(''):'<p style="font-size:.7rem;color:var(--t3);text-align:center;padding:.8rem">Sin clientes</p>'
 }
 
-/* ══ RUTAS ═══════════════════════════════════════════════════════════════ */
-function agregarRuta(){const n=g('nRutaNombre');if(!n)return alert('Ingresa el nombre de la ruta.');rutas.push({nombre:n,desc:g('nRutaDesc')});save('hRutas',rutas);['nRutaNombre','nRutaDesc'].forEach(id=>document.getElementById(id).value='');renderListaRutas();toast('✓ Ruta guardada')}
-function eliminarRuta(i){rutas.splice(i,1);save('hRutas',rutas);renderListaRutas()}
-function usarRuta(i){if(rutaTarget!=null){const f=filas.find(f=>f.id===rutaTarget);if(f){f.ruta=rutas[i].nombre;renderTabla();}rutaTarget=null}cerrarModal('modal')}
-function selRuta(filaId){rutaTarget=filaId;abrirModal()}
-function renderListaRutas(){const el=document.getElementById('listaRutas');if(!el)return;el.innerHTML=rutas.length?rutas.map((r,i)=>`<div class="list-item"><div class="item-info">${r.nombre}<small>${r.desc||''}</small></div><div class="item-btns"><button onclick="usarRuta(${i})">✓</button><button class="del" onclick="eliminarRuta(${i})">✕</button></div></div>`).join(''):'<p style="font-size:.7rem;color:var(--t3);text-align:center;padding:.8rem">Sin rutas</p>'}
+/* ══ RUTAS POR CLIENTE ═══════════════════════════════════════════════════ */
+let clienteActivoIdx = null; // índice del cliente seleccionado en el modal
+
+function seleccionarClienteModal(i){
+  clienteActivoIdx = i;
+  // highlight en lista
+  document.querySelectorAll('#listaClientes .list-item').forEach((el,idx)=>{
+    el.classList.toggle('selected', idx===i);
+  });
+  const c = clientes[i];
+  // mostrar nombre badge
+  const badge = document.getElementById('rutasClienteNombre');
+  badge.textContent = c.nombre;
+  badge.style.display = 'inline-flex';
+  // mostrar panel rutas
+  document.getElementById('sinClienteRutas').style.display = 'none';
+  document.getElementById('panelRutas').style.display = 'block';
+  cancelarEditRuta();
+  renderListaRutas();
+}
+
+function getRutasCliente(i){
+  return clientes[i] && clientes[i].rutas ? clientes[i].rutas : [];
+}
+
+function guardarRuta(){
+  if(clienteActivoIdx===null) return alert('Selecciona un cliente primero.');
+  const n=g('nRutaNombre'); if(!n) return alert('Ingresa el nombre de la ruta.');
+  if(!clientes[clienteActivoIdx].rutas) clientes[clienteActivoIdx].rutas=[];
+  const idx=document.getElementById('editRutaIdx').value;
+  const datos={nombre:n,desc:g('nRutaDesc')};
+  if(idx!==''){clientes[clienteActivoIdx].rutas[parseInt(idx)]=datos;toast('✏️ Ruta actualizada')}
+  else{clientes[clienteActivoIdx].rutas.push(datos);toast('✓ Ruta guardada')}
+  save('hClientes',clientes);
+  cancelarEditRuta(); renderListaRutas();
+}
+
+function editarRuta(i){
+  const r=getRutasCliente(clienteActivoIdx)[i];
+  document.getElementById('nRutaNombre').value=r.nombre||'';
+  document.getElementById('nRutaDesc').value=r.desc||'';
+  document.getElementById('editRutaIdx').value=i;
+  document.getElementById('rutaFormTitle').textContent='✏️ Editando ruta';
+  document.getElementById('rutaFormTitle').style.color='#b07800';
+  document.getElementById('btnGuardarRuta').textContent='💾 Guardar cambios';
+  document.getElementById('btnCancelarEditRuta').style.display='inline-flex';
+  document.getElementById('nRutaNombre').focus();
+}
+
+function cancelarEditRuta(){
+  ['nRutaNombre','nRutaDesc'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('editRutaIdx').value='';
+  document.getElementById('rutaFormTitle').textContent='+ Nueva ruta';
+  document.getElementById('rutaFormTitle').style.color='var(--blue)';
+  document.getElementById('btnGuardarRuta').textContent='+ Agregar ruta';
+  document.getElementById('btnCancelarEditRuta').style.display='none';
+}
+
+function eliminarRuta(i){
+  if(clienteActivoIdx===null) return;
+  const r=getRutasCliente(clienteActivoIdx)[i];
+  if(!confirm('¿Eliminar ruta "'+r.nombre+'"?')) return;
+  clientes[clienteActivoIdx].rutas.splice(i,1);
+  save('hClientes',clientes); renderListaRutas();
+  if(document.getElementById('editRutaIdx').value==i) cancelarEditRuta();
+}
+
+function usarRuta(i){
+  if(clienteActivoIdx===null) return;
+  const r=getRutasCliente(clienteActivoIdx)[i];
+  if(rutaTarget!=null){
+    const f=filas.find(f=>f.id===rutaTarget);
+    if(f){f.ruta=r.nombre; renderTabla();}
+    rutaTarget=null;
+  }
+  cerrarModal('modal');
+}
+
+function selRuta(filaId){
+  rutaTarget=filaId;
+  // auto-seleccionar cliente activo según el del documento
+  abrirModal();
+  // intentar preseleccionar el cliente que coincida con cliNombre
+  const nombre=gv('cliNombre').trim().toLowerCase();
+  if(nombre){
+    const idx=clientes.findIndex(c=>c.nombre.toLowerCase()===nombre);
+    if(idx>=0) setTimeout(()=>seleccionarClienteModal(idx),80);
+  }
+}
+
+function renderListaRutas(){
+  const el=document.getElementById('listaRutas'); if(!el) return;
+  if(clienteActivoIdx===null) return;
+  const lista=getRutasCliente(clienteActivoIdx);
+  el.innerHTML=lista.length
+    ?lista.map((r,i)=>`
+      <div class="list-item">
+        <div class="item-info">${r.nombre}<small>${r.desc||''}</small></div>
+        <div class="item-btns">
+          <button onclick="usarRuta(${i})" title="Usar en documento">✓</button>
+          <button onclick="editarRuta(${i})" title="Editar">✏️</button>
+          <button class="del" onclick="eliminarRuta(${i})" title="Eliminar">✕</button>
+        </div>
+      </div>`).join('')
+    :'<p style="font-size:.7rem;color:var(--t3);text-align:center;padding:.8rem">Sin rutas para este cliente</p>';
+}
 
 /* ══ MODALES ══════════════════════════════════════════════════════════════ */
-function abrirModal(){renderListaClientes();renderListaRutas();document.getElementById('modal').classList.add('open')}
+function abrirModal(){
+  clienteActivoIdx=null;
+  document.getElementById('sinClienteRutas').style.display='block';
+  document.getElementById('panelRutas').style.display='none';
+  document.getElementById('rutasClienteNombre').style.display='none';
+  renderListaClientes();renderListaRutas();
+  document.getElementById('modal').classList.add('open');
+}
 function cerrarModal(id){document.getElementById(id).classList.remove('open');if(id==='modal')rutaTarget=null}
 ['modal','modalHist','modalConvertir'].forEach(id=>{document.getElementById(id).addEventListener('click',e=>{if(e.target===e.currentTarget)cerrarModal(id)})});
 document.addEventListener('keydown',e=>{if(e.key==='Escape'){['modal','modalHist','modalConvertir'].forEach(id=>cerrarModal(id))}});
