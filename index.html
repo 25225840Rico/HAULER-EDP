@@ -272,16 +272,52 @@ td.num input,td.num{font-family:var(--mono);font-size:.74rem}
 .convert-modal-box p{font-size:.76rem;color:var(--t2);margin-bottom:1.4rem;line-height:1.6}
 .convert-btns{display:flex;gap:.7rem;justify-content:center;flex-wrap:wrap}
 
+/* ── BACKUP BANNER ── */
+.backup-banner{
+  width:100%;max-width:1160px;
+  display:flex;align-items:center;justify-content:space-between;gap:.8rem;
+  background:linear-gradient(135deg,#fff8e6,#fffbf0);
+  border:1px solid #f0d080;border-radius:12px;
+  padding:.6rem 1rem;margin-bottom:.8rem;flex-wrap:wrap;
+}
+.backup-banner p{font-size:.68rem;color:#7a5500;flex:1;min-width:200px}
+.backup-banner p strong{color:#5a3d00}
+.backup-banner-btns{display:flex;gap:.4rem;flex-shrink:0}
+.btn-export{background:#b07800;color:#fff;border:none;border-radius:99px;font:600 .68rem/1 var(--sans);padding:.38rem .85rem;cursor:pointer;transition:background .15s;display:inline-flex;align-items:center;gap:.3rem}
+.btn-export:hover{background:#8a5c00}
+.btn-import-label{background:#fff;color:#b07800;border:1px solid #f0d080;border-radius:99px;font:600 .68rem/1 var(--sans);padding:.38rem .85rem;cursor:pointer;transition:all .15s;display:inline-flex;align-items:center;gap:.3rem}
+.btn-import-label:hover{background:#fff8e6;border-color:#c89020}
+/* ── MODAL BACKUP ── */
+.modal-box-backup{background:#fff;border-radius:22px;width:90%;max-width:440px;overflow:hidden;box-shadow:0 28px 56px rgba(0,0,0,.12);display:flex;flex-direction:column;border:1px solid var(--bdr)}
+.backup-info{padding:1rem 1.3rem;font-size:.72rem;line-height:1.65;color:var(--t2)}
+.backup-info ul{margin:.5rem 0 0 1rem}
+.backup-info ul li{margin-bottom:.25rem}
+.backup-actions{padding:.8rem 1.3rem 1.3rem;display:flex;flex-direction:column;gap:.5rem}
+
 @media(max-width:600px){
   .doc-header,.doc-info{grid-template-columns:1fr}
   .vdiv{display:none}
   .cond-grid{grid-template-columns:1fr}
+  .backup-banner{flex-direction:column;align-items:flex-start}
 }
 </style>
 </head>
 <body class="modo-cot">
 
 <!-- TABS MODO -->
+<!-- BACKUP BANNER -->
+<div class="backup-banner" id="backupBanner">
+  <p>⚠️ <strong>Tus datos se guardan en el navegador.</strong> Si limpias los datos de navegación los perderás. Exporta una copia de seguridad regularmente.</p>
+  <div class="backup-banner-btns">
+    <button class="btn-export" onclick="exportarDatos()">⬇ Exportar datos</button>
+    <label class="btn-import-label">
+      ⬆ Importar datos
+      <input type="file" accept=".json" onchange="importarDatos(this)" style="display:none">
+    </label>
+    <button style="background:transparent;border:none;cursor:pointer;font-size:.9rem;color:#b07800;padding:.2rem .4rem;border-radius:8px" onclick="document.getElementById('backupBanner').style.display='none'" title="Cerrar">✕</button>
+  </div>
+</div>
+
 <div class="mode-tabs">
   <button class="mode-tab act" id="tabCot" onclick="cambiarModo('cot')">📋 Cotización</button>
   <button class="mode-tab" id="tabEP" onclick="cambiarModo('ep')">✅ Estado de Pago</button>
@@ -506,6 +542,31 @@ td.num input,td.num{font-family:var(--mono);font-size:.74rem}
 </div>
 
 <div class="toast" id="toast"></div>
+
+<!-- MODAL BACKUP -->
+<div id="modalBackup" class="modal">
+  <div class="modal-box-backup">
+    <div class="modal-head">
+      <h3>🗂 Exportar / Importar datos</h3>
+      <button class="modal-close" onclick="cerrarModal('modalBackup')">✕</button>
+    </div>
+    <div class="backup-info">
+      <p>Tus datos (historial de documentos, clientes y rutas) se guardan en el <strong>localStorage</strong> del navegador, que puede borrarse si limpias los datos de navegación.</p>
+      <ul>
+        <li><strong>Exportar</strong> descarga un archivo <code>.json</code> con toda tu información.</li>
+        <li><strong>Importar</strong> restaura los datos desde ese archivo (reemplaza todo).</li>
+        <li>Se recomienda exportar antes de cada limpieza del navegador.</li>
+      </ul>
+    </div>
+    <div class="backup-actions">
+      <button class="btn-export" style="justify-content:center;padding:.55rem 1rem" onclick="exportarDatos()">⬇ Descargar copia de seguridad (.json)</button>
+      <label class="btn-import-label" style="justify-content:center;padding:.55rem 1rem">
+        ⬆ Restaurar desde archivo (.json)
+        <input type="file" accept=".json" onchange="importarDatos(this)" style="display:none">
+      </label>
+    </div>
+  </div>
+</div>
 
 <!-- MODAL CONVERTIR -->
 <div id="modalConvertir" class="modal">
@@ -1069,12 +1130,12 @@ function imprimirDoc(){
     <div class="hdiv"></div>
     <div class="cond-print">
       <div class="section-label">Condiciones de la oferta</div>
-      <div class="cond-grid-print">
-        <div><span class="cl">Forma de pago</span><span class="cv">${gv('condPago')||'—'}</span></div>
-        <div><span class="cl">Moneda</span><span class="cv">${gv('condMonedaOferta')||'—'}</span></div>
-        <div><span class="cl">Reajuste</span><span class="cv">${gv('condReajuste')||'Sin reajuste'}</span></div>
-        ${gv('condNotas')?`<div style="grid-column:1/-1"><span class="cl">Notas</span><span class="cv">${gv('condNotas')}</span></div>`:''}
+      <div class="cond-row">
+        <div class="cond-cell"><span class="cl">Forma de pago</span><span class="cv">${gv('condPago')||'—'}</span></div>
+        <div class="cond-cell"><span class="cl">Moneda</span><span class="cv">${gv('condMonedaOferta')||'—'}</span></div>
+        <div class="cond-cell"><span class="cl">Reajuste</span><span class="cv">${gv('condReajuste')||'Sin reajuste'}</span></div>
       </div>
+      ${gv('condNotas')?`<div class="cond-notas"><strong>Notas:</strong> ${gv('condNotas')}</div>`:''}
     </div>`:'';
 
   const html=`<!DOCTYPE html><html lang="es"><head>
@@ -1083,113 +1144,181 @@ function imprimirDoc(){
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
-:root{--blue:#0055FF;--t1:#111115;--t2:#5a5a66;--t3:#9898a6;--bdr:#dde0e8;--grad:linear-gradient(90deg,transparent,#bdd0ff 40%,#bdd0ff 60%,transparent)}
-@page{size:letter portrait;margin:10mm 12mm}
-html,body{font-family:'Inter',sans-serif;font-size:10pt;color:var(--t1);background:#fff;
-  -webkit-print-color-adjust:exact;print-color-adjust:exact;
-  display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh}
-.doc{border:1pt solid #c0d0f0;border-top:3pt solid var(--blue);width:100%}
-.hdiv{height:1pt;background:var(--grad);margin:0 8mm}
-.vdiv{width:1pt;background:var(--grad)}
-.doc-header{display:grid;grid-template-columns:auto 1fr auto;align-items:stretch;gap:8mm;padding:6mm 8mm;min-height:18mm}
-.logo-col,.meta-col{display:flex;flex-direction:column;justify-content:center}
-.doc-title{display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center}
-.doc-title h1{font-size:6.5pt;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:var(--t3);margin-bottom:3px}
-.doc-title h2{font-size:14pt;font-weight:300}
-.doc-title .badge{display:inline-block;margin-top:3px;padding:2px 8px;border-radius:99pt;font-size:6.5pt;font-weight:700;background:#e6eeff;color:var(--blue)}
-.meta-row{display:flex;align-items:center;justify-content:flex-end;gap:4mm;margin-bottom:2mm}
-.meta-row:last-child{margin-bottom:0}
-.meta-row label{font-size:6pt;font-weight:700;letter-spacing:.8px;text-transform:uppercase;color:var(--t3)}
-.meta-row span{font:9pt/1 'JetBrains Mono','Courier New',monospace;color:var(--t1)}
+:root{
+  --blue:#0055FF;--blue-lt:#e6eeff;
+  --t1:#111115;--t2:#5a5a66;--t3:#9898a6;--bdr:#dde0e8;
+  --grad:linear-gradient(90deg,transparent,#bdd0ff 50%,transparent);
+  --mono:'JetBrains Mono','Courier New',monospace;
+}
+@page{size:letter portrait;margin:8mm 10mm}
+*{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+html,body{font-family:'Inter',sans-serif;font-size:8.5pt;color:var(--t1);background:#fff}
+/* ── ESTRUCTURA ── */
+.doc{border:1pt solid #c8d8f8;border-top:3pt solid var(--blue);width:100%}
+.hdiv{height:.6pt;background:var(--grad);margin:0 6mm}
+.vdiv{width:.6pt;background:var(--grad);align-self:stretch;flex-shrink:0}
+/* ── HEADER ── */
+.doc-header{
+  display:grid;grid-template-columns:auto 1fr auto;
+  align-items:center;gap:5mm;padding:4mm 6mm;
+  background:linear-gradient(135deg,#fff 55%,#f4f7ff);
+}
+.logo-col{display:flex;flex-direction:column;justify-content:center}
+.doc-title{text-align:center}
+.doc-title h1{font-size:5.5pt;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:var(--t3);margin-bottom:2px}
+.doc-title h2{font-size:13pt;font-weight:300;letter-spacing:-.2px;line-height:1}
+.doc-title .badge{display:inline-block;margin-top:2px;padding:1.5px 6px;border-radius:99pt;font-size:5.5pt;font-weight:700;background:var(--blue-lt);color:var(--blue)}
+.meta-col{display:flex;flex-direction:column;gap:1.5mm}
+.meta-row{display:flex;align-items:baseline;justify-content:flex-end;gap:3mm}
+.meta-row label{font-size:5pt;font-weight:700;letter-spacing:.8px;text-transform:uppercase;color:var(--t3);white-space:nowrap}
+.meta-row span{font:8pt/1 var(--mono);color:var(--t1)}
+/* ── INFO CLIENTE / PROVEEDOR ── */
 .doc-info{display:grid;grid-template-columns:1fr auto 1fr}
-.info-block{padding:4mm 8mm}
-.block-title{font-size:6pt;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--t3);margin-bottom:3mm}
-.info-grid{display:grid;grid-template-columns:1fr 1fr;gap:2.5mm 5mm}
-.f-full{grid-column:1/-1}
-.field label{font-size:5.5pt;font-weight:700;text-transform:uppercase;letter-spacing:.7px;color:var(--t3);display:block;margin-bottom:.8mm}
-.field span{font-size:8.5pt;color:var(--t1);display:block;border-bottom:1pt solid var(--bdr);padding-bottom:1mm;min-height:4mm}
-.table-wrap{padding:4mm 8mm 3mm}
-.section-label{font-size:6pt;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--t3);margin-bottom:3mm}
-table{width:100%;border-collapse:collapse;font-size:8pt}
-thead th{background:#f5f6f9;font:700 6pt/1 sans-serif;letter-spacing:.3px;text-transform:uppercase;color:var(--t2);padding:2mm 1.5mm;text-align:center;border-bottom:1pt solid var(--bdr)}
-thead th:first-child{text-align:left;padding-left:2.5mm}
-tbody td{padding:1.5mm;text-align:center;border-bottom:1pt solid #eef}
-tbody td:first-child{text-align:left;padding-left:2.5mm}
-.doc-footer{display:grid;grid-template-columns:1fr auto;gap:6mm;align-items:end;padding:3mm 8mm 5mm}
-.glosa{font-size:7pt;line-height:1.55;color:var(--t2);background:#f8f9ff;padding:2.5mm 3.5mm;border-left:2pt solid #a0bff0}
-.glosa strong{color:var(--t1)}
-.totales{background:#f5f6f9;padding:3mm 4mm;min-width:52mm;border:1pt solid var(--bdr)}
-.t-line{display:flex;justify-content:space-between;padding:1.5mm 0;color:var(--t2);font-size:8pt;border-bottom:1pt solid var(--bdr)}
+.info-block{padding:3mm 6mm}
+.block-title{
+  font-size:5pt;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;
+  color:var(--blue);border-bottom:1pt solid var(--bdr);padding-bottom:1.5mm;margin-bottom:2.5mm;
+}
+/* tabla de campos compacta */
+.fields-table{width:100%;border-collapse:collapse}
+.fields-table tr td{padding:.8mm 0;vertical-align:top;line-height:1.3}
+.fields-table tr td:first-child{
+  font-size:5pt;font-weight:700;text-transform:uppercase;letter-spacing:.6px;
+  color:var(--t3);white-space:nowrap;padding-right:3mm;width:22mm;
+}
+.fields-table tr td:last-child{font-size:8pt;color:var(--t1)}
+.fields-table tr:not(:last-child) td{border-bottom:.4pt solid #f0f2f8}
+/* ── CONDICIONES COT ── */
+.cond-print{padding:2.5mm 6mm}
+.cond-row{display:flex;gap:0;border:1pt solid var(--bdr);border-radius:2pt;overflow:hidden}
+.cond-cell{flex:1;padding:1.5mm 2.5mm;border-right:1pt solid var(--bdr)}
+.cond-cell:last-child{border-right:none}
+.cond-cell .cl{display:block;font-size:5pt;font-weight:700;text-transform:uppercase;color:var(--t3);letter-spacing:.6px;margin-bottom:.5mm}
+.cond-cell .cv{display:block;font-size:8pt;color:var(--t1)}
+.cond-notas{margin-top:1.5mm;padding:1.5mm 2.5mm;background:#f8f9ff;border:1pt solid var(--bdr);border-radius:2pt;font-size:7.5pt;color:var(--t2);line-height:1.4}
+/* ── TABLA SERVICIOS ── */
+.table-wrap{padding:3mm 6mm 2.5mm}
+.section-label{
+  font-size:5pt;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;
+  color:var(--blue);margin-bottom:2mm;display:flex;align-items:center;gap:1.5mm;
+}
+.section-label::after{content:'';flex:1;height:.5pt;background:var(--grad)}
+table{width:100%;border-collapse:collapse;font-size:7.5pt}
+thead th{
+  background:#f0f4ff;font:700 5.5pt/1 sans-serif;letter-spacing:.3px;
+  text-transform:uppercase;color:var(--blue);
+  padding:1.5mm 1mm;text-align:center;border-bottom:1pt solid #c8d8f8;
+  white-space:nowrap;
+}
+thead th:first-child{text-align:left;padding-left:2mm}
+thead th:last-child{text-align:right;padding-right:2mm}
+tbody tr:nth-child(even) td{background:#fafbff}
+tbody td{padding:1.2mm 1mm;text-align:center;border-bottom:.4pt solid #e8ecf8;vertical-align:middle}
+tbody td:first-child{text-align:left;padding-left:2mm}
+tbody td:last-child{text-align:right;padding-right:2mm;font-family:var(--mono);font-weight:600}
+/* extras table */
+.extras-table thead th{background:#fdf8f0;color:#966320;border-bottom:1pt solid #f0dfc0}
+.extras-table tbody td{border-bottom:.4pt solid #f8f0e0}
+.extras-table tbody tr:nth-child(even) td{background:#fffdf8}
+/* ── FOOTER ── */
+.doc-footer{display:grid;grid-template-columns:1fr auto;gap:5mm;align-items:end;padding:2.5mm 6mm 4mm}
+.glosa{font-size:6.5pt;line-height:1.5;color:var(--t3);padding:2mm 2.5mm;border-left:2pt solid #a0bff0;background:#f8f9ff}
+.glosa strong{color:var(--t2)}
+.totales{border:1pt solid var(--bdr);min-width:56mm;overflow:hidden}
+.t-line{
+  display:flex;justify-content:space-between;align-items:center;
+  padding:1.5mm 2.5mm;font-size:7.5pt;color:var(--t2);
+  border-bottom:.4pt solid var(--bdr);
+}
 .t-line:last-child{border-bottom:none}
-.t-line .amt{font:500 8pt/1 monospace;color:var(--t1)}
+.t-line .amt{font:500 7.5pt/1 var(--mono);color:var(--t1)}
 .t-line.extra-line{color:#966320}.t-line.extra-line .amt{color:#966320}
-.t-line.grand{margin-top:1.5mm;padding-top:2mm;border-top:1pt solid var(--bdr)!important;font-size:9pt;font-weight:700}
-.t-line.grand .amt{font-size:10.5pt;font-weight:700;color:var(--blue)}
-.cond-print{padding:3mm 8mm}
-.cond-grid-print{display:grid;grid-template-columns:1fr 1fr 1fr;gap:2mm 5mm;margin-top:2mm}
-.cond-grid-print .cl{display:block;font-size:5.5pt;font-weight:700;text-transform:uppercase;color:var(--t3);letter-spacing:.7px;margin-bottom:.5mm}
-.cond-grid-print .cv{display:block;font-size:8.5pt;border-bottom:1pt solid var(--bdr);padding-bottom:1mm}
-</style></head><body>
+.t-line.grand{
+  background:var(--blue);color:#fff;padding:2mm 2.5mm;
+  font-size:9pt;font-weight:700;border-bottom:none;
+}
+.t-line.grand .amt{font-size:10pt;font-weight:700;color:#fff}
+/* ── FIRMA / PIE ── */
+.firma-row{display:grid;grid-template-columns:1fr 1fr;gap:8mm;padding:3mm 6mm 4mm}
+.firma-box{border-top:1pt solid var(--bdr);padding-top:1.5mm}
+.firma-box .fl{font-size:5pt;font-weight:700;text-transform:uppercase;letter-spacing:.7px;color:var(--t3)}
+.firma-box .fn{font-size:7.5pt;color:var(--t2);margin-top:.5mm}
+</style>
+</head><body>
 <div class="doc">
+
+  <!-- HEADER -->
   <div class="doc-header">
     <div class="logo-col">${logoHTML}</div>
     <div class="doc-title">
       <h1>${esCot?'Documento de oferta':'Documento de cobro'}</h1>
       <h2>${esCot?'Cotización':'Estado de Pago'}</h2>
-      <span class="badge">${esCot?'📋 Propuesta Comercial':'✅ Estado de Pago'}</span>
+      <span class="badge">${esCot?'📋 Propuesta Comercial':'✅ Cobro de Servicios'}</span>
     </div>
     <div class="meta-col">
       <div class="meta-row"><label>${esCot?'N° Cot.':'N° Doc.'}</label><span>${gv('numDoc')}</span></div>
       <div class="meta-row"><label>Emisión</label><span>${gv('fechaEmision')}</span></div>
-      ${esCot?`<div class="meta-row"><label>Válida hasta</label><span>${gv('fechaVence')}</span></div>`:`<div class="meta-row"><label>Vencimiento</label><span>${gv('fechaVence')}</span></div>`}
+      <div class="meta-row"><label>${esCot?'Válida hasta':'Vencimiento'}</label><span>${gv('fechaVence')}</span></div>
     </div>
   </div>
+
   <div class="hdiv"></div>
+
+  <!-- CLIENTE / PROVEEDOR -->
   <div class="doc-info">
     <div class="info-block">
       <div class="block-title">${esCot?'Cliente / Destinatario':'Mandante / Cliente'}</div>
-      <div class="info-grid">
-        <div class="field f-full"><label>Razón social</label><span>${gv('cliNombre')}</span></div>
-        <div class="field"><label>RUT</label><span>${gv('cliRut')}</span></div>
-        ${gv('cliGiro')?`<div class="field"><label>Giro / Actividad</label><span>${gv('cliGiro')}</span></div>`:''}
-        <div class="field"><label>Dirección</label><span>${gv('cliDir')}</span></div>
-        <div class="field"><label>Ciudad</label><span>${gv('cliCiudad')}</span></div>
-        <div class="field"><label>Email</label><span>${gv('cliEmail')}</span></div>
-        <div class="field"><label>Teléfono</label><span>${gv('cliTel')}</span></div>
-        ${!esCot?`<div class="field"><label>Contrato</label><span>${gv('cliContrato')}</span></div><div class="field"><label>OC</label><span>${gv('cliOC')}</span></div>`:''}
-        <div class="field"><label>Contacto</label><span>${gv('cliContacto')}</span></div>
-      </div>
+      <table class="fields-table">
+        ${gv('cliNombre')?`<tr><td>Razón social</td><td><strong>${gv('cliNombre')}</strong></td></tr>`:''}
+        ${gv('cliRut')?`<tr><td>RUT</td><td>${gv('cliRut')}</td></tr>`:''}
+        ${gv('cliGiro')?`<tr><td>Giro</td><td>${gv('cliGiro')}</td></tr>`:''}
+        ${gv('cliDir')?`<tr><td>Dirección</td><td>${gv('cliDir')}${gv('cliCiudad')?' — '+gv('cliCiudad'):''}</td></tr>`:''}
+        ${gv('cliEmail')?`<tr><td>Email</td><td>${gv('cliEmail')}</td></tr>`:''}
+        ${gv('cliTel')?`<tr><td>Teléfono</td><td>${gv('cliTel')}</td></tr>`:''}
+        ${!esCot&&gv('cliContrato')?`<tr><td>Contrato</td><td>${gv('cliContrato')}</td></tr>`:''}
+        ${!esCot&&gv('cliOC')?`<tr><td>Orden de compra</td><td>${gv('cliOC')}</td></tr>`:''}
+        ${gv('cliContacto')?`<tr><td>Contacto</td><td>${gv('cliContacto')}</td></tr>`:''}
+      </table>
     </div>
     <div class="vdiv"></div>
     <div class="info-block">
       <div class="block-title">Proveedor / Oferente</div>
-      <div class="info-grid">
-        <div class="field f-full"><label>Razón social</label><span>${gv('prvNombre')}</span></div>
-        <div class="field"><label>RUT</label><span>${gv('prvRut')}</span></div>
-        <div class="field"><label>Giro</label><span>${gv('prvGiro')}</span></div>
-        <div class="field f-full"><label>Dirección</label><span>${gv('prvDir')}</span></div>
-        <div class="field"><label>Ciudad</label><span>${gv('prvCiudad')}</span></div>
-        <div class="field"><label>Región</label><span>${gv('prvRegion')}</span></div>
-        <div class="field"><label>Email</label><span>${gv('prvEmail')}</span></div>
-        <div class="field"><label>Teléfono</label><span>${gv('prvTel')}</span></div>
-        ${gv('prvContacto')?`<div class="field"><label>Contacto</label><span>${gv('prvContacto')}</span></div>`:''}
-      </div>
+      <table class="fields-table">
+        ${gv('prvNombre')?`<tr><td>Razón social</td><td><strong>${gv('prvNombre')}</strong></td></tr>`:''}
+        ${gv('prvRut')?`<tr><td>RUT</td><td>${gv('prvRut')}</td></tr>`:''}
+        ${gv('prvGiro')?`<tr><td>Giro</td><td>${gv('prvGiro')}</td></tr>`:''}
+        ${gv('prvDir')?`<tr><td>Dirección</td><td>${gv('prvDir')}${gv('prvCiudad')?' — '+gv('prvCiudad'):''}</td></tr>`:''}
+        ${gv('prvEmail')?`<tr><td>Email</td><td>${gv('prvEmail')}</td></tr>`:''}
+        ${gv('prvTel')?`<tr><td>Teléfono</td><td>${gv('prvTel')}</td></tr>`:''}
+        ${gv('prvContacto')?`<tr><td>Contacto</td><td>${gv('prvContacto')}</td></tr>`:''}
+      </table>
     </div>
   </div>
+
   ${condHTML}
   <div class="hdiv"></div>
+
+  <!-- SERVICIOS -->
   <div class="table-wrap">
     <div class="section-label">Detalle de servicios</div>
-    <table><thead><tr>
-      <th style="text-align:left;padding-left:2.5mm">Vehículo</th><th>Patente</th><th>Ruta</th><th>Período</th><th>Pasaj.</th><th>Viajes/Días</th><th>Valor unit.</th><th>Total</th>
-    </tr></thead><tbody>${filasHTML}</tbody></table>
+    <table>
+      <thead><tr>
+        <th style="text-align:left;padding-left:2mm">Vehículo</th>
+        <th>Patente</th><th>Ruta</th><th>Período</th>
+        <th>Pasaj.</th><th>Viajes/Días</th><th>Valor unit.</th><th>Total</th>
+      </tr></thead>
+      <tbody>${filasHTML}</tbody>
+    </table>
   </div>
+
   ${extrasHTML}
   <div class="hdiv"></div>
+
+  <!-- FOOTER TOTALES + GLOSA -->
   <div class="doc-footer">
     <div class="glosa">${esCot
-      ?'<strong>Nota:</strong> Esta cotización tiene carácter de oferta comercial y no constituye factura ni documento tributario. Los precios son referenciales y están sujetos a variaciones en combustible, peajes u otros costos operativos. Válida según el plazo indicado.'
-      :'<strong>Importante:</strong> Este Estado de Pago constituye respaldo administrativo de los servicios prestados y antecedente para facturación. Los montos están sujetos a revisión. Observaciones deberán realizarse dentro de 5 días hábiles. La factura se regirá por la Ley de Pago a 30 Días.'
+      ?'<strong>Nota:</strong> Oferta comercial sin validez tributaria. Precios sujetos a variación. Válida según plazo indicado.'
+      :'<strong>Importante:</strong> Respaldo administrativo de servicios prestados. Observaciones dentro de 5 días hábiles. Factura según Ley de Pago a 30 Días.'
     }</div>
     <div class="totales">
       <div class="t-line"><span>Subtotal servicios</span><span class="amt">${cur.sym} ${fmt(brutoServ)}</span></div>
@@ -1199,6 +1328,20 @@ tbody td:first-child{text-align:left;padding-left:2.5mm}
       <div class="t-line grand"><span>${esCot?'TOTAL COTIZACIÓN':'TOTAL A PAGAR'}</span><span class="amt">${cur.sym} ${fmt(bruto+iva)}</span></div>
     </div>
   </div>
+
+  <!-- FIRMAS -->
+  <div class="hdiv"></div>
+  <div class="firma-row">
+    <div class="firma-box">
+      <div class="fl">Firma y timbre Proveedor</div>
+      <div class="fn">${gv('prvNombre')} · ${gv('prvRut')}</div>
+    </div>
+    <div class="firma-box">
+      <div class="fl">Firma y timbre ${esCot?'Cliente':'Mandante'}</div>
+      <div class="fn">${gv('cliNombre')} · ${gv('cliRut')}</div>
+    </div>
+  </div>
+
 </div>
 <script>document.fonts.ready.then(()=>setTimeout(()=>window.print(),400));<\/script>
 </body></html>`;
@@ -1213,192 +1356,362 @@ function cargarLogo(input){const file=input.files[0];if(!file)return;const r=new
 function ajustarLogo(v){document.getElementById('imgTag').style.maxHeight=v+'px';document.getElementById('sizePx').textContent=v+'px'}
 function quitarLogo(){document.getElementById('logoTexto').style.display='block';document.getElementById('logoImg').style.display='none';document.getElementById('sizeWrap').style.display='none';document.getElementById('btnQuitarLogo').style.display='none';document.getElementById('imgTag').src=''}
 
+/* ══ ESTADO MODAL ════════════════════════════════════════════════════════ */
+var clienteActivoIdx = null;
+
 /* ══ CLIENTES ════════════════════════════════════════════════════════════ */
-function renderSelector(){const sel=document.getElementById('clienteSelector');sel.innerHTML='<option value="">— Seleccionar —</option>'+clientes.map((c,i)=>`<option value="${i}">${c.nombre}</option>`).join('')}
-function cargarCliente(){const idx=document.getElementById('clienteSelector').value;if(idx==='')return;const c=clientes[parseInt(idx)];if(!c)return;sv('cliNombre',c.nombre||'');sv('cliRut',c.rut||'');sv('cliGiro',c.giro||'');sv('cliDir',c.dir||'');sv('cliCiudad',c.ciudad||'')}
-
-function guardarCliente(){
-  const n=g('nCliNombre');if(!n)return alert('Ingresa la razón social.');
-  const datos={nombre:n,rut:g('nCliRut'),giro:g('nCliGiro'),dir:g('nCliDir'),ciudad:g('nCliCiudad')};
-  const idx=document.getElementById('editCliIdx').value;
-  if(idx!==''){clientes[parseInt(idx)]=datos;toast('✏️ Cliente actualizado')}
-  else{clientes.push(datos);toast('✓ Cliente guardado')}
-  save('hClientes',clientes);
-  limpiarFormCli();renderSelector();renderListaClientes();
+function renderSelector() {
+  var sel = document.getElementById('clienteSelector');
+  if (!sel) return;
+  sel.innerHTML = '<option value="">— Seleccionar —</option>' +
+    clientes.map(function(c, i) {
+      return '<option value="' + i + '">' + (c.nombre || '') + '</option>';
+    }).join('');
 }
 
-function editarCliente(i){
-  const c=clientes[i];
-  document.getElementById('nCliNombre').value=c.nombre||'';
-  document.getElementById('nCliRut').value=c.rut||'';
-  document.getElementById('nCliGiro').value=c.giro||'';
-  document.getElementById('nCliDir').value=c.dir||'';
-  document.getElementById('nCliCiudad').value=c.ciudad||'';
-  document.getElementById('editCliIdx').value=i;
-  document.getElementById('cliFormTitle').textContent='✏️ Editando cliente';
-  document.getElementById('cliFormTitle').style.color='#b07800';
-  document.getElementById('btnGuardarCli').textContent='💾 Guardar cambios';
-  document.getElementById('btnCancelarEdit').style.display='inline-flex';
+function cargarCliente() {
+  var idx = document.getElementById('clienteSelector').value;
+  if (idx === '') return;
+  var c = clientes[parseInt(idx)];
+  if (!c) return;
+  sv('cliNombre', c.nombre || '');
+  sv('cliRut',    c.rut    || '');
+  sv('cliGiro',   c.giro   || '');
+  sv('cliDir',    c.dir    || '');
+  sv('cliCiudad', c.ciudad || '');
+}
+
+function guardarCliente() {
+  var n = g('nCliNombre');
+  if (!n) { alert('Ingresa la razón social.'); return; }
+  var rawIdx = document.getElementById('editCliIdx').value;
+  var idx = rawIdx !== '' ? parseInt(rawIdx) : -1;
+
+  if (idx >= 0 && clientes[idx]) {
+    // EDIT: preservar las rutas existentes del cliente
+    clientes[idx] = {
+      rutas:   clientes[idx].rutas || [],   // ← clave: no perder las rutas
+      nombre:  n,
+      rut:     g('nCliRut'),
+      giro:    g('nCliGiro'),
+      dir:     g('nCliDir'),
+      ciudad:  g('nCliCiudad')
+    };
+    toast('✏️ Cliente actualizado');
+  } else {
+    // NUEVO
+    clientes.push({ nombre: n, rut: g('nCliRut'), giro: g('nCliGiro'), dir: g('nCliDir'), ciudad: g('nCliCiudad'), rutas: [] });
+    toast('✓ Cliente guardado');
+  }
+  save('hClientes', clientes);
+  limpiarFormCli();
+  renderSelector();
+  renderListaClientes();
+}
+
+function editarCliente(i) {
+  var c = clientes[i];
+  if (!c) return;
+  document.getElementById('nCliNombre').value = c.nombre || '';
+  document.getElementById('nCliRut').value    = c.rut    || '';
+  document.getElementById('nCliGiro').value   = c.giro   || '';
+  document.getElementById('nCliDir').value    = c.dir    || '';
+  document.getElementById('nCliCiudad').value = c.ciudad || '';
+  document.getElementById('editCliIdx').value = i;
+  document.getElementById('cliFormTitle').textContent = '✏️ Editando cliente';
+  document.getElementById('cliFormTitle').style.color = '#b07800';
+  document.getElementById('btnGuardarCli').textContent = '💾 Guardar cambios';
+  document.getElementById('btnCancelarEdit').style.display = 'inline-flex';
   document.getElementById('nCliNombre').focus();
-  document.getElementById('nCliNombre').scrollIntoView({behavior:'smooth',block:'nearest'});
+  document.getElementById('nCliNombre').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
 }
 
-function cancelarEditCliente(){limpiarFormCli()}
+function cancelarEditCliente() { limpiarFormCli(); }
 
-function limpiarFormCli(){
-  ['nCliNombre','nCliRut','nCliGiro','nCliDir','nCliCiudad'].forEach(id=>document.getElementById(id).value='');
-  document.getElementById('editCliIdx').value='';
-  document.getElementById('cliFormTitle').textContent='+ Nuevo cliente';
-  document.getElementById('cliFormTitle').style.color='var(--blue)';
-  document.getElementById('btnGuardarCli').textContent='+ Agregar cliente';
-  document.getElementById('btnCancelarEdit').style.display='none';
+function limpiarFormCli() {
+  ['nCliNombre','nCliRut','nCliGiro','nCliDir','nCliCiudad'].forEach(function(id) {
+    document.getElementById(id).value = '';
+  });
+  document.getElementById('editCliIdx').value = '';
+  document.getElementById('cliFormTitle').textContent = '+ Nuevo cliente';
+  document.getElementById('cliFormTitle').style.color = 'var(--blue)';
+  document.getElementById('btnGuardarCli').textContent = '+ Agregar cliente';
+  document.getElementById('btnCancelarEdit').style.display = 'none';
 }
 
-function eliminarCliente(i){
-  if(!confirm('¿Eliminar cliente "'+clientes[i].nombre+'"?'))return;
-  clientes.splice(i,1);save('hClientes',clientes);renderSelector();renderListaClientes();
-  if(document.getElementById('editCliIdx').value==i) limpiarFormCli();
+function eliminarCliente(i) {
+  var c = clientes[i];
+  if (!c) return;
+  if (!confirm('¿Eliminar cliente "' + c.nombre + '"?')) return;
+  clientes.splice(i, 1);
+  save('hClientes', clientes);
+  // Ajustar clienteActivoIdx tras el splice
+  if (clienteActivoIdx === i) {
+    clienteActivoIdx = null;
+    ocultarPanelRutas();
+  } else if (clienteActivoIdx !== null && clienteActivoIdx > i) {
+    clienteActivoIdx--;
+  }
+  var editIdx = document.getElementById('editCliIdx').value;
+  if (editIdx !== '' && parseInt(editIdx) === i) limpiarFormCli();
+  renderSelector();
+  renderListaClientes();
 }
-function usarCliente(i){const c=clientes[i];sv('cliNombre',c.nombre||'');sv('cliRut',c.rut||'');sv('cliGiro',c.giro||'');sv('cliDir',c.dir||'');sv('cliCiudad',c.ciudad||'');cerrarModal('modal')}
-function renderListaClientes(){
-  const el=document.getElementById('listaClientes');if(!el)return;
-  el.innerHTML=clientes.length?clientes.map((c,i)=>`
-    <div class="list-item${clienteActivoIdx===i?' selected':''}" onclick="seleccionarClienteModal(${i})" style="cursor:pointer">
-      <div class="item-info">
-        ${c.nombre}
-        <small>${[c.rut,c.giro,c.ciudad].filter(Boolean).join(' · ')}${(c.rutas&&c.rutas.length)?' · '+c.rutas.length+' ruta'+(c.rutas.length!==1?'s':''):''}</small>
-      </div>
-      <div class="item-btns" onclick="event.stopPropagation()">
-        <button onclick="usarCliente(${i})" title="Usar en documento">✓</button>
-        <button onclick="editarCliente(${i})" title="Editar">✏️</button>
-        <button class="del" onclick="eliminarCliente(${i})" title="Eliminar">✕</button>
-      </div>
-    </div>`).join(''):'<p style="font-size:.7rem;color:var(--t3);text-align:center;padding:.8rem">Sin clientes</p>'
+
+function usarCliente(i) {
+  var c = clientes[i];
+  if (!c) return;
+  sv('cliNombre', c.nombre || '');
+  sv('cliRut',    c.rut    || '');
+  sv('cliGiro',   c.giro   || '');
+  sv('cliDir',    c.dir    || '');
+  sv('cliCiudad', c.ciudad || '');
+  cerrarModal('modal');
+}
+
+function renderListaClientes() {
+  var el = document.getElementById('listaClientes');
+  if (!el) return;
+  if (!clientes.length) {
+    el.innerHTML = '<p style="font-size:.7rem;color:var(--t3);text-align:center;padding:.8rem">Sin clientes guardados</p>';
+    return;
+  }
+  el.innerHTML = clientes.map(function(c, i) {
+    var meta = [c.rut, c.giro, c.ciudad].filter(Boolean).join(' · ');
+    var rutaCount = (c.rutas && c.rutas.length)
+      ? ' · <span style="color:var(--blue)">' + c.rutas.length + ' ruta' + (c.rutas.length !== 1 ? 's' : '') + '</span>'
+      : '';
+    var selClass = clienteActivoIdx === i ? ' selected' : '';
+    return '<div class="list-item' + selClass + '" data-cli-idx="' + i + '" style="cursor:pointer">' +
+      '<div class="item-info">' + (c.nombre || '—') + '<small>' + meta + rutaCount + '</small></div>' +
+      '<div class="item-btns">' +
+        '<button onclick="usarCliente(' + i + ')" title="Usar en documento">✓</button>' +
+        '<button onclick="editarCliente(' + i + ')" title="Editar">✏️</button>' +
+        '<button class="del" onclick="eliminarCliente(' + i + ')" title="Eliminar">✕</button>' +
+      '</div>' +
+    '</div>';
+  }).join('');
+
+  // Delegación de eventos: click en el div selecciona el cliente
+  el.querySelectorAll('.list-item').forEach(function(div) {
+    div.addEventListener('click', function(e) {
+      if (e.target.closest('.item-btns')) return; // ignorar clicks en botones
+      seleccionarClienteModal(parseInt(div.dataset.cliIdx));
+    });
+  });
 }
 
 /* ══ RUTAS POR CLIENTE ═══════════════════════════════════════════════════ */
-let clienteActivoIdx = null; // índice del cliente seleccionado en el modal
+function getRutasCliente(i) {
+  if (i === null || i === undefined || !clientes[i]) return [];
+  return clientes[i].rutas || [];
+}
 
-function seleccionarClienteModal(i){
+function ocultarPanelRutas() {
+  document.getElementById('sinClienteRutas').style.display = 'block';
+  document.getElementById('panelRutas').style.display = 'none';
+  document.getElementById('rutasClienteNombre').style.display = 'none';
+}
+
+function seleccionarClienteModal(i) {
+  if (i < 0 || i >= clientes.length) return;
   clienteActivoIdx = i;
-  // highlight en lista
-  document.querySelectorAll('#listaClientes .list-item').forEach((el,idx)=>{
-    el.classList.toggle('selected', idx===i);
-  });
-  const c = clientes[i];
-  // mostrar nombre badge
-  const badge = document.getElementById('rutasClienteNombre');
-  badge.textContent = c.nombre;
+  renderListaClientes(); // re-render para el highlight
+  var c = clientes[i];
+  var badge = document.getElementById('rutasClienteNombre');
+  badge.textContent = c.nombre || '';
   badge.style.display = 'inline-flex';
-  // mostrar panel rutas
   document.getElementById('sinClienteRutas').style.display = 'none';
   document.getElementById('panelRutas').style.display = 'block';
   cancelarEditRuta();
   renderListaRutas();
 }
 
-function getRutasCliente(i){
-  return clientes[i] && clientes[i].rutas ? clientes[i].rutas : [];
+function guardarRuta() {
+  if (clienteActivoIdx === null) { alert('Selecciona un cliente primero.'); return; }
+  var n = g('nRutaNombre');
+  if (!n) { alert('Ingresa el nombre de la ruta.'); return; }
+  if (!clientes[clienteActivoIdx].rutas) clientes[clienteActivoIdx].rutas = [];
+  var rawIdx = document.getElementById('editRutaIdx').value;
+  var datos = { nombre: n, desc: g('nRutaDesc') };
+  if (rawIdx !== '') {
+    clientes[clienteActivoIdx].rutas[parseInt(rawIdx)] = datos;
+    toast('✏️ Ruta actualizada');
+  } else {
+    clientes[clienteActivoIdx].rutas.push(datos);
+    toast('✓ Ruta guardada');
+  }
+  save('hClientes', clientes);
+  cancelarEditRuta();
+  renderListaRutas();
+  renderListaClientes(); // actualiza el counter de rutas
 }
 
-function guardarRuta(){
-  if(clienteActivoIdx===null) return alert('Selecciona un cliente primero.');
-  const n=g('nRutaNombre'); if(!n) return alert('Ingresa el nombre de la ruta.');
-  if(!clientes[clienteActivoIdx].rutas) clientes[clienteActivoIdx].rutas=[];
-  const idx=document.getElementById('editRutaIdx').value;
-  const datos={nombre:n,desc:g('nRutaDesc')};
-  if(idx!==''){clientes[clienteActivoIdx].rutas[parseInt(idx)]=datos;toast('✏️ Ruta actualizada')}
-  else{clientes[clienteActivoIdx].rutas.push(datos);toast('✓ Ruta guardada')}
-  save('hClientes',clientes);
-  cancelarEditRuta(); renderListaRutas();
-}
-
-function editarRuta(i){
-  const r=getRutasCliente(clienteActivoIdx)[i];
-  document.getElementById('nRutaNombre').value=r.nombre||'';
-  document.getElementById('nRutaDesc').value=r.desc||'';
-  document.getElementById('editRutaIdx').value=i;
-  document.getElementById('rutaFormTitle').textContent='✏️ Editando ruta';
-  document.getElementById('rutaFormTitle').style.color='#b07800';
-  document.getElementById('btnGuardarRuta').textContent='💾 Guardar cambios';
-  document.getElementById('btnCancelarEditRuta').style.display='inline-flex';
+function editarRuta(i) {
+  var lista = getRutasCliente(clienteActivoIdx);
+  if (!lista[i]) return;
+  document.getElementById('nRutaNombre').value = lista[i].nombre || '';
+  document.getElementById('nRutaDesc').value   = lista[i].desc   || '';
+  document.getElementById('editRutaIdx').value = i;
+  document.getElementById('rutaFormTitle').textContent = '✏️ Editando ruta';
+  document.getElementById('rutaFormTitle').style.color = '#b07800';
+  document.getElementById('btnGuardarRuta').textContent = '💾 Guardar cambios';
+  document.getElementById('btnCancelarEditRuta').style.display = 'inline-flex';
   document.getElementById('nRutaNombre').focus();
 }
 
-function cancelarEditRuta(){
-  ['nRutaNombre','nRutaDesc'].forEach(id=>document.getElementById(id).value='');
-  document.getElementById('editRutaIdx').value='';
-  document.getElementById('rutaFormTitle').textContent='+ Nueva ruta';
-  document.getElementById('rutaFormTitle').style.color='var(--blue)';
-  document.getElementById('btnGuardarRuta').textContent='+ Agregar ruta';
-  document.getElementById('btnCancelarEditRuta').style.display='none';
+function cancelarEditRuta() {
+  ['nRutaNombre','nRutaDesc'].forEach(function(id) { document.getElementById(id).value = ''; });
+  document.getElementById('editRutaIdx').value = '';
+  document.getElementById('rutaFormTitle').textContent = '+ Nueva ruta';
+  document.getElementById('rutaFormTitle').style.color = 'var(--blue)';
+  document.getElementById('btnGuardarRuta').textContent = '+ Agregar ruta';
+  document.getElementById('btnCancelarEditRuta').style.display = 'none';
 }
 
-function eliminarRuta(i){
-  if(clienteActivoIdx===null) return;
-  const r=getRutasCliente(clienteActivoIdx)[i];
-  if(!confirm('¿Eliminar ruta "'+r.nombre+'"?')) return;
-  clientes[clienteActivoIdx].rutas.splice(i,1);
-  save('hClientes',clientes); renderListaRutas();
-  if(document.getElementById('editRutaIdx').value==i) cancelarEditRuta();
+function eliminarRuta(i) {
+  if (clienteActivoIdx === null) return;
+  var lista = getRutasCliente(clienteActivoIdx);
+  if (!lista[i]) return;
+  if (!confirm('¿Eliminar ruta "' + lista[i].nombre + '"?')) return;
+  clientes[clienteActivoIdx].rutas.splice(i, 1);
+  save('hClientes', clientes);
+  var editIdx = document.getElementById('editRutaIdx').value;
+  if (editIdx !== '' && parseInt(editIdx) === i) cancelarEditRuta();
+  renderListaRutas();
+  renderListaClientes(); // actualiza el counter
 }
 
-function usarRuta(i){
-  if(clienteActivoIdx===null) return;
-  const r=getRutasCliente(clienteActivoIdx)[i];
-  if(rutaTarget!=null){
-    const f=filas.find(f=>f.id===rutaTarget);
-    if(f){f.ruta=r.nombre; renderTabla();}
-    rutaTarget=null;
+function usarRuta(i) {
+  if (clienteActivoIdx === null) return;
+  var lista = getRutasCliente(clienteActivoIdx);
+  if (!lista[i]) return;
+  if (rutaTarget != null) {
+    var f = filas.find(function(f) { return f.id === rutaTarget; });
+    if (f) { f.ruta = lista[i].nombre; renderTabla(); }
+    rutaTarget = null;
   }
   cerrarModal('modal');
 }
 
-function selRuta(filaId){
-  rutaTarget=filaId;
-  // auto-seleccionar cliente activo según el del documento
+function renderListaRutas() {
+  var el = document.getElementById('listaRutas');
+  if (!el) return;
+  if (clienteActivoIdx === null) return;
+  var lista = getRutasCliente(clienteActivoIdx);
+  if (!lista.length) {
+    el.innerHTML = '<p style="font-size:.7rem;color:var(--t3);text-align:center;padding:.8rem">Sin rutas — agrega la primera abajo</p>';
+    return;
+  }
+  el.innerHTML = lista.map(function(r, i) {
+    return '<div class="list-item">' +
+      '<div class="item-info">' + (r.nombre || '') + '<small>' + (r.desc || '') + '</small></div>' +
+      '<div class="item-btns">' +
+        '<button onclick="usarRuta(' + i + ')" title="Insertar en fila">✓</button>' +
+        '<button onclick="editarRuta(' + i + ')" title="Editar">✏️</button>' +
+        '<button class="del" onclick="eliminarRuta(' + i + ')" title="Eliminar">✕</button>' +
+      '</div>' +
+    '</div>';
+  }).join('');
+}
+
+function selRuta(filaId) {
+  rutaTarget = filaId;
   abrirModal();
-  // intentar preseleccionar el cliente que coincida con cliNombre
-  const nombre=gv('cliNombre').trim().toLowerCase();
-  if(nombre){
-    const idx=clientes.findIndex(c=>c.nombre.toLowerCase()===nombre);
-    if(idx>=0) setTimeout(()=>seleccionarClienteModal(idx),80);
+  // Auto-seleccionar el cliente que coincida con el del documento
+  var nombre = gv('cliNombre').trim().toLowerCase();
+  if (nombre) {
+    var idx = -1;
+    for (var i = 0; i < clientes.length; i++) {
+      if ((clientes[i].nombre || '').toLowerCase() === nombre) { idx = i; break; }
+    }
+    if (idx >= 0) {
+      setTimeout(function() { seleccionarClienteModal(idx); }, 60);
+    }
   }
 }
 
-function renderListaRutas(){
-  const el=document.getElementById('listaRutas'); if(!el) return;
-  if(clienteActivoIdx===null) return;
-  const lista=getRutasCliente(clienteActivoIdx);
-  el.innerHTML=lista.length
-    ?lista.map((r,i)=>`
-      <div class="list-item">
-        <div class="item-info">${r.nombre}<small>${r.desc||''}</small></div>
-        <div class="item-btns">
-          <button onclick="usarRuta(${i})" title="Usar en documento">✓</button>
-          <button onclick="editarRuta(${i})" title="Editar">✏️</button>
-          <button class="del" onclick="eliminarRuta(${i})" title="Eliminar">✕</button>
-        </div>
-      </div>`).join('')
-    :'<p style="font-size:.7rem;color:var(--t3);text-align:center;padding:.8rem">Sin rutas para este cliente</p>';
-}
-
 /* ══ MODALES ══════════════════════════════════════════════════════════════ */
-function abrirModal(){
-  clienteActivoIdx=null;
-  document.getElementById('sinClienteRutas').style.display='block';
-  document.getElementById('panelRutas').style.display='none';
-  document.getElementById('rutasClienteNombre').style.display='none';
-  renderListaClientes();renderListaRutas();
+function abrirModal() {
+  clienteActivoIdx = null;
+  ocultarPanelRutas();
+  limpiarFormCli();
+  renderListaClientes();
   document.getElementById('modal').classList.add('open');
 }
 function cerrarModal(id){document.getElementById(id).classList.remove('open');if(id==='modal')rutaTarget=null}
-['modal','modalHist','modalConvertir'].forEach(id=>{document.getElementById(id).addEventListener('click',e=>{if(e.target===e.currentTarget)cerrarModal(id)})});
-document.addEventListener('keydown',e=>{if(e.key==='Escape'){['modal','modalHist','modalConvertir'].forEach(id=>cerrarModal(id))}});
+['modal','modalHist','modalConvertir','modalBackup'].forEach(id=>{document.getElementById(id).addEventListener('click',e=>{if(e.target===e.currentTarget)cerrarModal(id)})});
+document.addEventListener('keydown',e=>{if(e.key==='Escape'){['modal','modalHist','modalConvertir','modalBackup'].forEach(id=>cerrarModal(id))}});
 
 /* ══ TOAST ════════════════════════════════════════════════════════════════ */
 let toastT=null;
 function toast(msg){const el=document.getElementById('toast');el.textContent=msg;el.classList.add('show');clearTimeout(toastT);toastT=setTimeout(()=>el.classList.remove('show'),2400)}
+
+/* ══ EXPORTAR / IMPORTAR ════════════════════════════════════════════════ */
+function exportarDatos() {
+  var datos = {
+    version: 2,
+    exportadoEn: new Date().toISOString(),
+    hDocs:     load('hDocs',     []),
+    hClientes: load('hClientes', []),
+    hRutas:    load('hRutas',    []),
+    hMoneda:   load('hMoneda',   'CLP'),
+    hModo:     load('hModo',     'cot')
+  };
+  var json   = JSON.stringify(datos, null, 2);
+  var blob   = new Blob([json], { type: 'application/json' });
+  var url    = URL.createObjectURL(blob);
+  var fecha  = new Date().toISOString().slice(0,10);
+  var a      = document.createElement('a');
+  a.href     = url;
+  a.download = 'hauler-backup-' + fecha + '.json';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+  toast('⬇ Copia exportada: hauler-backup-' + fecha + '.json');
+}
+
+function importarDatos(input) {
+  var file = input.files[0];
+  if (!file) return;
+  var reader = new FileReader();
+  reader.onload = function(e) {
+    try {
+      var datos = JSON.parse(e.target.result);
+      if (!datos.hDocs && !datos.hClientes) {
+        alert('Archivo inválido: no parece una copia de seguridad de HAULER.');
+        return;
+      }
+      if (!confirm('¿Restaurar los datos desde este archivo? Se reemplazarán todos los datos actuales.')) return;
+
+      if (datos.hDocs)     save('hDocs',     datos.hDocs);
+      if (datos.hClientes) save('hClientes', datos.hClientes);
+      if (datos.hRutas)    save('hRutas',    datos.hRutas);
+      if (datos.hMoneda)   save('hMoneda',   datos.hMoneda);
+      if (datos.hModo)     save('hModo',     datos.hModo);
+
+      // Recargar estado en memoria
+      clientes = load('hClientes', []);
+      rutas    = load('hRutas',    []);
+      renderSelector();
+
+      // Cargar último EP si existe
+      var hist = load('hDocs', []);
+      if (hist.length) {
+        cargarDoc(hist[hist.length - 1]);
+        toast('✅ Datos restaurados — ' + hist.length + ' documento' + (hist.length !== 1 ? 's' : '') + ' importados');
+      } else {
+        toast('✅ Datos restaurados');
+      }
+      cerrarModal('modalBackup');
+    } catch (err) {
+      alert('Error al leer el archivo: ' + err.message);
+    }
+  };
+  reader.readAsText(file);
+  input.value = ''; // reset para permitir reimportar el mismo archivo
+}
 
 /* ══ UTIL ══════════════════════════════════════════════════════════════════ */
 function g(id){return document.getElementById(id).value.trim()}
