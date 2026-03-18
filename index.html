@@ -1217,40 +1217,26 @@ const SB_KEY = 'sb_publishable_tXCnGYE_OjoH0yrFVM-vpA_rqBPXPaU';
 
 /* ════════════════════════════════════════════════════════════════════════
    MÓDULO: DB  (Supabase + localStorage)
-   ─ Fuente de verdad: Supabase
-   ─ Cache instantáneo: localStorage (prefijado con device_id)
-   ─ Tres claves por dispositivo: state · clients · docs
 ════════════════════════════════════════════════════════════════════════ */
 const DB = (() => {
-  // Device ID persistente (identifica este navegador/dispositivo)
   const DEVICE = (() => {
     const KEY = 'hauler_device';
-
-    // Leer de cookie
     const cookieGet = () => {
       const m = document.cookie.match('(?:^|; )' + KEY + '=([^;]+)');
       return m ? decodeURIComponent(m[1]) : null;
     };
-
-    // Escribir cookie con 10 años de expiración (sobrevive borrado de historial)
     const cookieSet = (id) => {
       const exp = new Date();
       exp.setFullYear(exp.getFullYear() + 10);
       document.cookie = KEY + '=' + encodeURIComponent(id) + '; expires=' + exp.toUTCString() + '; path=/; SameSite=Lax';
     };
-
-    // 1. Intentar cookie (más persistente)
     let id = cookieGet();
-    // 2. Fallback a localStorage
     if (!id) id = localStorage.getItem(KEY);
-    // 3. Generar nuevo si no hay ninguno
     if (!id) {
       id = 'dev_' + Math.random().toString(36).slice(2, 10) + Date.now().toString(36);
     }
-    // Siempre escribir en ambos lugares para máxima persistencia
     cookieSet(id);
     try { localStorage.setItem(KEY, id); } catch(e) {}
-
     return id;
   })();
 
@@ -1260,16 +1246,10 @@ const DB = (() => {
     return _sb;
   };
 
-  // Timers de debounce por clave
   const _timers = {};
-
-  // Llave Supabase = device + '__' + nombre
   const sbKey = name => DEVICE + '__' + name;
-
-  // Llave localStorage = device + '_' + nombre
   const lsKey = name => DEVICE + '_' + name;
 
-  /* Leer de localStorage (síncrono, inmediato) */
   const lsRead = (name, fallback = null) => {
     try {
       const raw = localStorage.getItem(lsKey(name));
@@ -1277,12 +1257,10 @@ const DB = (() => {
     } catch { return fallback; }
   };
 
-  /* Escribir en localStorage */
   const lsWrite = (name, value) => {
     try { localStorage.setItem(lsKey(name), JSON.stringify(value)); } catch {}
   };
 
-  /* Leer desde Supabase */
   const sbRead = async (name) => {
     try {
       const { data, error } = await sb()
@@ -1295,7 +1273,6 @@ const DB = (() => {
     } catch (e) { console.warn('[DB.sbRead net]', e); return null; }
   };
 
-  /* Escribir en Supabase (con debounce configurable) */
   const sbWrite = (name, value, delay = 600) => {
     clearTimeout(_timers[name]);
     _timers[name] = setTimeout(async () => {
@@ -1313,13 +1290,11 @@ const DB = (() => {
     }, delay);
   };
 
-  /* Guardar: escribe en local INMEDIATAMENTE y en Supabase con debounce */
   const save = (name, value, delay) => {
     lsWrite(name, value);
     sbWrite(name, value, delay);
   };
 
-  /* Cargar múltiples claves desde Supabase en una sola query */
   const loadMany = async (names) => {
     const keys = names.map(n => sbKey(n));
     try {
@@ -1341,7 +1316,7 @@ const DB = (() => {
 
 
 /* ════════════════════════════════════════════════════════════════════════
-   MÓDULO: Sync (indicador visual de estado de guardado)
+   MÓDULO: Sync
 ════════════════════════════════════════════════════════════════════════ */
 const Sync = (() => {
   const el = () => document.getElementById('syncDot');
@@ -1412,7 +1387,6 @@ const Modal = (() => {
     open('modalHistory');
   };
 
-  // Cerrar con click en backdrop
   ['modalConvert','modalClients','modalHistory'].forEach(id => {
     document.getElementById(id)?.addEventListener('click', e => {
       if (e.target.id === id) close(id);
@@ -1427,14 +1401,13 @@ const Modal = (() => {
    ESTADO GLOBAL
 ════════════════════════════════════════════════════════════════════════ */
 const State = {
-  mode:     'cot',   // 'cot' | 'ep'
+  mode:     'cot',
   currency: 'CLP',
-  rows:     [],      // filas de servicios
-  extras:   [],      // ítems adicionales
-  docId:    null,    // id del documento actual
+  rows:     [],
+  extras:   [],
+  docId:    null,
 };
 
-// Catálogo de monedas
 const CURRENCIES = [
   { code:'CLP', sym:'$',    name:'Peso chileno',           dec:0, locale:'es-CL' },
   { code:'ARS', sym:'$',    name:'Peso argentino',         dec:2, locale:'es-AR' },
@@ -1472,16 +1445,11 @@ const fmt = n => {
 
 /* ════════════════════════════════════════════════════════════════════════
    MÓDULO: AutoSave
-   ─ Escucha TODOS los eventos input/change en #doc con delegación
-   ─ Debounce 800ms → captura TODO el estado y lo guarda
-   ─ También guarda rows y extras tras cada modificación estructural
 ════════════════════════════════════════════════════════════════════════ */
 const AutoSave = (() => {
   let _timer = null;
 
-  /* Captura TODOS los campos del formulario en un snapshot JSON */
   const capture = () => {
-    // Sincronizar filas: leer inputs del DOM al array
     State.rows.forEach(row => {
       const vi = document.getElementById('vi_' + row.id);
       const vu = document.getElementById('vu_' + row.id);
@@ -1490,67 +1458,53 @@ const AutoSave = (() => {
     });
 
     return {
-      // Configuración
       mode:     State.mode,
       currency: State.currency,
       docId:    State.docId,
-      // Encabezado
       numDoc:        fv('numDoc'),
       fechaEmision:  fv('fechaEmision'),
       fechaVence:    fv('fechaVence'),
       selValidez:    fv('selValidez'),
-      // Cliente
       cliNombre:    fv('cliNombre'),    cliRut:     fv('cliRut'),
       cliGiro:      fv('cliGiro'),      cliDir:     fv('cliDir'),
       cliCiudad:    fv('cliCiudad'),    cliEmail:   fv('cliEmail'),
       cliTel:       fv('cliTel'),       cliContacto:fv('cliContacto'),
       cliContrato:  fv('cliContrato'),  cliOC:      fv('cliOC'),
       cliProyecto:  fv('cliProyecto'),  cliSistema: fv('cliSistema'),
-      // Proveedor
       prvNombre:    fv('prvNombre'),    prvRut:     fv('prvRut'),
       prvGiro:      fv('prvGiro'),      prvDir:     fv('prvDir'),
       prvCiudad:    fv('prvCiudad'),    prvRegion:  fv('prvRegion'),
       prvEmail:     fv('prvEmail'),     prvTel:     fv('prvTel'),
       prvContacto:  fv('prvContacto'),
-      // Condiciones
       condPago:     fv('condPago'),     condMoneda:    fv('condMoneda'),
       condReajuste: fv('condReajuste'), condNotas:     fv('condNotas'),
-      // Presentación / propuesta
       presDesc:     fv('presDesc'),     presSistema:   fv('presSistema'),
       presVigencia: fv('presVigencia'), presInicio:    fv('presInicio'),
-      // Intro + descripción
       introMsg:     fv('introMsg'),     descServicio:  fv('descServicio'),
-      // Características (checkboxes)
       caracts: [1,2,3,4,5,6].map(i => document.getElementById('caract' + i)?.checked ?? true),
-      // IVA
       conIva: document.getElementById('chkIva')?.checked ?? true,
-      // Logo
       tieneLogo: document.getElementById('logoImg')?.style.display !== 'none',
       logoSrc:   document.getElementById('imgLogo')?.src  || '',
       logoSize:  document.getElementById('logoSize')?.value || '56',
-      // Datos de servicio
       rows:   JSON.parse(JSON.stringify(State.rows)),
       extras: JSON.parse(JSON.stringify(State.extras)),
     };
   };
 
-  /* Guardar inmediatamente (sin debounce) */
   const flush = () => {
     clearTimeout(_timer);
     const snapshot = capture();
     DB.save('state', snapshot, 400);
   };
 
-  /* Guardar con debounce (para eventos de teclado) */
   const schedule = () => {
     clearTimeout(_timer);
     _timer = setTimeout(() => {
       const snapshot = capture();
-      DB.save('state', snapshot, 0); // delay 0 porque ya esperamos aquí
+      DB.save('state', snapshot, 0);
     }, 800);
   };
 
-  /* Registrar delegación de eventos en el documento */
   const init = () => {
     const doc = document.getElementById('doc');
     doc.addEventListener('input',  () => schedule());
@@ -1562,22 +1516,19 @@ const AutoSave = (() => {
 
 
 /* ════════════════════════════════════════════════════════════════════════
-   MÓDULO: App (inicialización, modo, moneda, logo, guardar/limpiar)
+   MÓDULO: App
 ════════════════════════════════════════════════════════════════════════ */
 const App = (() => {
 
-  /* ── Inicializar app ── */
   const init = async () => {
     Sync.setIdle();
 
-    // 1. Cargar desde localStorage (instantáneo)
     const localState   = DB.lsRead('state');
     const localClients = DB.lsRead('clients', []);
 
     if (localState) {
       restoreSnapshot(localState);
     } else {
-      // Primera vez: valores por defecto
       const hoy = new Date(), v30 = new Date(hoy);
       v30.setDate(v30.getDate() + 30);
       setField('fechaEmision', iso(hoy));
@@ -1585,31 +1536,26 @@ const App = (() => {
       Rows.add();
     }
 
+    // ── FIX: asignar via setter para actualizar la variable interna del closure ──
     Clients.list = localClients;
     Clients.renderSelector();
     initCurrencySelect();
     applyMode(State.mode, false);
 
-    // 2. Registrar auto-save en todos los campos
     AutoSave.init();
 
-    // 3. Actualizar indicador inline del cliente
     setTimeout(() => Clients.updateInlineStatus(), 150);
 
-    // 4. Sincronizar desde Supabase en background
     syncFromSupabase();
   };
 
-  /* ── Sincronizar desde Supabase ── */
   const syncFromSupabase = async () => {
     Sync.setSaving();
     const sb = await DB.loadMany(['state', 'clients']);
 
-    // Estado del formulario
     if (sb.state) {
       const localTs = DB.lsRead('state')?.savedAt || 0;
       const sbTs    = sb.state.savedAt || 0;
-      // Supabase gana si tiene datos más recientes
       if (!localTs || (sbTs && sbTs > localTs)) {
         restoreSnapshot(sb.state);
         DB.lsWrite('state', sb.state);
@@ -1617,10 +1563,10 @@ const App = (() => {
       }
     }
 
-    // Clientes
     if (sb.clients && Array.isArray(sb.clients)) {
       const localCli = DB.lsRead('clients', []);
       if (sb.clients.length >= localCli.length) {
+        // ── FIX: asignar via setter ──
         Clients.list = sb.clients;
         DB.lsWrite('clients', sb.clients);
         Clients.renderSelector();
@@ -1631,24 +1577,19 @@ const App = (() => {
     Sync.setOk();
   };
 
-  /* ── Restaurar snapshot al DOM ── */
   const restoreSnapshot = (snap) => {
     if (!snap) return;
 
-    // Configuración global
     if (snap.currency) { State.currency = snap.currency; }
     if (snap.docId)    { State.docId    = snap.docId;    }
 
-    // Actualizar selector de moneda
     const selCur = document.getElementById('currencySelect');
     if (selCur) selCur.value = State.currency;
 
-    // Modo (sin guardar para no triggear auto-save)
     const modo = snap.mode || 'cot';
     State.mode = modo;
     applyMode(modo, false);
 
-    // Campos de texto: todos de una vez
     const textFields = [
       'numDoc','fechaEmision','fechaVence','selValidez',
       'cliNombre','cliRut','cliGiro','cliDir','cliCiudad','cliEmail',
@@ -1663,7 +1604,6 @@ const App = (() => {
       if (snap[id] !== undefined) setField(id, snap[id]);
     });
 
-    // Checkboxes
     if (Array.isArray(snap.caracts)) {
       snap.caracts.forEach((v, i) => {
         const el = document.getElementById('caract' + (i + 1));
@@ -1673,7 +1613,6 @@ const App = (() => {
     const chkIva = document.getElementById('chkIva');
     if (chkIva && snap.conIva !== undefined) chkIva.checked = !!snap.conIva;
 
-    // Logo
     if (snap.tieneLogo && snap.logoSrc) {
       document.getElementById('imgLogo').src = snap.logoSrc;
       document.getElementById('logoText').style.display    = 'none';
@@ -1686,7 +1625,6 @@ const App = (() => {
       removeLogo();
     }
 
-    // Filas y extras — normalizar IDs legacy (podían ser strings alfanuméricos sin prefijo)
     const normId = id => id ? 'r' + String(id).replace(/^r/, '') : uid();
     State.rows   = (snap.rows   || []).map(r => ({ periodoTipo:'dia', periodoDesde:'', periodoHasta:'', periodoMes:'', periodoAnio:'', vehiculo:'', patente:'', ruta:'', pasajeros:'', viajes:0, valorUnit:0, ...r, id: normId(r.id) }));
     State.extras = (snap.extras || []).map(e => ({ tipo:'unit', cantidad:1, valorUnit:0, desc:'', ...e, id: normId(e.id) }));
@@ -1698,7 +1636,6 @@ const App = (() => {
     Calc.run();
   };
 
-  /* ── Inicializar selector de moneda ── */
   const initCurrencySelect = () => {
     const sel = document.getElementById('currencySelect');
     sel.innerHTML = CURRENCIES.map(c =>
@@ -1706,7 +1643,6 @@ const App = (() => {
     ).join('');
   };
 
-  /* ── Cambiar moneda ── */
   const setCurrency = (code) => {
     State.currency = code;
     Calc.run();
@@ -1714,7 +1650,6 @@ const App = (() => {
     AutoSave.flush();
   };
 
-  /* ── Cambiar modo (cot / ep) ── */
   const setMode = (mode) => {
     if (mode === State.mode) return;
     State.mode = mode;
@@ -1722,7 +1657,6 @@ const App = (() => {
     AutoSave.flush();
   };
 
-  /* ── Aplicar modo al DOM ── */
   const applyMode = (mode, withTransition) => {
     State.mode = mode;
     const isCot = mode === 'cot';
@@ -1749,7 +1683,6 @@ const App = (() => {
     document.getElementById('rowContrato').style.display = isCot ? 'none' : 'block';
     document.getElementById('rowOC').style.display       = isCot ? 'none' : 'block';
 
-    // Secciones exclusivas de cotización
     ['secCondiciones','secPresentacion','secIntro','secDescServicio'].forEach(id => {
       document.getElementById(id).style.display = isCot ? 'block' : 'none';
     });
@@ -1765,7 +1698,6 @@ const App = (() => {
     }
   };
 
-  /* ── Actualizar fecha de validez ── */
   const updateValidez = () => {
     const dias = parseInt(fv('selValidez')) || 30;
     const em   = fv('fechaEmision');
@@ -1776,7 +1708,6 @@ const App = (() => {
     }
   };
 
-  /* ── Guardar documento en historial ── */
   const saveDoc = () => {
     State.docId = State.docId || uid();
     const snap = { ...AutoSave.capture(), savedAt: new Date().toISOString(), id: State.docId };
@@ -1791,7 +1722,6 @@ const App = (() => {
     Toast.show('💾 Guardado en Supabase');
   };
 
-  /* ── Nuevo documento en blanco ── */
   const newDoc = () => {
     if (!confirm('¿Crear un nuevo documento en blanco?')) return;
     State.docId = uid();
@@ -1822,13 +1752,11 @@ const App = (() => {
     Toast.show('📄 Nuevo documento en blanco');
   };
 
-  /* ── Limpiar todo ── */
   const clearAll = () => {
     if (!confirm('¿Dejar el documento completamente en blanco?')) return;
     newDoc();
   };
 
-  /* ── Ejecutar conversión COT ↔ EP ── */
   const executeConvert = () => {
     const newMode = State.mode === 'cot' ? 'ep' : 'cot';
     State.docId = uid();
@@ -1838,7 +1766,6 @@ const App = (() => {
     AutoSave.flush();
   };
 
-  /* ── Logo ── */
   const loadLogo = (input) => {
     const file = input.files[0]; if (!file) return;
     const reader = new FileReader();
@@ -1867,12 +1794,12 @@ const App = (() => {
     document.getElementById('imgLogo').src = '';
   };
 
-  return { init, setCurrency, setMode, applyMode, updateValidez, saveDoc, newDoc, clearAll, executeConvert, loadLogo, resizeLogo, removeLogo, syncFromSupabase };
+  return { init, setCurrency, setMode, applyMode, updateValidez, saveDoc, newDoc, clearAll, executeConvert, loadLogo, resizeLogo, removeLogo, syncFromSupabase, restoreSnapshot };
 })();
 
 
 /* ════════════════════════════════════════════════════════════════════════
-   MÓDULO: Período (mini-widget por fila)
+   MÓDULO: Período
 ════════════════════════════════════════════════════════════════════════ */
 const Periodo = (() => {
   const calcDias = (r) => {
@@ -1886,7 +1813,6 @@ const Periodo = (() => {
 
   const html = (r) => {
     const t = r.periodoTipo || 'dia', dias = calcDias(r), id = r.id;
-    // IDs siempre entre comillas simples en onclick
     const pills = ['dia','rango','mes','anio'].map(pt => {
       const labels = { dia:'Día', rango:'Rango', mes:'Mes', anio:'Año' };
       return `<button class="tipo-pill${t === pt ? ' act' : ''}" onclick="Periodo.setType('${id}','${pt}')">${labels[pt]}</button>`;
@@ -1940,10 +1866,10 @@ const Periodo = (() => {
 
 
 /* ════════════════════════════════════════════════════════════════════════
-   MÓDULO: Rows (filas de servicios)
+   MÓDULO: Rows
 ════════════════════════════════════════════════════════════════════════ */
 const Rows = (() => {
-  let _routeTarget = null; // id de fila que espera ruta
+  let _routeTarget = null;
 
   const add = (data = {}) => {
     State.rows.push({
@@ -1970,7 +1896,6 @@ const Rows = (() => {
       tbody.innerHTML = '<tr class="empty-row"><td colspan="9">Sin servicios — haz clic en ➕ Servicio</td></tr>';
       return;
     }
-    // IMPORTANTE: IDs siempre entre comillas simples en onclick para soportar strings y números
     tbody.innerHTML = State.rows.map(r => {
       const id = r.id;
       return `
@@ -2031,7 +1956,7 @@ const Rows = (() => {
 
 
 /* ════════════════════════════════════════════════════════════════════════
-   MÓDULO: Extras (ítems adicionales)
+   MÓDULO: Extras
 ════════════════════════════════════════════════════════════════════════ */
 const Extras = (() => {
   const add = (data = {}) => {
@@ -2095,13 +2020,12 @@ const Extras = (() => {
 
 
 /* ════════════════════════════════════════════════════════════════════════
-   MÓDULO: Calc (cálculo de totales)
+   MÓDULO: Calc
 ════════════════════════════════════════════════════════════════════════ */
 const Calc = (() => {
   const run = () => {
     const sym = getCur().sym;
 
-    // Actualizar celdas de filas
     let brutoServ = 0;
     State.rows.forEach(r => {
       const vi  = +(document.getElementById('vi_' + r.id)?.value) || +r.viajes    || 0;
@@ -2112,7 +2036,6 @@ const Calc = (() => {
       if (cel) cel.textContent = vi && vu ? sym + ' ' + fmt(tot) : '—';
     });
 
-    // Actualizar celdas de extras
     let brutoExtra = 0;
     State.extras.forEach(e => {
       const q  = +e.cantidad  || 0;
@@ -2141,7 +2064,11 @@ const Calc = (() => {
 
 
 /* ════════════════════════════════════════════════════════════════════════
-   MÓDULO: Clients (gestión de clientes guardados)
+   MÓDULO: Clients
+   ── FIX: list expuesto como getter/setter para que la variable interna
+      del closure se actualice cuando se hace Clients.list = [...] desde
+      App.init() y syncFromSupabase(). Sin esto las rutas y el render
+      interno usaban una lista desactualizada. ──
 ════════════════════════════════════════════════════════════════════════ */
 const Clients = (() => {
   let list      = DB.lsRead('clients', []);
@@ -2255,7 +2182,6 @@ const Clients = (() => {
     });
   };
 
-  /* ── Guardar cliente directamente desde los campos del documento ── */
   const saveFromDoc = () => {
     const nombre = fv('cliNombre').trim();
     if (!nombre) { Toast.show('⚠️ Escribe la razón social del cliente'); return; }
@@ -2268,11 +2194,9 @@ const Clients = (() => {
       ciudad: fv('cliCiudad'),
     };
 
-    // Buscar si ya existe (por nombre, case-insensitive)
     const idx = list.findIndex(c => c.nombre.trim().toLowerCase() === nombre.toLowerCase());
 
     if (idx >= 0) {
-      // Actualizar preservando rutas
       data.rutas = list[idx].rutas || [];
       list[idx] = data;
       _setInlineStatus('clientSaveStatus', 'btnSaveClientInline', '✓ Cliente actualizado en la lista', 'ok', true);
@@ -2290,7 +2214,6 @@ const Clients = (() => {
     AutoSave.flush();
   };
 
-  /* ── Guardar datos del proveedor como cliente en la lista ── */
   const saveProviderFromDoc = () => {
     const nombre = fv('prvNombre').trim();
     if (!nombre) { Toast.show('⚠️ Escribe la razón social del proveedor'); return; }
@@ -2320,7 +2243,6 @@ const Clients = (() => {
     _setInlineStatus('providerSaveStatus', 'btnSaveProviderInline', '✓ Guardado en lista de clientes', 'ok', true);
   };
 
-  /* ── Actualizar el indicador inline según el nombre escrito ── */
   const updateInlineStatus = () => {
     const nombre = fv('cliNombre').trim();
     const statusEl = document.getElementById('clientSaveStatus');
@@ -2346,7 +2268,6 @@ const Clients = (() => {
     }
   };
 
-  /* ── Helper interno para feedback temporal en botón ── */
   const _setInlineStatus = (statusId, btnId, msg, cls, reset) => {
     const s = document.getElementById(statusId);
     const b = document.getElementById(btnId);
@@ -2355,15 +2276,23 @@ const Clients = (() => {
     if (reset) setTimeout(() => updateInlineStatus(), 2500);
   };
 
-  return { list, save, edit, cancelEdit, clearForm, del, useInDoc, selectForRoutes, loadFromSelector,
+  // ── FIX PRINCIPAL: getter/setter para `list` ──────────────────────────
+  // Exportar list como getter/setter garantiza que cualquier asignación
+  // externa (Clients.list = [...]) actualice la variable interna del
+  // closure, manteniendo sincronizados render(), save(), del() y Routes.
+  return {
+    get list() { return list; },
+    set list(v) { list = v; },
+    save, edit, cancelEdit, clearForm, del, useInDoc, selectForRoutes, loadFromSelector,
     renderSelector, render, saveFromDoc, saveProviderFromDoc, updateInlineStatus,
-    get activeIdx() { return activeIdx; }, set activeIdx(v) { activeIdx = v; }
+    get activeIdx() { return activeIdx; },
+    set activeIdx(v) { activeIdx = v; }
   };
 })();
 
 
 /* ════════════════════════════════════════════════════════════════════════
-   MÓDULO: Routes (rutas de clientes)
+   MÓDULO: Routes
 ════════════════════════════════════════════════════════════════════════ */
 const Routes = (() => {
   const getList = () => {
@@ -2380,11 +2309,17 @@ const Routes = (() => {
   const save = () => {
     if (Clients.activeIdx === null) { alert('Selecciona un cliente primero.'); return; }
     const name = gf('nr_nombre'); if (!name) { alert('Ingresa el nombre de la ruta.'); return; }
+    // Asegurar que el array de rutas existe en el cliente activo
     if (!Clients.list[Clients.activeIdx].rutas) Clients.list[Clients.activeIdx].rutas = [];
     const rawIdx = document.getElementById('nr_editIdx').value;
     const data   = { nombre: name, desc: gf('nr_desc') };
-    if (rawIdx !== '') { Clients.list[Clients.activeIdx].rutas[parseInt(rawIdx)] = data; Toast.show('✏️ Ruta actualizada'); }
-    else               { Clients.list[Clients.activeIdx].rutas.push(data);              Toast.show('✓ Ruta guardada'); }
+    if (rawIdx !== '') {
+      Clients.list[Clients.activeIdx].rutas[parseInt(rawIdx)] = data;
+      Toast.show('✏️ Ruta actualizada');
+    } else {
+      Clients.list[Clients.activeIdx].rutas.push(data);
+      Toast.show('✓ Ruta guardada');
+    }
     DB.save('clients', Clients.list);
     cancelEdit(); render(); Clients.render();
   };
@@ -2445,7 +2380,7 @@ const Routes = (() => {
 
 
 /* ════════════════════════════════════════════════════════════════════════
-   MÓDULO: History (historial de documentos)
+   MÓDULO: History
 ════════════════════════════════════════════════════════════════════════ */
 const History = (() => {
   let _filter = 'all';
@@ -2504,7 +2439,7 @@ const History = (() => {
     const d = DB.lsRead('docs', []).find(x => String(x.id) === String(id));
     if (!d) return;
     State.docId = d.id;
-    App.restoreSnapshot ? App.restoreSnapshot(d) : window._restoreSnapshot(d);
+    App.restoreSnapshot(d);
     Modal.close('modalHistory');
     Toast.show('📂 ' + (d.numDoc || 'Documento cargado'));
   };
@@ -2521,58 +2456,15 @@ const History = (() => {
   return { filter, render, load, del };
 })();
 
-// Exponer restoreSnapshot para History.load
-window._restoreSnapshot = (snap) => {
-  State.docId = snap.id || snap.docId || uid();
-  // Delegamos a la función interna de App mediante capture/restore
-  // Reconstruimos el estado directamente:
-  if (snap.currency) { State.currency = snap.currency || snap.moneda || 'CLP'; }
-  const selCur = document.getElementById('currencySelect');
-  if (selCur) selCur.value = State.currency;
-
-  const mode = snap.mode || snap.modo || 'cot';
-  State.mode = mode;
-  App.applyMode(mode, false);
-
-  const textFields = [
-    'numDoc','fechaEmision','fechaVence','selValidez',
-    'cliNombre','cliRut','cliGiro','cliDir','cliCiudad','cliEmail',
-    'cliTel','cliContacto','cliContrato','cliOC','cliProyecto','cliSistema',
-    'prvNombre','prvRut','prvGiro','prvDir','prvCiudad','prvRegion',
-    'prvEmail','prvTel','prvContacto',
-    'condPago','condMoneda','condReajuste','condNotas',
-    'presDesc','presSistema','presVigencia','presInicio',
-    'introMsg','descServicio',
-  ];
-  textFields.forEach(id => {
-    const val = snap[id];
-    if (val !== undefined) setField(id, val);
-  });
-  if (Array.isArray(snap.caracts)) {
-    snap.caracts.forEach((v, i) => { const el = document.getElementById('caract' + (i+1)); if (el) el.checked = !!v; });
-  }
-  const chk = document.getElementById('chkIva'); if (chk) chk.checked = snap.conIva !== false;
-  if (snap.tieneLogo && snap.logoSrc) {
-    document.getElementById('imgLogo').src = snap.logoSrc;
-    document.getElementById('logoText').style.display      = 'none';
-    document.getElementById('logoImg').style.display       = 'flex';
-    document.getElementById('logoSizeWrap').style.display  = 'flex';
-    document.getElementById('btnRemoveLogo').style.display = 'inline-flex';
-    App.resizeLogo(snap.logoSize || 56);
-    document.getElementById('logoSize').value = snap.logoSize || 56;
-  } else { App.removeLogo(); }
-
-  const normId = id => id ? 'r' + String(id).replace(/^r/, '') : uid();
-  State.rows   = (snap.rows   || snap.filas  || []).map(r => ({ periodoTipo:'dia', ...r, id: normId(r.id) }));
-  State.extras = (snap.extras || []).map(e => ({ tipo:'unit', ...e, id: normId(e.id) }));
-  Rows.render(); Extras.render(); Calc.run();
-  // Actualizar indicador inline de cliente
-  setTimeout(() => { if (typeof Clients !== 'undefined') Clients.updateInlineStatus(); }, 100);
-};
+// Alias global para compatibilidad legacy
+window._restoreSnapshot = (snap) => App.restoreSnapshot(snap);
 
 
 /* ════════════════════════════════════════════════════════════════════════
-   MÓDULO: PDF (generación e impresión)
+   MÓDULO: PDF
+   ── FIX: pdfTitle incluye la ruta del primer servicio cuando existe,
+      generando nombres como:
+      "Cotización · COT-2401 · G4S Security Services · ARICA - PAMPA CAMARONES · 2026-03-16"
 ════════════════════════════════════════════════════════════════════════ */
 const PDF = (() => {
   const MESES = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
@@ -2619,7 +2511,6 @@ const PDF = (() => {
         </tbody></table>
       </div>` : '';
 
-    // Secciones nuevas (solo COT)
     const caracts = [1,2,3,4,5,6].map(i => document.getElementById('caract'+i)?.checked ?? true);
     const caractsOn = CARACT_LABELS.filter((_, i) => caracts[i]);
 
@@ -2658,7 +2549,16 @@ const PDF = (() => {
         ${caractsOn.length ? `<div><div class="sec-title">Características Incluidas</div><ul class="caract-ul">${caractsOn.map(c=>`<li>✓ ${c}</li>`).join('')}</ul></div>` : ''}
       </div></div>` : '';
 
-    const pdfTitle = [isCot ? 'Cotización' : 'Estado de Pago', fv('numDoc') || '', fv('cliNombre') || 'Sin Cliente', fv('fechaEmision') || iso(new Date())].join(' · ');
+    // ── FIX: nombre del PDF incluye ruta del primer servicio ──────────────
+    // Formato: "Cotización · COT-2401 · G4S Security Services · ARICA - PAMPA CAMARONES · 2026-03-16"
+    const _firstRuta = (State.rows.length && State.rows[0].ruta) ? State.rows[0].ruta.trim() : '';
+    const pdfTitle = [
+      isCot ? 'Cotización' : 'Estado de Pago',
+      fv('numDoc') || '',
+      fv('cliNombre') || 'Sin Cliente',
+      _firstRuta,
+      fv('fechaEmision') || iso(new Date())
+    ].filter(Boolean).join(' · ');
 
     const html = `<!DOCTYPE html><html lang="es"><head>
 <meta charset="UTF-8"><title>${pdfTitle}</title>
@@ -2847,10 +2747,10 @@ document.fonts.ready.then(function(){setTimeout(function(){window.print();},500)
 const iso    = d => d.toISOString().slice(0, 10);
 const uid    = () => 'r' + Date.now() + Math.floor(Math.random() * 9999);
 const esc    = v => v == null ? '' : String(v).replace(/"/g, '&quot;');
-const fv     = id => { const el = document.getElementById(id); return el ? el.value : ''; };          // get field value
-const gf     = id => { const el = document.getElementById(id); return el ? el.value.trim() : ''; };   // get field trimmed
-const setf   = (id, v) => { const el = document.getElementById(id); if (el) el.value = v || ''; };    // set form input
-const setField = setf; // alias usado en varios módulos
+const fv     = id => { const el = document.getElementById(id); return el ? el.value : ''; };
+const gf     = id => { const el = document.getElementById(id); return el ? el.value.trim() : ''; };
+const setf   = (id, v) => { const el = document.getElementById(id); if (el) el.value = v || ''; };
+const setField = setf;
 
 
 /* ════════════════════════════════════════════════════════════════════════
@@ -2865,22 +2765,19 @@ document.addEventListener('keydown', e => {
 
 
 /* ════════════════════════════════════════════════════════════════════════
-   ARRANQUE + LIMPIEZA DE DATOS LEGACY
+   ARRANQUE
 ════════════════════════════════════════════════════════════════════════ */
 window.addEventListener('DOMContentLoaded', () => {
 
-  // Recuperar device ID desde cookie (más persistente que localStorage)
   try {
     const m = document.cookie.match('(?:^|; )hauler_device=([^;]+)');
     const cookieDevice = m ? decodeURIComponent(m[1]) : null;
     const lsDevice = localStorage.getItem('hauler_device');
-    // Si la cookie tiene un ID que localStorage no tiene, restaurarlo
     if (cookieDevice && !lsDevice) {
       localStorage.setItem('hauler_device', cookieDevice);
     }
   } catch(e) {}
 
-  // Normalizar IDs corruptos (sin prefijo 'r') antes de iniciar
   try {
     const device = localStorage.getItem('hauler_device') || '';
     if (device) {
@@ -2899,7 +2796,7 @@ window.addEventListener('DOMContentLoaded', () => {
         if (changed) localStorage.setItem(stateKey, JSON.stringify(snap));
       }
     }
-  } catch(e) { /* no bloquear la app */ }
+  } catch(e) {}
 
   App.init();
 });
