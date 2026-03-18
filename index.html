@@ -1622,9 +1622,10 @@ const App = (() => {
       removeLogo();
     }
 
-    // Filas y extras
-    State.rows   = (snap.rows   || []).map(r => ({ periodoTipo:'dia', periodoDesde:'', periodoHasta:'', periodoMes:'', periodoAnio:'', vehiculo:'', patente:'', ruta:'', pasajeros:'', viajes:0, valorUnit:0, ...r, id: r.id || uid() }));
-    State.extras = (snap.extras || []).map(e => ({ tipo:'unit', cantidad:1, valorUnit:0, desc:'', ...e, id: e.id || uid() }));
+    // Filas y extras — normalizar IDs legacy (podían ser strings alfanuméricos sin prefijo)
+    const normId = id => id ? 'r' + String(id).replace(/^r/, '') : uid();
+    State.rows   = (snap.rows   || []).map(r => ({ periodoTipo:'dia', periodoDesde:'', periodoHasta:'', periodoMes:'', periodoAnio:'', vehiculo:'', patente:'', ruta:'', pasajeros:'', viajes:0, valorUnit:0, ...r, id: normId(r.id) }));
+    State.extras = (snap.extras || []).map(e => ({ tipo:'unit', cantidad:1, valorUnit:0, desc:'', ...e, id: normId(e.id) }));
 
     if (!State.rows.length) State.rows = [];
 
@@ -1821,45 +1822,43 @@ const Periodo = (() => {
 
   const html = (r) => {
     const t = r.periodoTipo || 'dia', dias = calcDias(r), id = r.id;
+    // IDs siempre entre comillas simples en onclick
     const pills = ['dia','rango','mes','anio'].map(pt => {
       const labels = { dia:'Día', rango:'Rango', mes:'Mes', anio:'Año' };
-      return `<button class="tipo-pill${t === pt ? ' act' : ''}" onclick="Periodo.setType(${id},'${pt}')">${labels[pt]}</button>`;
+      return `<button class="tipo-pill${t === pt ? ' act' : ''}" onclick="Periodo.setType('${id}','${pt}')">${labels[pt]}</button>`;
     }).join('');
     let inp = '';
     if (t === 'dia') {
-      inp = `<input type="date" value="${esc(r.periodoDesde)}" onchange="Periodo.set(${id},'periodoDesde',this.value)">`;
+      inp = `<input type="date" value="${esc(r.periodoDesde)}" onchange="Periodo.set('${id}','periodoDesde',this.value)">`;
     } else if (t === 'rango') {
       const badge = dias > 0
-        ? `<span class="dias-badge">📅 ${dias} día${dias !== 1 ? 's' : ''}</span><button class="btn-usar" onclick="Periodo.useDays(${id})">→ usar</button>`
+        ? `<span class="dias-badge">📅 ${dias} día${dias !== 1 ? 's' : ''}</span><button class="btn-usar" onclick="Periodo.useDays('${id}')">→ usar</button>`
         : `<span class="dias-badge warn">Elige fechas</span>`;
-      inp = `<div class="periodo-rango-row"><input type="date" value="${esc(r.periodoDesde)}" onchange="Periodo.set(${id},'periodoDesde',this.value)"><span class="periodo-sep">→</span><input type="date" value="${esc(r.periodoHasta)}" onchange="Periodo.set(${id},'periodoHasta',this.value)"></div><div style="display:flex;align-items:center;gap:.3rem;flex-wrap:wrap;margin-top:.2rem">${badge}</div>`;
+      inp = `<div class="periodo-rango-row"><input type="date" value="${esc(r.periodoDesde)}" onchange="Periodo.set('${id}','periodoDesde',this.value)"><span class="periodo-sep">→</span><input type="date" value="${esc(r.periodoHasta)}" onchange="Periodo.set('${id}','periodoHasta',this.value)"></div><div style="display:flex;align-items:center;gap:.3rem;flex-wrap:wrap;margin-top:.2rem">${badge}</div>`;
     } else if (t === 'mes') {
-      inp = `<input type="month" value="${esc(r.periodoMes)}" onchange="Periodo.set(${id},'periodoMes',this.value)">`;
+      inp = `<input type="month" value="${esc(r.periodoMes)}" onchange="Periodo.set('${id}','periodoMes',this.value)">`;
       if (r.periodoMes) inp += `<span class="dias-badge">📅 ${dias} días</span>`;
     } else if (t === 'anio') {
-      inp = `<input type="number" min="2000" max="2099" value="${esc(r.periodoAnio) || new Date().getFullYear()}" style="width:80px" onchange="Periodo.set(${id},'periodoAnio',this.value)">`;
+      inp = `<input type="number" min="2000" max="2099" value="${esc(r.periodoAnio) || new Date().getFullYear()}" style="width:80px" onchange="Periodo.set('${id}','periodoAnio',this.value)">`;
       if (r.periodoAnio) inp += `<span class="dias-badge">📅 ${dias} días</span>`;
     }
     return `<div class="periodo-wrap"><div class="tipo-pills">${pills}</div><div class="periodo-inputs">${inp}</div></div>`;
   };
 
   const setType = (id, tipo) => {
-    // eslint-disable-next-line eqeqeq
-    const r = State.rows.find(r => r.id == id); if (!r) return;
+    const r = State.rows.find(r => String(r.id) === String(id)); if (!r) return;
     r.periodoTipo = tipo; r.periodoHasta = ''; r.periodoMes = ''; r.periodoAnio = '';
     if (tipo === 'anio') r.periodoAnio = String(new Date().getFullYear());
     updateCell(id); Calc.run(); AutoSave.schedule();
   };
 
   const set = (id, key, val) => {
-    // eslint-disable-next-line eqeqeq
-    const r = State.rows.find(r => r.id == id); if (!r) return;
+    const r = State.rows.find(r => String(r.id) === String(id)); if (!r) return;
     r[key] = val; updateCell(id); Calc.run(); AutoSave.schedule();
   };
 
   const useDays = (id) => {
-    // eslint-disable-next-line eqeqeq
-    const r = State.rows.find(r => r.id == id); if (!r) return;
+    const r = State.rows.find(r => String(r.id) === String(id)); if (!r) return;
     const d = calcDias(r); r.viajes = d;
     const inp = document.getElementById('vi_' + id);
     if (inp) inp.value = d;
@@ -1868,8 +1867,7 @@ const Periodo = (() => {
 
   const updateCell = (id) => {
     const tr = document.querySelector(`tr[data-id="${id}"]`); if (!tr) return;
-    // eslint-disable-next-line eqeqeq
-    const r  = State.rows.find(r => r.id == id); if (!r) return;
+    const r  = State.rows.find(r => String(r.id) === String(id)); if (!r) return;
     tr.cells[3].innerHTML = html(r);
   };
 
@@ -1893,8 +1891,7 @@ const Rows = (() => {
   };
 
   const remove = (id) => {
-    // eslint-disable-next-line eqeqeq — id puede venir como número desde onclick o string desde JSON
-    State.rows = State.rows.filter(r => r.id != id);
+    State.rows = State.rows.filter(r => String(r.id) !== String(id));
     render(); Calc.run(); AutoSave.flush();
   };
 
@@ -1909,33 +1906,37 @@ const Rows = (() => {
       tbody.innerHTML = '<tr class="empty-row"><td colspan="9">Sin servicios — haz clic en ➕ Servicio</td></tr>';
       return;
     }
-    tbody.innerHTML = State.rows.map(r => `
-      <tr data-id="${r.id}">
-        <td><input type="text"   value="${esc(r.vehiculo)}"  placeholder="Bus · Van…"  oninput="Rows.setField(${r.id},'vehiculo',this.value)"></td>
-        <td><input type="text"   value="${esc(r.patente)}"   placeholder="AB-CD-12"    style="max-width:80px" oninput="Rows.setField(${r.id},'patente',this.value)"></td>
+    // IMPORTANTE: IDs siempre entre comillas simples en onclick para soportar strings y números
+    tbody.innerHTML = State.rows.map(r => {
+      const id = r.id;
+      return `
+      <tr data-id="${id}">
+        <td><input type="text"   value="${esc(r.vehiculo)}"  placeholder="Bus · Van…"  oninput="Rows.setField('${id}','vehiculo',this.value)"></td>
+        <td><input type="text"   value="${esc(r.patente)}"   placeholder="AB-CD-12"    style="max-width:80px" oninput="Rows.setField('${id}','patente',this.value)"></td>
         <td><div class="ruta-cell">
-          <input type="text"     value="${esc(r.ruta)}"      placeholder="Ruta…"       oninput="Rows.setField(${r.id},'ruta',this.value)">
-          <button class="btn-ruta" onclick="Rows.pickRoute(${r.id})" title="Elegir ruta">📍</button>
+          <input type="text"     value="${esc(r.ruta)}"      placeholder="Ruta…"       oninput="Rows.setField('${id}','ruta',this.value)">
+          <button class="btn-ruta" onclick="Rows.pickRoute('${id}')" title="Elegir ruta">📍</button>
         </div></td>
         <td style="padding:.4rem">${Periodo.html(r)}</td>
-        <td class="num"><input type="number" min="0" value="${esc(r.pasajeros)}" placeholder="0" style="max-width:55px" oninput="Rows.setField(${r.id},'pasajeros',this.value)"></td>
-        <td class="num"><input type="number" min="0" id="vi_${r.id}" value="${esc(r.viajes)}"    placeholder="0" style="max-width:60px"  oninput="Rows.setNum(${r.id},'viajes',this.value)"></td>
-        <td class="num"><input type="number" min="0" id="vu_${r.id}" value="${esc(r.valorUnit)}" placeholder="0" style="max-width:95px"  oninput="Rows.setNum(${r.id},'valorUnit',this.value)"></td>
-        <td class="num total-cell" id="rtot_${r.id}">${rowTotal(r)}</td>
-        <td><button class="btn-del" onclick="Rows.remove(${r.id})">✕</button></td>
-      </tr>`).join('');
+        <td class="num"><input type="number" min="0" value="${esc(r.pasajeros)}" placeholder="0" style="max-width:55px" oninput="Rows.setField('${id}','pasajeros',this.value)"></td>
+        <td class="num"><input type="number" min="0" id="vi_${id}" value="${esc(r.viajes)}"    placeholder="0" style="max-width:60px"  oninput="Rows.setNum('${id}','viajes',this.value)"></td>
+        <td class="num"><input type="number" min="0" id="vu_${id}" value="${esc(r.valorUnit)}" placeholder="0" style="max-width:95px"  oninput="Rows.setNum('${id}','valorUnit',this.value)"></td>
+        <td class="num total-cell" id="rtot_${id}">${rowTotal(r)}</td>
+        <td><button class="btn-del" onclick="Rows.remove('${id}')">✕</button></td>
+      </tr>`;
+    }).join('');
   };
 
   const setField = (id, key, val) => {
-    // eslint-disable-next-line eqeqeq
-    const r = State.rows.find(r => r.id == id); if (!r) return;
+    const r = State.rows.find(r => String(r.id) === String(id)); if (!r) return;
     r[key] = val;
   };
 
   const setNum = (id, key, val) => {
-    // eslint-disable-next-line eqeqeq
-    const r = State.rows.find(r => r.id == id); if (!r) return;
-    r[key] = +val || 0; Calc.run(); AutoSave.schedule();
+    const r = State.rows.find(r => String(r.id) === String(id)); if (!r) return;
+    r[key] = +val || 0;
+    Calc.run();
+    AutoSave.schedule();
   };
 
   const rowTotal = (r) => {
@@ -1955,8 +1956,7 @@ const Rows = (() => {
 
   const applyRoute = (routeName) => {
     if (_routeTarget == null) return;
-    // eslint-disable-next-line eqeqeq
-    const r = State.rows.find(r => r.id == _routeTarget);
+    const r = State.rows.find(r => String(r.id) === String(_routeTarget));
     if (r) { r.ruta = routeName; render(); AutoSave.flush(); }
     _routeTarget = null;
     Modal.close('modalClients');
@@ -1976,26 +1976,24 @@ const Extras = (() => {
   };
 
   const remove = (id) => {
-    // eslint-disable-next-line eqeqeq
-    State.extras = State.extras.filter(e => e.id != id);
+    State.extras = State.extras.filter(e => String(e.id) !== String(id));
     render(); Calc.run(); AutoSave.flush();
   };
 
   const setField = (id, key, val) => {
-    // eslint-disable-next-line eqeqeq
-    const e = State.extras.find(e => e.id == id); if (!e) return;
+    const e = State.extras.find(e => String(e.id) === String(id)); if (!e) return;
     e[key] = val;
   };
 
   const setNum = (id, key, val) => {
-    // eslint-disable-next-line eqeqeq
-    const e = State.extras.find(e => e.id == id); if (!e) return;
-    e[key] = +val || 0; Calc.run(); AutoSave.schedule();
+    const e = State.extras.find(e => String(e.id) === String(id)); if (!e) return;
+    e[key] = +val || 0;
+    Calc.run();
+    AutoSave.schedule();
   };
 
   const setTipo = (id, tipo) => {
-    // eslint-disable-next-line eqeqeq
-    const e = State.extras.find(e => e.id == id); if (!e) return;
+    const e = State.extras.find(e => String(e.id) === String(id)); if (!e) return;
     e.tipo = tipo; render(); AutoSave.flush();
   };
 
@@ -2010,18 +2008,21 @@ const Extras = (() => {
       tbody.innerHTML = '<tr class="empty-row"><td colspan="6" style="background:transparent;padding:1rem;color:#c8a060;font-size:.74rem">Sin ítems adicionales</td></tr>';
       Calc.run(); return;
     }
-    tbody.innerHTML = State.extras.map(e => `
-      <tr data-eid="${e.id}">
-        <td><input type="text"   value="${esc(e.desc)}" placeholder="Descripción…" oninput="Extras.setField(${e.id},'desc',this.value)"></td>
+    tbody.innerHTML = State.extras.map(e => {
+      const id = e.id;
+      return `
+      <tr data-eid="${id}">
+        <td><input type="text"   value="${esc(e.desc)}" placeholder="Descripción…" oninput="Extras.setField('${id}','desc',this.value)"></td>
         <td><div class="tipo-extra-wrap">
-          <button class="tipo-extra-pill${e.tipo === 'unit' ? ' act' : ''}" onclick="Extras.setTipo(${e.id},'unit')">Por unidad</button>
-          <button class="tipo-extra-pill${e.tipo === 'dia'  ? ' act' : ''}" onclick="Extras.setTipo(${e.id},'dia')">Por día</button>
+          <button class="tipo-extra-pill${e.tipo === 'unit' ? ' act' : ''}" onclick="Extras.setTipo('${id}','unit')">Por unidad</button>
+          <button class="tipo-extra-pill${e.tipo === 'dia'  ? ' act' : ''}" onclick="Extras.setTipo('${id}','dia')">Por día</button>
         </div></td>
-        <td class="num"><input type="number" min="0" value="${esc(e.cantidad)}"  placeholder="${e.tipo === 'dia' ? 'Días' : 'Cant.'}" style="max-width:65px"  oninput="Extras.setNum(${e.id},'cantidad',this.value)"></td>
-        <td class="num"><input type="number" min="0" value="${esc(e.valorUnit)}" placeholder="0"                                       style="max-width:100px" oninput="Extras.setNum(${e.id},'valorUnit',this.value)"></td>
-        <td class="num total-cell" id="etot_${e.id}">${extraTotal(e)}</td>
-        <td><button class="btn-del" onclick="Extras.remove(${e.id})">✕</button></td>
-      </tr>`).join('');
+        <td class="num"><input type="number" min="0" value="${esc(e.cantidad)}"  placeholder="${e.tipo === 'dia' ? 'Días' : 'Cant.'}" style="max-width:65px"  oninput="Extras.setNum('${id}','cantidad',this.value)"></td>
+        <td class="num"><input type="number" min="0" value="${esc(e.valorUnit)}" placeholder="0"                                       style="max-width:100px" oninput="Extras.setNum('${id}','valorUnit',this.value)"></td>
+        <td class="num total-cell" id="etot_${id}">${extraTotal(e)}</td>
+        <td><button class="btn-del" onclick="Extras.remove('${id}')">✕</button></td>
+      </tr>`;
+    }).join('');
     Calc.run();
   };
 
@@ -2396,8 +2397,9 @@ window._restoreSnapshot = (snap) => {
     document.getElementById('logoSize').value = snap.logoSize || 56;
   } else { App.removeLogo(); }
 
-  State.rows   = (snap.rows   || snap.filas  || []).map(r => ({ periodoTipo:'dia', ...r, id: r.id || uid() }));
-  State.extras = (snap.extras || []).map(e => ({ tipo:'unit', ...e, id: e.id || uid() }));
+  const normId = id => id ? 'r' + String(id).replace(/^r/, '') : uid();
+  State.rows   = (snap.rows   || snap.filas  || []).map(r => ({ periodoTipo:'dia', ...r, id: normId(r.id) }));
+  State.extras = (snap.extras || []).map(e => ({ tipo:'unit', ...e, id: normId(e.id) }));
   Rows.render(); Extras.render(); Calc.run();
 };
 
@@ -2676,7 +2678,7 @@ document.fonts.ready.then(function(){setTimeout(function(){window.print();},500)
    UTILIDADES GLOBALES
 ════════════════════════════════════════════════════════════════════════ */
 const iso    = d => d.toISOString().slice(0, 10);
-const uid    = () => Date.now() + Math.floor(Math.random() * 100000); // numérico, seguro en onclick=""
+const uid    = () => 'r' + Date.now() + Math.floor(Math.random() * 9999);
 const esc    = v => v == null ? '' : String(v).replace(/"/g, '&quot;');
 const fv     = id => { const el = document.getElementById(id); return el ? el.value : ''; };          // get field value
 const gf     = id => { const el = document.getElementById(id); return el ? el.value.trim() : ''; };   // get field trimmed
@@ -2696,9 +2698,32 @@ document.addEventListener('keydown', e => {
 
 
 /* ════════════════════════════════════════════════════════════════════════
-   ARRANQUE
+   ARRANQUE + LIMPIEZA DE DATOS LEGACY
+   Si hay un estado guardado con IDs sin prefijo 'r', lo normaliza
+   para que las tablas funcionen correctamente.
 ════════════════════════════════════════════════════════════════════════ */
-window.addEventListener('DOMContentLoaded', () => App.init());
+window.addEventListener('DOMContentLoaded', () => {
+  // Limpiar IDs corruptos en localStorage antes de iniciar
+  try {
+    const device = localStorage.getItem('hauler_device') || '';
+    const stateKey = device + '_state';
+    const raw = localStorage.getItem(stateKey);
+    if (raw) {
+      const snap = JSON.parse(raw);
+      let changed = false;
+      const normId = id => {
+        const s = String(id);
+        if (!s.startsWith('r')) { changed = true; return 'r' + s; }
+        return s;
+      };
+      if (snap.rows)   snap.rows   = snap.rows.map(r => ({ ...r, id: normId(r.id) }));
+      if (snap.extras) snap.extras = snap.extras.map(e => ({ ...e, id: normId(e.id) }));
+      if (changed) localStorage.setItem(stateKey, JSON.stringify(snap));
+    }
+  } catch(e) { /* no bloquear la app si falla */ }
+
+  App.init();
+});
 </script>
 </body>
 </html>
