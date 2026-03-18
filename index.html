@@ -752,6 +752,29 @@ table.extras-table tbody td input:focus { border-color: #e0a030; }
   .cond-grid, .caract-grid, .pres-card, .desc-cols { grid-template-columns: 1fr; }
   .doc-footer { grid-template-columns: 1fr; }
 }
+
+/* ── Botón inline guardar cliente / proveedor desde el documento ── */
+.inline-save-row {
+  grid-column: 1 / -1;
+  display: flex; align-items: center; gap: .6rem;
+  margin-top: .35rem; padding-top: .6rem;
+  border-top: 1px dashed var(--border);
+}
+.btn-inline-save {
+  display: inline-flex; align-items: center; gap: .3rem;
+  padding: .34rem .8rem; border-radius: 99px;
+  border: 1.5px solid var(--blue);
+  font: 600 .63rem/1 var(--font-sans); cursor: pointer;
+  transition: all .2s; background: var(--blue-lt); color: var(--blue); white-space: nowrap;
+}
+.btn-inline-save:hover  { background: var(--blue); color: #fff; }
+.btn-inline-save.saved  { border-color: #12a150; background: #edfaf3; color: #12a150; }
+.inline-save-status {
+  font: 400 .6rem/1.4 var(--font-sans); color: var(--t3);
+  flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.inline-save-status.ok  { color: #12a150; }
+.inline-save-status.new { color: var(--blue); }
 </style>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
@@ -872,7 +895,7 @@ table.extras-table tbody td input:focus { border-color: #e0a030; }
             <option value="">— Seleccionar —</option>
           </select>
         </div>
-        <div class="field f-full"><label>Razón social</label><input type="text" id="cliNombre"   placeholder="Empresa SA"              data-autosave></div>
+        <div class="field f-full"><label>Razón social</label><input type="text" id="cliNombre"   placeholder="Empresa SA"              data-autosave oninput="Clients.updateInlineStatus()"></div>
         <div class="field">       <label>RUT</label>           <input type="text" id="cliRut"      placeholder="12.345.678-9"            data-autosave></div>
         <div class="field">       <label>Giro / Actividad</label><input type="text" id="cliGiro"  placeholder="Minería, Construcción…"   data-autosave></div>
         <div class="field">       <label>Dirección</label>     <input type="text" id="cliDir"      placeholder="Av. Ejemplo 1234"        data-autosave></div>
@@ -884,6 +907,14 @@ table.extras-table tbody td input:focus { border-color: #e0a030; }
         <div class="field" id="rowOC"       style="display:none"><label>Orden de compra</label><input type="text" id="cliOC" placeholder="OC-XXXX" data-autosave></div>
         <div class="field f-full"><label>Proyecto / Servicio</label><input type="text" id="cliProyecto" placeholder="Transporte personal – Faena Norte" data-autosave></div>
         <div class="field">       <label>Sistema operacional</label><input type="text" id="cliSistema" placeholder="Turno 7×7 / Servicio diario…" data-autosave></div>
+        <!-- Guardar cliente directo desde el documento -->
+        <div class="inline-save-row">
+          <button class="btn-inline-save" id="btnSaveClientInline" onclick="Clients.saveFromDoc()">
+            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+            Guardar cliente
+          </button>
+          <span class="inline-save-status" id="clientSaveStatus">Escribe el nombre del cliente para guardar</span>
+        </div>
       </div>
     </div>
 
@@ -905,6 +936,14 @@ table.extras-table tbody td input:focus { border-color: #e0a030; }
         <div class="field">       <label>Email</label>        <input type="text" id="prvEmail"   value="operaciones@hauler.cl"         data-autosave></div>
         <div class="field">       <label>Teléfono</label>     <input type="text" id="prvTel"     placeholder="+56 9 XXXX XXXX"         data-autosave></div>
         <div class="field">       <label>Persona de contacto</label><input type="text" id="prvContacto" placeholder="Nombre representante" data-autosave></div>
+        <!-- Guardar proveedor directo desde el documento -->
+        <div class="inline-save-row">
+          <button class="btn-inline-save" id="btnSaveProviderInline" onclick="Clients.saveProviderFromDoc()">
+            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+            Guardar como cliente
+          </button>
+          <span class="inline-save-status" id="providerSaveStatus">Datos del proveedor/oferente</span>
+        </div>
       </div>
     </div>
 
@@ -1185,12 +1224,33 @@ const SB_KEY = 'sb_publishable_tXCnGYE_OjoH0yrFVM-vpA_rqBPXPaU';
 const DB = (() => {
   // Device ID persistente (identifica este navegador/dispositivo)
   const DEVICE = (() => {
-    const key = 'hauler_device';
-    let id = localStorage.getItem(key);
+    const KEY = 'hauler_device';
+
+    // Leer de cookie
+    const cookieGet = () => {
+      const m = document.cookie.match('(?:^|; )' + KEY + '=([^;]+)');
+      return m ? decodeURIComponent(m[1]) : null;
+    };
+
+    // Escribir cookie con 10 años de expiración (sobrevive borrado de historial)
+    const cookieSet = (id) => {
+      const exp = new Date();
+      exp.setFullYear(exp.getFullYear() + 10);
+      document.cookie = KEY + '=' + encodeURIComponent(id) + '; expires=' + exp.toUTCString() + '; path=/; SameSite=Lax';
+    };
+
+    // 1. Intentar cookie (más persistente)
+    let id = cookieGet();
+    // 2. Fallback a localStorage
+    if (!id) id = localStorage.getItem(KEY);
+    // 3. Generar nuevo si no hay ninguno
     if (!id) {
       id = 'dev_' + Math.random().toString(36).slice(2, 10) + Date.now().toString(36);
-      localStorage.setItem(key, id);
     }
+    // Siempre escribir en ambos lugares para máxima persistencia
+    cookieSet(id);
+    try { localStorage.setItem(KEY, id); } catch(e) {}
+
     return id;
   })();
 
@@ -1533,7 +1593,10 @@ const App = (() => {
     // 2. Registrar auto-save en todos los campos
     AutoSave.init();
 
-    // 3. Sincronizar desde Supabase en background
+    // 3. Actualizar indicador inline del cliente
+    setTimeout(() => Clients.updateInlineStatus(), 150);
+
+    // 4. Sincronizar desde Supabase en background
     syncFromSupabase();
   };
 
@@ -1561,6 +1624,7 @@ const App = (() => {
         Clients.list = sb.clients;
         DB.lsWrite('clients', sb.clients);
         Clients.renderSelector();
+        Clients.updateInlineStatus();
       }
     }
 
@@ -2191,7 +2255,108 @@ const Clients = (() => {
     });
   };
 
-  return { list, save, edit, cancelEdit, clearForm, del, useInDoc, selectForRoutes, loadFromSelector, renderSelector, render,
+  /* ── Guardar cliente directamente desde los campos del documento ── */
+  const saveFromDoc = () => {
+    const nombre = fv('cliNombre').trim();
+    if (!nombre) { Toast.show('⚠️ Escribe la razón social del cliente'); return; }
+
+    const data = {
+      nombre,
+      rut:    fv('cliRut'),
+      giro:   fv('cliGiro'),
+      dir:    fv('cliDir'),
+      ciudad: fv('cliCiudad'),
+    };
+
+    // Buscar si ya existe (por nombre, case-insensitive)
+    const idx = list.findIndex(c => c.nombre.trim().toLowerCase() === nombre.toLowerCase());
+
+    if (idx >= 0) {
+      // Actualizar preservando rutas
+      data.rutas = list[idx].rutas || [];
+      list[idx] = data;
+      _setInlineStatus('clientSaveStatus', 'btnSaveClientInline', '✓ Cliente actualizado en la lista', 'ok', true);
+      Toast.show('✏️ Cliente actualizado: ' + nombre);
+    } else {
+      data.rutas = [];
+      list.push(data);
+      _setInlineStatus('clientSaveStatus', 'btnSaveClientInline', '✓ Cliente guardado nuevo: ' + nombre, 'ok', true);
+      Toast.show('✅ Cliente guardado: ' + nombre);
+    }
+
+    DB.save('clients', list);
+    renderSelector();
+    render();
+    AutoSave.flush();
+  };
+
+  /* ── Guardar datos del proveedor como cliente en la lista ── */
+  const saveProviderFromDoc = () => {
+    const nombre = fv('prvNombre').trim();
+    if (!nombre) { Toast.show('⚠️ Escribe la razón social del proveedor'); return; }
+
+    const data = {
+      nombre,
+      rut:    fv('prvRut'),
+      giro:   fv('prvGiro'),
+      dir:    fv('prvDir'),
+      ciudad: fv('prvCiudad'),
+      rutas:  [],
+    };
+
+    const idx = list.findIndex(c => c.nombre.trim().toLowerCase() === nombre.toLowerCase());
+    if (idx >= 0) {
+      data.rutas = list[idx].rutas || [];
+      list[idx] = data;
+      Toast.show('✏️ Proveedor actualizado en lista: ' + nombre);
+    } else {
+      list.push(data);
+      Toast.show('✅ Proveedor guardado como cliente: ' + nombre);
+    }
+
+    DB.save('clients', list);
+    renderSelector();
+    render();
+    _setInlineStatus('providerSaveStatus', 'btnSaveProviderInline', '✓ Guardado en lista de clientes', 'ok', true);
+  };
+
+  /* ── Actualizar el indicador inline según el nombre escrito ── */
+  const updateInlineStatus = () => {
+    const nombre = fv('cliNombre').trim();
+    const statusEl = document.getElementById('clientSaveStatus');
+    const btnEl    = document.getElementById('btnSaveClientInline');
+    if (!statusEl || !btnEl) return;
+
+    if (!nombre) {
+      statusEl.textContent = 'Escribe el nombre del cliente para guardar';
+      statusEl.className   = 'inline-save-status';
+      btnEl.className      = 'btn-inline-save';
+      return;
+    }
+
+    const exists = list.some(c => c.nombre.trim().toLowerCase() === nombre.toLowerCase());
+    if (exists) {
+      statusEl.textContent = '↻ Ya guardado · click para actualizar';
+      statusEl.className   = 'inline-save-status ok';
+      btnEl.className      = 'btn-inline-save saved';
+    } else {
+      statusEl.textContent = '+ Nuevo cliente · click para guardar';
+      statusEl.className   = 'inline-save-status new';
+      btnEl.className      = 'btn-inline-save';
+    }
+  };
+
+  /* ── Helper interno para feedback temporal en botón ── */
+  const _setInlineStatus = (statusId, btnId, msg, cls, reset) => {
+    const s = document.getElementById(statusId);
+    const b = document.getElementById(btnId);
+    if (s) { s.textContent = msg; s.className = 'inline-save-status ' + cls; }
+    if (b) b.className = 'btn-inline-save saved';
+    if (reset) setTimeout(() => updateInlineStatus(), 2500);
+  };
+
+  return { list, save, edit, cancelEdit, clearForm, del, useInDoc, selectForRoutes, loadFromSelector,
+    renderSelector, render, saveFromDoc, saveProviderFromDoc, updateInlineStatus,
     get activeIdx() { return activeIdx; }, set activeIdx(v) { activeIdx = v; }
   };
 })();
@@ -2401,6 +2566,8 @@ window._restoreSnapshot = (snap) => {
   State.rows   = (snap.rows   || snap.filas  || []).map(r => ({ periodoTipo:'dia', ...r, id: normId(r.id) }));
   State.extras = (snap.extras || []).map(e => ({ tipo:'unit', ...e, id: normId(e.id) }));
   Rows.render(); Extras.render(); Calc.run();
+  // Actualizar indicador inline de cliente
+  setTimeout(() => { if (typeof Clients !== 'undefined') Clients.updateInlineStatus(); }, 100);
 };
 
 
@@ -2699,28 +2866,40 @@ document.addEventListener('keydown', e => {
 
 /* ════════════════════════════════════════════════════════════════════════
    ARRANQUE + LIMPIEZA DE DATOS LEGACY
-   Si hay un estado guardado con IDs sin prefijo 'r', lo normaliza
-   para que las tablas funcionen correctamente.
 ════════════════════════════════════════════════════════════════════════ */
 window.addEventListener('DOMContentLoaded', () => {
-  // Limpiar IDs corruptos en localStorage antes de iniciar
+
+  // Recuperar device ID desde cookie (más persistente que localStorage)
+  try {
+    const m = document.cookie.match('(?:^|; )hauler_device=([^;]+)');
+    const cookieDevice = m ? decodeURIComponent(m[1]) : null;
+    const lsDevice = localStorage.getItem('hauler_device');
+    // Si la cookie tiene un ID que localStorage no tiene, restaurarlo
+    if (cookieDevice && !lsDevice) {
+      localStorage.setItem('hauler_device', cookieDevice);
+    }
+  } catch(e) {}
+
+  // Normalizar IDs corruptos (sin prefijo 'r') antes de iniciar
   try {
     const device = localStorage.getItem('hauler_device') || '';
-    const stateKey = device + '_state';
-    const raw = localStorage.getItem(stateKey);
-    if (raw) {
-      const snap = JSON.parse(raw);
-      let changed = false;
-      const normId = id => {
-        const s = String(id);
-        if (!s.startsWith('r')) { changed = true; return 'r' + s; }
-        return s;
-      };
-      if (snap.rows)   snap.rows   = snap.rows.map(r => ({ ...r, id: normId(r.id) }));
-      if (snap.extras) snap.extras = snap.extras.map(e => ({ ...e, id: normId(e.id) }));
-      if (changed) localStorage.setItem(stateKey, JSON.stringify(snap));
+    if (device) {
+      const stateKey = device + '_state';
+      const raw = localStorage.getItem(stateKey);
+      if (raw) {
+        const snap = JSON.parse(raw);
+        let changed = false;
+        const normId = id => {
+          const s = String(id);
+          if (!s.startsWith('r')) { changed = true; return 'r' + s; }
+          return s;
+        };
+        if (snap.rows)   snap.rows   = snap.rows.map(r => ({ ...r, id: normId(r.id) }));
+        if (snap.extras) snap.extras = snap.extras.map(e => ({ ...e, id: normId(e.id) }));
+        if (changed) localStorage.setItem(stateKey, JSON.stringify(snap));
+      }
     }
-  } catch(e) { /* no bloquear la app si falla */ }
+  } catch(e) { /* no bloquear la app */ }
 
   App.init();
 });
