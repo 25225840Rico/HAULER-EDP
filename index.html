@@ -1844,19 +1844,22 @@ const Periodo = (() => {
   };
 
   const setType = (id, tipo) => {
-    const r = State.rows.find(r => r.id === id); if (!r) return;
+    // eslint-disable-next-line eqeqeq
+    const r = State.rows.find(r => r.id == id); if (!r) return;
     r.periodoTipo = tipo; r.periodoHasta = ''; r.periodoMes = ''; r.periodoAnio = '';
     if (tipo === 'anio') r.periodoAnio = String(new Date().getFullYear());
     updateCell(id); Calc.run(); AutoSave.schedule();
   };
 
   const set = (id, key, val) => {
-    const r = State.rows.find(r => r.id === id); if (!r) return;
+    // eslint-disable-next-line eqeqeq
+    const r = State.rows.find(r => r.id == id); if (!r) return;
     r[key] = val; updateCell(id); Calc.run(); AutoSave.schedule();
   };
 
   const useDays = (id) => {
-    const r = State.rows.find(r => r.id === id); if (!r) return;
+    // eslint-disable-next-line eqeqeq
+    const r = State.rows.find(r => r.id == id); if (!r) return;
     const d = calcDias(r); r.viajes = d;
     const inp = document.getElementById('vi_' + id);
     if (inp) inp.value = d;
@@ -1865,7 +1868,8 @@ const Periodo = (() => {
 
   const updateCell = (id) => {
     const tr = document.querySelector(`tr[data-id="${id}"]`); if (!tr) return;
-    const r  = State.rows.find(r => r.id === id); if (!r) return;
+    // eslint-disable-next-line eqeqeq
+    const r  = State.rows.find(r => r.id == id); if (!r) return;
     tr.cells[3].innerHTML = html(r);
   };
 
@@ -1885,11 +1889,12 @@ const Rows = (() => {
       periodoMes:'', periodoAnio:'', vehiculo:'', patente:'',
       ruta:'', pasajeros:'', viajes:0, valorUnit:0, ...data
     });
-    render();
+    render(); Calc.run();
   };
 
   const remove = (id) => {
-    State.rows = State.rows.filter(r => r.id !== id);
+    // eslint-disable-next-line eqeqeq — id puede venir como número desde onclick o string desde JSON
+    State.rows = State.rows.filter(r => r.id != id);
     render(); Calc.run(); AutoSave.flush();
   };
 
@@ -1922,13 +1927,15 @@ const Rows = (() => {
   };
 
   const setField = (id, key, val) => {
-    const r = State.rows.find(r => r.id === id); if (!r) return;
+    // eslint-disable-next-line eqeqeq
+    const r = State.rows.find(r => r.id == id); if (!r) return;
     r[key] = val;
   };
 
   const setNum = (id, key, val) => {
-    const r = State.rows.find(r => r.id === id); if (!r) return;
-    r[key] = +val || 0; Calc.run();
+    // eslint-disable-next-line eqeqeq
+    const r = State.rows.find(r => r.id == id); if (!r) return;
+    r[key] = +val || 0; Calc.run(); AutoSave.schedule();
   };
 
   const rowTotal = (r) => {
@@ -1939,7 +1946,6 @@ const Rows = (() => {
   const pickRoute = (id) => {
     _routeTarget = id;
     Modal.openClients();
-    // Auto-seleccionar cliente que coincide con el del documento
     const name = fv('cliNombre').trim().toLowerCase();
     if (name) {
       const idx = Clients.list.findIndex(c => (c.nombre || '').toLowerCase() === name);
@@ -1949,7 +1955,8 @@ const Rows = (() => {
 
   const applyRoute = (routeName) => {
     if (_routeTarget == null) return;
-    const r = State.rows.find(r => r.id === _routeTarget);
+    // eslint-disable-next-line eqeqeq
+    const r = State.rows.find(r => r.id == _routeTarget);
     if (r) { r.ruta = routeName; render(); AutoSave.flush(); }
     _routeTarget = null;
     Modal.close('modalClients');
@@ -1969,22 +1976,26 @@ const Extras = (() => {
   };
 
   const remove = (id) => {
-    State.extras = State.extras.filter(e => e.id !== id);
+    // eslint-disable-next-line eqeqeq
+    State.extras = State.extras.filter(e => e.id != id);
     render(); Calc.run(); AutoSave.flush();
   };
 
   const setField = (id, key, val) => {
-    const e = State.extras.find(e => e.id === id); if (!e) return;
+    // eslint-disable-next-line eqeqeq
+    const e = State.extras.find(e => e.id == id); if (!e) return;
     e[key] = val;
   };
 
   const setNum = (id, key, val) => {
-    const e = State.extras.find(e => e.id === id); if (!e) return;
-    e[key] = +val || 0; Calc.run();
+    // eslint-disable-next-line eqeqeq
+    const e = State.extras.find(e => e.id == id); if (!e) return;
+    e[key] = +val || 0; Calc.run(); AutoSave.schedule();
   };
 
   const setTipo = (id, tipo) => {
-    const e = State.extras.find(e => e.id === id); if (!e) return;
+    // eslint-disable-next-line eqeqeq
+    const e = State.extras.find(e => e.id == id); if (!e) return;
     e.tipo = tipo; render(); AutoSave.flush();
   };
 
@@ -2665,7 +2676,7 @@ document.fonts.ready.then(function(){setTimeout(function(){window.print();},500)
    UTILIDADES GLOBALES
 ════════════════════════════════════════════════════════════════════════ */
 const iso    = d => d.toISOString().slice(0, 10);
-const uid    = () => Math.random().toString(36).slice(2, 10) + Date.now().toString(36);
+const uid    = () => Date.now() + Math.floor(Math.random() * 100000); // numérico, seguro en onclick=""
 const esc    = v => v == null ? '' : String(v).replace(/"/g, '&quot;');
 const fv     = id => { const el = document.getElementById(id); return el ? el.value : ''; };          // get field value
 const gf     = id => { const el = document.getElementById(id); return el ? el.value.trim() : ''; };   // get field trimmed
