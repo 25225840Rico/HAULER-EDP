@@ -10,24 +10,45 @@
 <!-- ═══════════════════════════════════════════════════════════════════
   SUPABASE SETUP — ejecutar en SQL Editor de tu proyecto:
 
-  CREATE TABLE hauler_store (
+  ── Tabla principal (ya existente) ──────────────────────────────────
+  CREATE TABLE IF NOT EXISTS hauler_store (
     clave      TEXT PRIMARY KEY,
     valor      JSONB NOT NULL DEFAULT '{}'::jsonb,
     updated_at TIMESTAMPTZ DEFAULT now()
   );
-
-  -- Permite lectura y escritura anónima (sin login de usuario)
   ALTER TABLE hauler_store ENABLE ROW LEVEL SECURITY;
-  CREATE POLICY "public_all" ON hauler_store
+  CREATE POLICY IF NOT EXISTS "public_all" ON hauler_store
     FOR ALL USING (true) WITH CHECK (true);
 
-  -- Índice para búsquedas por prefijo de dispositivo
-  CREATE INDEX hauler_store_clave_idx ON hauler_store (clave);
+  ── NUEVA: tabla de contadores para numeración automática ────────────
+  CREATE TABLE IF NOT EXISTS hauler_counters (
+    id         TEXT PRIMARY KEY,   -- ej: "hauler__COT" o "hauler__EP"
+    seq        BIGINT NOT NULL DEFAULT 0,
+    updated_at TIMESTAMPTZ DEFAULT now()
+  );
+  ALTER TABLE hauler_counters ENABLE ROW LEVEL SECURITY;
+  CREATE POLICY "public_all_counters" ON hauler_counters
+    FOR ALL USING (true) WITH CHECK (true);
 
-  Claves que usa la app (prefijadas con el device_id del navegador):
-    {device}__state    → todo el formulario + filas + extras + config
-    {device}__clients  → array de clientes con sus rutas
-    {device}__docs     → historial de documentos guardados
+  ── NUEVA: función RPC que incrementa atómicamente ──────────────────
+  CREATE OR REPLACE FUNCTION hauler_next_num(counter_id TEXT)
+  RETURNS BIGINT
+  LANGUAGE plpgsql
+  AS $$
+  DECLARE
+    next_val BIGINT;
+  BEGIN
+    INSERT INTO hauler_counters (id, seq, updated_at)
+    VALUES (counter_id, 1, now())
+    ON CONFLICT (id)
+    DO UPDATE SET seq = hauler_counters.seq + 1, updated_at = now()
+    RETURNING seq INTO next_val;
+    RETURN next_val;
+  END;
+  $$;
+
+  Así dos usuarios que guarden al mismo tiempo NUNCA obtendrán
+  el mismo número. La función es completamente segura (atómica).
 ═══════════════════════════════════════════════════════════════════ -->
 
 <style>
@@ -142,7 +163,6 @@ body {
   color: var(--blue);
 }
 
-/* Botones genéricos */
 .btn {
   display: inline-flex;
   align-items: center;
@@ -163,7 +183,6 @@ body {
 .btn.danger   { color: var(--red); }
 .btn.danger:hover  { background: rgba(217,48,48,.07); border-color: rgba(217,48,48,.2); }
 
-/* Selector de moneda */
 .currency-wrap {
   display: inline-flex;
   align-items: center;
@@ -185,7 +204,6 @@ body {
   max-width: 120px;
 }
 
-/* Indicador de sync */
 .sync-dot {
   display: inline-flex;
   align-items: center;
@@ -236,7 +254,7 @@ body {
 .banner strong { color: var(--t1); }
 
 /* ═══════════════════════════════════════════════
-   4. DOCUMENTO (contenedor principal)
+   4. DOCUMENTO
 ═══════════════════════════════════════════════ */
 .doc {
   width: 100%;
@@ -251,7 +269,6 @@ body {
 body.modo-cot .doc { border-top: 3px solid var(--blue); }
 body.modo-ep  .doc { border-top: 3px solid var(--blue); }
 
-/* Divisores decorativos */
 .hdiv { height: 1px; background: var(--grad-h); margin: 0 2rem; }
 .vdiv { width: 1px;  background: var(--grad-v); align-self: stretch; }
 
@@ -268,7 +285,6 @@ body.modo-ep  .doc { border-top: 3px solid var(--blue); }
   min-height: 100px;
 }
 
-/* Logo */
 .logo-col { display: flex; flex-direction: column; justify-content: center; }
 .logo-text { font-size: 1.6rem; font-weight: 700; letter-spacing: -.5px; }
 .logo-sub  { font-size: .48rem; font-weight: 500; letter-spacing: 2.5px; text-transform: uppercase; color: var(--t3); margin-top: 3px; }
@@ -293,7 +309,6 @@ body.modo-ep  .doc { border-top: 3px solid var(--blue); }
 }
 .logo-size-wrap span { font: 400 .58rem/1 var(--font-mono); color: var(--t3); min-width: 30px; }
 
-/* Título central */
 .doc-title { display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; }
 .doc-title h1 { font-size: .52rem; font-weight: 600; letter-spacing: 2px; text-transform: uppercase; color: var(--t3); margin-bottom: 4px; }
 .doc-title h2 { font-size: 1.25rem; font-weight: 300; letter-spacing: -.2px; }
@@ -304,7 +319,6 @@ body.modo-ep  .doc { border-top: 3px solid var(--blue); }
   background: var(--blue-lt); color: var(--blue);
 }
 
-/* Meta derecha */
 .doc-meta { display: flex; flex-direction: column; justify-content: center; }
 .meta-row {
   display: flex; align-items: center; justify-content: flex-end;
@@ -321,6 +335,82 @@ body.modo-ep  .doc { border-top: 3px solid var(--blue); }
 .meta-row input:focus, .validez-sel:focus { outline: none; border-color: var(--blue); background: #fff; }
 .validez-sel { cursor: pointer; }
 
+/* ── NUMERACIÓN AUTOMÁTICA ─────────────────────────────────────────
+   Wrapper que agrupa el input del número + el botón ⚡ N° Auto
+   El botón llama a Supabase RPC y rellena el campo al instante.
+──────────────────────────────────────────────────────────────────── */
+.num-doc-wrap {
+  display: flex;
+  align-items: center;
+  gap: .35rem;
+}
+.num-doc-wrap input {
+  width: 100px !important;
+}
+
+/* Botón "⚡ N° Auto" */
+.btn-autonum {
+  display: inline-flex;
+  align-items: center;
+  gap: .25rem;
+  padding: .28rem .7rem;
+  border-radius: 99px;
+  border: 1.5px solid var(--blue);
+  font: 700 .58rem/1 var(--font-sans);
+  cursor: pointer;
+  background: var(--blue-lt);
+  color: var(--blue);
+  transition: all .2s;
+  white-space: nowrap;
+  letter-spacing: .3px;
+  position: relative;
+  overflow: hidden;
+}
+.btn-autonum:hover {
+  background: var(--blue);
+  color: #fff;
+  box-shadow: 0 2px 10px rgba(0,85,255,.35);
+}
+.btn-autonum:disabled {
+  opacity: .55;
+  cursor: wait;
+  pointer-events: none;
+}
+/* Animación de carga dentro del botón */
+.btn-autonum.loading::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,.5) 50%, transparent 100%);
+  animation: shimmer .8s infinite;
+}
+@keyframes shimmer {
+  from { transform: translateX(-100%); }
+  to   { transform: translateX(100%);  }
+}
+
+/* Tooltip del historial de numeración (aparece al hacer hover sobre el campo) */
+.num-history-tip {
+  position: absolute;
+  top: calc(100% + 6px);
+  right: 0;
+  background: var(--t1);
+  color: #fff;
+  border-radius: 10px;
+  padding: .6rem .9rem;
+  font: 400 .62rem/1.6 var(--font-mono);
+  white-space: nowrap;
+  box-shadow: 0 6px 20px rgba(0,0,0,.18);
+  z-index: 100;
+  pointer-events: none;
+  opacity: 0;
+  transform: translateY(-4px);
+  transition: all .2s;
+  min-width: 180px;
+}
+.num-doc-wrap:hover .num-history-tip { opacity: 1; transform: translateY(0); }
+.num-history-tip strong { color: #7eb8ff; display: block; margin-bottom: .2rem; font-size: .58rem; letter-spacing: .8px; text-transform: uppercase; }
+
 /* ═══════════════════════════════════════════════
    6. GRID CLIENTE / PROVEEDOR
 ═══════════════════════════════════════════════ */
@@ -334,7 +424,6 @@ body.modo-ep  .doc { border-top: 3px solid var(--blue); }
   display: flex; align-items: center; gap: .35rem; margin-bottom: .9rem;
 }
 
-/* Campos dentro de partido */
 .field-grid { display: grid; grid-template-columns: 1fr 1fr; gap: .65rem 1.1rem; }
 .f-full     { grid-column: 1 / -1; }
 
@@ -360,11 +449,9 @@ body.modo-ep  .doc { border-top: 3px solid var(--blue); }
 }
 
 /* ═══════════════════════════════════════════════
-   7. SECCIONES DEL DOCUMENTO
+   7. SECCIONES
 ═══════════════════════════════════════════════ */
-.section {
-  padding: .9rem 2rem 1.1rem;
-}
+.section { padding: .9rem 2rem 1.1rem; }
 
 .section-title {
   font: 700 .48rem/1 var(--font-sans);
@@ -374,7 +461,6 @@ body.modo-ep  .doc { border-top: 3px solid var(--blue); }
 }
 .section-title svg { flex-shrink: 0; }
 
-/* Condiciones */
 .cond-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: .8rem 1.2rem; }
 .cond-item { display: flex; flex-direction: column; gap: .2rem; }
 .cond-item label { font: 700 .45rem/1 var(--font-sans); text-transform: uppercase; letter-spacing: .7px; color: var(--t3); }
@@ -387,25 +473,8 @@ body.modo-ep  .doc { border-top: 3px solid var(--blue); }
 .cond-item input:focus, .cond-item select:focus { outline: none; border-bottom-color: var(--blue); }
 .cond-item textarea:focus { outline: none; border-color: var(--blue); }
 
-/* Resumen propuesta */
-.pres-card {
-  background: linear-gradient(135deg, #f6f8ff, #eef2ff);
-  border: 1px solid #c8d8ff; border-radius: 12px;
-  padding: 1rem 1.3rem;
-  display: grid; grid-template-columns: 1fr 1fr 1fr; gap: .7rem 1.3rem;
-}
-.pres-card .f-full { grid-column: 1 / -1; }
-.pres-field { display: flex; flex-direction: column; gap: .2rem; }
-.pres-field label { font: 700 .45rem/1 var(--font-sans); text-transform: uppercase; letter-spacing: .7px; color: var(--blue); opacity: .7; }
-.pres-field input {
-  background: transparent; border: none; border-bottom: 1.5px solid rgba(0,85,255,.2);
-  font: 500 .78rem/1.3 var(--font-sans); color: var(--t1);
-  padding: .28rem 0 .18rem; width: 100%; transition: border-color .2s;
-}
-.pres-field input:focus { outline: none; border-bottom-color: var(--blue); }
-.pres-field input::placeholder { color: var(--t3); font-weight: 400; }
 
-/* Intro + descripción textareas */
+
 .doc-textarea {
   width: 100%; background: #f8f9ff; border: 1px solid var(--border); border-radius: 10px;
   font: 400 .78rem/1.7 var(--font-sans); color: var(--t1);
@@ -414,10 +483,8 @@ body.modo-ep  .doc { border-top: 3px solid var(--blue); }
 .doc-textarea:focus { outline: none; border-color: var(--blue); background: #fff; }
 .field-hint { font: italic 400 .58rem/1 var(--font-sans); color: var(--t3); margin-top: .3rem; }
 
-/* Descripción en dos columnas */
 .desc-cols { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem 1.5rem; }
 
-/* Características */
 .caract-label { font: 700 .45rem/1 var(--font-sans); text-transform: uppercase; letter-spacing: .7px; color: var(--t3); margin-bottom: .5rem; display: block; }
 .caract-grid  { display: grid; grid-template-columns: 1fr 1fr; gap: .3rem .6rem; }
 .caract-item  {
@@ -454,7 +521,6 @@ thead th {
 thead th:first-child { text-align: left; padding-left: .9rem; }
 thead th:last-child  { width: 2.2rem; }
 
-/* Anchos columnas servicios */
 table.serv-table th:nth-child(1) { width: 16%; }
 table.serv-table th:nth-child(2) { width:  9%; }
 table.serv-table th:nth-child(3) { width: 16%; }
@@ -507,7 +573,7 @@ td.num input, td.num { font-family: var(--font-mono); font-size: .74rem; }
 }
 
 /* ═══════════════════════════════════════════════
-   9. PERÍODO (celda especial)
+   9. PERÍODO
 ═══════════════════════════════════════════════ */
 .periodo-wrap {
   background: #f7f8fa; border: 1px solid var(--border); border-radius: 10px;
@@ -545,7 +611,7 @@ td.num input, td.num { font-family: var(--font-mono); font-size: .74rem; }
 .btn-usar:hover { background: var(--blue); color: #fff; }
 
 /* ═══════════════════════════════════════════════
-   10. ÍTEMS ADICIONALES (extras)
+   10. ÍTEMS ADICIONALES
 ═══════════════════════════════════════════════ */
 .extras-section { padding: .8rem 2rem 1.2rem; }
 
@@ -669,7 +735,6 @@ table.extras-table tbody td input:focus { border-color: #e0a030; }
 
 .modal-body { padding: 1.3rem; overflow-y: auto; display: grid; grid-template-columns: 1fr 1fr; gap: 1.3rem; }
 
-/* Historial */
 .hist-filters { display: flex; gap: .3rem; padding: .5rem 1.3rem 0; flex-shrink: 0; }
 .hist-filters button {
   padding: .3rem .8rem; border-radius: 99px; border: 1px solid var(--border);
@@ -702,7 +767,6 @@ table.extras-table tbody td input:focus { border-color: #e0a030; }
 }
 .btn-new-doc:hover { background: #003ecc; }
 
-/* Panel clientes */
 .panel { background: #f5f6f9; border-radius: 14px; padding: .9rem; }
 .panel h4 { font: 700 .6rem/1 var(--font-sans); color: var(--t3); text-transform: uppercase; letter-spacing: 1px; margin-bottom: .75rem; }
 .panel-sep { border: none; border-top: 1px solid var(--border); margin: .75rem 0; }
@@ -738,7 +802,6 @@ table.extras-table tbody td input:focus { border-color: #e0a030; }
 }
 .btn-panel-save:hover { background: #003ecc; }
 
-/* Modal convertir */
 .modal-box.tiny h3  { font-size: 1rem; font-weight: 700; margin-bottom: .4rem; }
 .modal-box.tiny p   { font-size: .76rem; color: var(--t2); margin-bottom: 1.4rem; line-height: 1.6; }
 .modal-action-row   { display: flex; gap: .7rem; justify-content: center; flex-wrap: wrap; }
@@ -753,7 +816,6 @@ table.extras-table tbody td input:focus { border-color: #e0a030; }
   .doc-footer { grid-template-columns: 1fr; }
 }
 
-/* ── Botón inline guardar cliente / proveedor desde el documento ── */
 .inline-save-row {
   grid-column: 1 / -1;
   display: flex; align-items: center; gap: .6rem;
@@ -775,19 +837,57 @@ table.extras-table tbody td input:focus { border-color: #e0a030; }
 }
 .inline-save-status.ok  { color: #12a150; }
 .inline-save-status.new { color: var(--blue); }
+
+/* ═══════════════════════════════════════════════
+   RUT — validación visual en tiempo real
+   Wrapper relativo + badge absoluto dentro del input
+═══════════════════════════════════════════════ */
+.rut-field-wrap {
+  position: relative;
+  display: block;
+  width: 100%;
+}
+.rut-field-wrap input {
+  width: 100%;
+  padding-right: 1.8em !important;
+}
+/* Badge flotante dentro del input */
+.rut-ok-badge {
+  position: absolute;
+  right: .35rem;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: .75rem;
+  font-weight: 700;
+  line-height: 1;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity .18s, color .18s;
+}
+.rut-ok-badge.show { opacity: 1; }
+.rut-ok-badge.ok   { color: var(--green); }
+.rut-ok-badge.err  { color: var(--red);   }
+/* Badge para modal (dentro de form-group con border-radius) */
+.rut-modal-wrap {
+  position: relative;
+}
+.rut-modal-wrap input {
+  padding-right: 2rem !important;
+}
+.rut-modal-wrap .rut-ok-badge {
+  right: .6rem;
+}
 </style>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 </head>
 <body class="modo-cot">
 
-<!-- TABS MODO -->
 <div class="mode-tabs">
   <button class="mode-tab act" id="tabCot" onclick="App.setMode('cot')">📋 Cotización</button>
   <button class="mode-tab"     id="tabEP"  onclick="App.setMode('ep')">✅ Estado de Pago</button>
 </div>
 
-<!-- BANNER MODO -->
 <div class="banner" id="bannerCot">
   <p><strong>Modo Cotización</strong> — Documento de oferta de precios. Puedes convertirlo a Estado de Pago una vez aprobado.</p>
   <button class="btn primary" onclick="Modal.openConvert()">⇄ Convertir a Estado de Pago</button>
@@ -797,7 +897,6 @@ table.extras-table tbody td input:focus { border-color: #e0a030; }
   <button class="btn primary" onclick="Modal.openConvert()">⇄ Convertir a Cotización</button>
 </div>
 
-<!-- TOOLBAR -->
 <div class="toolbar">
   <span class="toolbar-brand">Hauler · <span class="badge" id="toolbarBadge">Cotización</span></span>
   <div class="currency-wrap">
@@ -817,10 +916,8 @@ table.extras-table tbody td input:focus { border-color: #e0a030; }
 <!-- ══════════ DOCUMENTO ══════════ -->
 <div class="doc" id="doc">
 
-  <!-- ENCABEZADO -->
   <div class="doc-header">
 
-    <!-- Logo -->
     <div class="logo-col">
       <div id="logoText">
         <div class="logo-text">HAULER</div>
@@ -843,19 +940,39 @@ table.extras-table tbody td input:focus { border-color: #e0a030; }
       </div>
     </div>
 
-    <!-- Título -->
     <div class="doc-title">
       <h1 id="docEyebrow">Cotización de Servicio de Transporte</h1>
       <h2 id="docTitle">Cotización</h2>
       <span class="doc-type-badge" id="docBadge">📋 Propuesta Comercial</span>
     </div>
 
-    <!-- Meta -->
     <div class="doc-meta">
+
+      <!-- ══ NÚMERO DE DOCUMENTO CON BOTÓN ⚡ N° AUTO ══════════════
+           El wrapper .num-doc-wrap agrupa:
+            · input#numDoc  → número editable manualmente
+            · .btn-autonum  → llama a Counter.next() que ejecuta
+                              la función RPC hauler_next_num() en
+                              Supabase y rellena el campo con el
+                              siguiente número correlativo.
+            · .num-history-tip → tooltip que muestra últimos números
+                              generados (persiste en localStorage).
+      ══════════════════════════════════════════════════════════════ -->
       <div class="meta-row">
         <label id="numLabel">N° Cot.</label>
-        <input type="text" id="numDoc" value="COT-2401" data-autosave>
+        <div class="num-doc-wrap" style="position:relative">
+          <input type="text" id="numDoc" value="COT-2401" data-autosave>
+          <button class="btn-autonum" id="btnAutoNum" onclick="Counter.next()" title="Generar número automático correlativo desde Supabase">
+            ⚡ N° Auto
+          </button>
+          <!-- Tooltip con historial de últimos números generados -->
+          <div class="num-history-tip" id="numHistoryTip">
+            <strong>Últimos números generados</strong>
+            <span id="numHistoryList">— sin historial —</span>
+          </div>
+        </div>
       </div>
+
       <div class="meta-row">
         <label>Emisión</label>
         <input type="date" id="fechaEmision" data-autosave>
@@ -876,13 +993,11 @@ table.extras-table tbody td input:focus { border-color: #e0a030; }
       </div>
     </div>
 
-  </div><!-- /doc-header -->
+  </div>
   <div class="hdiv"></div>
 
   <!-- CLIENTE / PROVEEDOR -->
   <div class="parties-grid">
-
-    <!-- CLIENTE -->
     <div class="party">
       <div class="party-title">
         <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/></svg>
@@ -896,7 +1011,14 @@ table.extras-table tbody td input:focus { border-color: #e0a030; }
           </select>
         </div>
         <div class="field f-full"><label>Razón social</label><input type="text" id="cliNombre"   placeholder="Empresa SA"              data-autosave oninput="Clients.updateInlineStatus()"></div>
-        <div class="field">       <label>RUT</label>           <input type="text" id="cliRut"      placeholder="12.345.678-9"            data-autosave></div>
+        <div class="field">
+          <label>RUT</label>
+          <div class="rut-field-wrap">
+            <input type="text" id="cliRut" placeholder="12.345.678-9" data-autosave
+              oninput="Rut.onInput(this,'cliRutBadge')" maxlength="12" autocomplete="off">
+            <span class="rut-ok-badge" id="cliRutBadge"></span>
+          </div>
+        </div>
         <div class="field">       <label>Giro / Actividad</label><input type="text" id="cliGiro"  placeholder="Minería, Construcción…"   data-autosave></div>
         <div class="field">       <label>Dirección</label>     <input type="text" id="cliDir"      placeholder="Av. Ejemplo 1234"        data-autosave></div>
         <div class="field">       <label>Ciudad</label>        <input type="text" id="cliCiudad"   placeholder="Antofagasta"             data-autosave></div>
@@ -907,7 +1029,6 @@ table.extras-table tbody td input:focus { border-color: #e0a030; }
         <div class="field" id="rowOC"       style="display:none"><label>Orden de compra</label><input type="text" id="cliOC" placeholder="OC-XXXX" data-autosave></div>
         <div class="field f-full"><label>Proyecto / Servicio</label><input type="text" id="cliProyecto" placeholder="Transporte personal – Faena Norte" data-autosave></div>
         <div class="field">       <label>Sistema operacional</label><input type="text" id="cliSistema" placeholder="Turno 7×7 / Servicio diario…" data-autosave></div>
-        <!-- Guardar cliente directo desde el documento -->
         <div class="inline-save-row">
           <button class="btn-inline-save" id="btnSaveClientInline" onclick="Clients.saveFromDoc()">
             <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
@@ -920,7 +1041,6 @@ table.extras-table tbody td input:focus { border-color: #e0a030; }
 
     <div class="vdiv"></div>
 
-    <!-- PROVEEDOR -->
     <div class="party">
       <div class="party-title">
         <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="8" r="4"/><path d="M6 20v-2a4 4 0 0 1 4-4h4a4 4 0 0 1 4 4v2"/></svg>
@@ -928,7 +1048,14 @@ table.extras-table tbody td input:focus { border-color: #e0a030; }
       </div>
       <div class="field-grid">
         <div class="field f-full"><label>Razón social</label><input type="text" id="prvNombre"  value="HAULER SPA"                    data-autosave></div>
-        <div class="field">       <label>RUT</label>          <input type="text" id="prvRut"     value="76.123.456-7"                  data-autosave></div>
+        <div class="field">
+          <label>RUT</label>
+          <div class="rut-field-wrap">
+            <input type="text" id="prvRut" value="76.123.456-7" data-autosave
+              oninput="Rut.onInput(this,'prvRutBadge')" maxlength="12" autocomplete="off">
+            <span class="rut-ok-badge" id="prvRutBadge"></span>
+          </div>
+        </div>
         <div class="field">       <label>Giro</label>         <input type="text" id="prvGiro"    value="Transporte terrestre de pasajeros" data-autosave></div>
         <div class="field f-full"><label>Dirección</label>    <input type="text" id="prvDir"     value="Uribe 636 Of. 302, C. de Negocios" data-autosave></div>
         <div class="field">       <label>Ciudad</label>       <input type="text" id="prvCiudad"  value="Antofagasta"                   data-autosave></div>
@@ -936,7 +1063,6 @@ table.extras-table tbody td input:focus { border-color: #e0a030; }
         <div class="field">       <label>Email</label>        <input type="text" id="prvEmail"   value="operaciones@hauler.cl"         data-autosave></div>
         <div class="field">       <label>Teléfono</label>     <input type="text" id="prvTel"     placeholder="+56 9 XXXX XXXX"         data-autosave></div>
         <div class="field">       <label>Persona de contacto</label><input type="text" id="prvContacto" placeholder="Nombre representante" data-autosave></div>
-        <!-- Guardar proveedor directo desde el documento -->
         <div class="inline-save-row">
           <button class="btn-inline-save" id="btnSaveProviderInline" onclick="Clients.saveProviderFromDoc()">
             <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
@@ -946,11 +1072,9 @@ table.extras-table tbody td input:focus { border-color: #e0a030; }
         </div>
       </div>
     </div>
-
-  </div><!-- /parties-grid -->
+  </div>
   <div class="hdiv"></div>
 
-  <!-- ── SECCIÓN CONDICIONES (solo cotización) ── -->
   <div id="secCondiciones">
     <div class="section">
       <div class="section-title">
@@ -984,36 +1108,6 @@ table.extras-table tbody td input:focus { border-color: #e0a030; }
     <div class="hdiv"></div>
   </div>
 
-  <!-- ── SECCIÓN RESUMEN PROPUESTA (solo cotización) ── -->
-  <div id="secPresentacion">
-    <div class="section">
-      <div class="section-title">
-        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
-        Resumen de la propuesta
-      </div>
-      <div class="pres-card">
-        <div class="pres-field f-full">
-          <label>Descripción general del servicio cotizado</label>
-          <input type="text" id="presDesc" placeholder="Ej: Servicio de transporte de personal para operación minera en Región de Antofagasta" data-autosave>
-        </div>
-        <div class="pres-field">
-          <label>Modalidad / Sistema de turno</label>
-          <input type="text" id="presSistema" placeholder="Turno 7×7, Servicio diario, Eventual…" data-autosave>
-        </div>
-        <div class="pres-field">
-          <label>Vigencia de la oferta</label>
-          <input type="text" id="presVigencia" placeholder="Ej: 30 días desde emisión" data-autosave>
-        </div>
-        <div class="pres-field">
-          <label>Inicio estimado del servicio</label>
-          <input type="date" id="presInicio" data-autosave>
-        </div>
-      </div>
-    </div>
-    <div class="hdiv"></div>
-  </div>
-
-  <!-- ── SECCIÓN MENSAJE INTRODUCTORIO (solo cotización) ── -->
   <div id="secIntro">
     <div class="section">
       <div class="section-title">
@@ -1027,7 +1121,6 @@ table.extras-table tbody td input:focus { border-color: #e0a030; }
     <div class="hdiv"></div>
   </div>
 
-  <!-- ── SECCIÓN DESCRIPCIÓN DEL SERVICIO (solo cotización) ── -->
   <div id="secDescServicio">
     <div class="section">
       <div class="section-title">
@@ -1053,7 +1146,6 @@ table.extras-table tbody td input:focus { border-color: #e0a030; }
     <div class="hdiv"></div>
   </div>
 
-  <!-- ── TABLA DE SERVICIOS ── -->
   <div class="table-section">
     <div class="section-row">
       <div class="section-title" style="margin-bottom:0">
@@ -1074,7 +1166,6 @@ table.extras-table tbody td input:focus { border-color: #e0a030; }
   </div>
   <div class="hdiv"></div>
 
-  <!-- ── ÍTEMS ADICIONALES ── -->
   <div class="extras-section">
     <div class="section-row">
       <div class="section-title" style="margin-bottom:0;color:#966320">
@@ -1098,7 +1189,6 @@ table.extras-table tbody td input:focus { border-color: #e0a030; }
   </div>
   <div class="hdiv"></div>
 
-  <!-- TOTALES Y GLOSA -->
   <div class="doc-footer">
     <div>
       <div class="iva-toggle">
@@ -1122,7 +1212,7 @@ table.extras-table tbody td input:focus { border-color: #e0a030; }
 
 <div class="toast" id="toast"></div>
 
-<!-- ═══════ MODAL: CONVERTIR ═══════ -->
+<!-- MODAL: CONVERTIR -->
 <div id="modalConvert" class="modal">
   <div class="modal-box tiny">
     <div style="font-size:2rem;margin-bottom:.6rem" id="convertIcon">⇄</div>
@@ -1135,7 +1225,7 @@ table.extras-table tbody td input:focus { border-color: #e0a030; }
   </div>
 </div>
 
-<!-- ═══════ MODAL: CLIENTES Y RUTAS ═══════ -->
+<!-- MODAL: CLIENTES Y RUTAS -->
 <div id="modalClients" class="modal">
   <div class="modal-box">
     <div class="modal-head">
@@ -1143,15 +1233,20 @@ table.extras-table tbody td input:focus { border-color: #e0a030; }
       <button class="modal-close" onclick="Modal.close('modalClients')">✕</button>
     </div>
     <div class="modal-body">
-
-      <!-- Panel Clientes -->
       <div class="panel">
         <h4>Clientes guardados</h4>
         <div id="clientsList"></div>
         <hr class="panel-sep">
         <div id="clientFormLabel" style="font-size:.56rem;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--blue);margin-bottom:.5rem">+ Nuevo cliente</div>
         <div class="form-group"><label>Razón social</label><input type="text" id="nc_nombre" placeholder="Empresa SA"></div>
-        <div class="form-group"><label>RUT</label><input type="text" id="nc_rut" placeholder="12.345.678-9"></div>
+        <div class="form-group">
+          <label>RUT</label>
+          <div class="rut-modal-wrap">
+            <input type="text" id="nc_rut" placeholder="12.345.678-9"
+              oninput="Rut.onInput(this,'nc_rutBadge')" maxlength="12" autocomplete="off">
+            <span class="rut-ok-badge" id="nc_rutBadge"></span>
+          </div>
+        </div>
         <div class="form-group"><label>Giro</label><input type="text" id="nc_giro" placeholder="Minería, Construcción…"></div>
         <div class="form-group"><label>Dirección</label><input type="text" id="nc_dir" placeholder="Calle #1234"></div>
         <div class="form-group"><label>Ciudad</label><input type="text" id="nc_ciudad" placeholder="Santiago"></div>
@@ -1161,8 +1256,6 @@ table.extras-table tbody td input:focus { border-color: #e0a030; }
           <button id="btnCancelClient" onclick="Clients.cancelEdit()" style="display:none;padding:.52rem .8rem;border-radius:99px;border:1px solid var(--border);background:#fff;font:600 .68rem/1 var(--font-sans);cursor:pointer;color:var(--t2)">Cancelar</button>
         </div>
       </div>
-
-      <!-- Panel Rutas -->
       <div class="panel">
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.75rem">
           <h4 style="margin-bottom:0">Rutas del cliente</h4>
@@ -1184,12 +1277,11 @@ table.extras-table tbody td input:focus { border-color: #e0a030; }
           </div>
         </div>
       </div>
-
     </div>
   </div>
 </div>
 
-<!-- ═══════ MODAL: HISTORIAL ═══════ -->
+<!-- MODAL: HISTORIAL -->
 <div id="modalHistory" class="modal">
   <div class="modal-box narrow">
     <div class="modal-head">
@@ -1211,7 +1303,7 @@ table.extras-table tbody td input:focus { border-color: #e0a030; }
 
 /* ════════════════════════════════════════════════════════════════════════
    CONFIGURACIÓN DE SUPABASE
-═══════════════════════════════════════════════════════════════════════ */
+════════════════════════════════════════════════════════════════════════ */
 const SB_URL = 'https://yethnzmpiouffmeaqkhy.supabase.co';
 const SB_KEY = 'sb_publishable_tXCnGYE_OjoH0yrFVM-vpA_rqBPXPaU';
 
@@ -1311,7 +1403,16 @@ const DB = (() => {
     } catch (e) { console.warn('[DB.loadMany net]', e); return {}; }
   };
 
-  return { save, lsRead, lsWrite, sbRead, loadMany, DEVICE };
+  /* ── RPC: llama a la función hauler_next_num de Supabase ── */
+  const rpc = async (fn, params) => {
+    try {
+      const { data, error } = await sb().rpc(fn, params);
+      if (error) { console.warn('[DB.rpc]', error.message); return null; }
+      return data;
+    } catch (e) { console.warn('[DB.rpc net]', e); return null; }
+  };
+
+  return { save, lsRead, lsWrite, sbRead, loadMany, rpc, DEVICE };
 })();
 
 
@@ -1444,6 +1545,124 @@ const fmt = n => {
 
 
 /* ════════════════════════════════════════════════════════════════════════
+   MÓDULO: Counter  ← NUEVO
+   ──────────────────────────────────────────────────────────────────────
+   Gestiona la numeración automática correlativa por tipo de documento.
+
+   Formato del número generado:
+     COT-AAAA-NNNN  (Cotizaciones)
+     EP-AAAA-NNNN   (Estados de Pago)
+
+   donde AAAA = año actual y NNNN = número secuencial con ceros a la
+   izquierda (0001, 0002 … 9999).
+
+   El contador vive en la tabla hauler_counters de Supabase, con un
+   registro por cada clave (ej: "hauler__COT__2026").
+   La función RPC hauler_next_num() incrementa de forma atómica.
+
+   El historial local (últimos 10 números generados) se persiste en
+   localStorage para mostrarlo en el tooltip al pasar el cursor sobre
+   el campo del número.
+════════════════════════════════════════════════════════════════════════ */
+const Counter = (() => {
+  const LS_HIST = 'hauler_num_history';
+
+  /* Lee historial local → array de strings */
+  const loadHist = () => {
+    try { return JSON.parse(localStorage.getItem(LS_HIST) || '[]'); } catch { return []; }
+  };
+
+  /* Guarda y actualiza el tooltip */
+  const saveHist = (num) => {
+    const h = [num, ...loadHist().filter(n => n !== num)].slice(0, 10);
+    try { localStorage.setItem(LS_HIST, JSON.stringify(h)); } catch {}
+    renderTip(h);
+  };
+
+  /* Actualiza el contenido del tooltip */
+  const renderTip = (hist) => {
+    const el = document.getElementById('numHistoryList');
+    if (!el) return;
+    el.textContent = hist.length ? hist.join('\n') : '— sin historial —';
+  };
+
+  /*
+    next() — lógica principal:
+    1. Deshabilita el botón y le añade animación de carga.
+    2. Determina el tipo (COT / EP) y el año actual.
+    3. Llama a DB.rpc('hauler_next_num', { counter_id }) con la clave
+       compuesta "hauler__COT__2026" (o EP).
+    4. Si la RPC funciona → formatea el número y lo pone en el campo.
+    5. Si la RPC falla (tabla no creada, sin conexión…) → genera un
+       número local usando Date.now() como fallback (con aviso).
+    6. Guarda en historial, restaura el botón y hace autosave.
+  */
+  const next = async () => {
+    const btn = document.getElementById('btnAutoNum');
+    if (!btn) return;
+
+    /* Deshabilitar + animación */
+    btn.disabled = true;
+    btn.classList.add('loading');
+    btn.textContent = '⏳ Generando…';
+
+    const isCot   = State.mode === 'cot';
+    const prefix  = isCot ? 'COT' : 'EP';
+    const year    = new Date().getFullYear();
+    const counterId = 'hauler__' + prefix + '__' + year;
+
+    let num = null;
+    let fromCloud = false;
+
+    try {
+      /* ── Llamada a Supabase RPC ─────────────────────────────────── */
+      const seq = await DB.rpc('hauler_next_num', { counter_id: counterId });
+
+      if (seq !== null && seq !== undefined) {
+        /* Formato: COT-2026-0001 */
+        const padded = String(seq).padStart(4, '0');
+        num = prefix + '-' + year + '-' + padded;
+        fromCloud = true;
+      }
+    } catch (e) {
+      console.warn('[Counter.next] RPC error:', e);
+    }
+
+    /* ── Fallback local si Supabase no responde ─────────────────── */
+    if (!num) {
+      const ts = Date.now().toString().slice(-5);
+      num = prefix + '-' + year + '-L' + ts;
+      Toast.show('⚠️ Sin conexión a Supabase — número local generado');
+    }
+
+    /* Poner el número en el campo */
+    setf('numDoc', num);
+
+    /* Guardar en historial local y actualizar tooltip */
+    saveHist((fromCloud ? '☁ ' : '💾 ') + num);
+
+    /* Toast de confirmación */
+    if (fromCloud) {
+      Toast.show('⚡ ' + num + ' — número correlativo generado');
+    }
+
+    /* Restaurar botón */
+    btn.disabled = false;
+    btn.classList.remove('loading');
+    btn.textContent = '⚡ N° Auto';
+
+    /* Autosave */
+    AutoSave.flush();
+  };
+
+  /* Inicializar tooltip con historial ya guardado */
+  const init = () => renderTip(loadHist());
+
+  return { next, init };
+})();
+
+
+/* ════════════════════════════════════════════════════════════════════════
    MÓDULO: AutoSave
 ════════════════════════════════════════════════════════════════════════ */
 const AutoSave = (() => {
@@ -1478,8 +1697,6 @@ const AutoSave = (() => {
       prvContacto:  fv('prvContacto'),
       condPago:     fv('condPago'),     condMoneda:    fv('condMoneda'),
       condReajuste: fv('condReajuste'), condNotas:     fv('condNotas'),
-      presDesc:     fv('presDesc'),     presSistema:   fv('presSistema'),
-      presVigencia: fv('presVigencia'), presInicio:    fv('presInicio'),
       introMsg:     fv('introMsg'),     descServicio:  fv('descServicio'),
       caracts: [1,2,3,4,5,6].map(i => document.getElementById('caract' + i)?.checked ?? true),
       conIva: document.getElementById('chkIva')?.checked ?? true,
@@ -1536,15 +1753,18 @@ const App = (() => {
       Rows.add();
     }
 
-    // ── FIX: asignar via setter para actualizar la variable interna del closure ──
     Clients.list = localClients;
     Clients.renderSelector();
     initCurrencySelect();
     applyMode(State.mode, false);
 
     AutoSave.init();
+    Counter.init();
 
-    setTimeout(() => Clients.updateInlineStatus(), 150);
+    setTimeout(() => {
+      Clients.updateInlineStatus();
+      Rut.initAll();
+    }, 150);
 
     syncFromSupabase();
   };
@@ -1566,7 +1786,6 @@ const App = (() => {
     if (sb.clients && Array.isArray(sb.clients)) {
       const localCli = DB.lsRead('clients', []);
       if (sb.clients.length >= localCli.length) {
-        // ── FIX: asignar via setter ──
         Clients.list = sb.clients;
         DB.lsWrite('clients', sb.clients);
         Clients.renderSelector();
@@ -1597,7 +1816,6 @@ const App = (() => {
       'prvNombre','prvRut','prvGiro','prvDir','prvCiudad','prvRegion',
       'prvEmail','prvTel','prvContacto',
       'condPago','condMoneda','condReajuste','condNotas',
-      'presDesc','presSistema','presVigencia','presInicio',
       'introMsg','descServicio',
     ];
     textFields.forEach(id => {
@@ -1634,6 +1852,8 @@ const App = (() => {
     Rows.render();
     Extras.render();
     Calc.run();
+    /* Revalidar RUTs al restaurar desde historial o Supabase */
+    setTimeout(() => Rut.initAll(), 80);
   };
 
   const initCurrencySelect = () => {
@@ -1683,7 +1903,7 @@ const App = (() => {
     document.getElementById('rowContrato').style.display = isCot ? 'none' : 'block';
     document.getElementById('rowOC').style.display       = isCot ? 'none' : 'block';
 
-    ['secCondiciones','secPresentacion','secIntro','secDescServicio'].forEach(id => {
+    ['secCondiciones','secIntro','secDescServicio'].forEach(id => {
       document.getElementById(id).style.display = isCot ? 'block' : 'none';
     });
 
@@ -1734,7 +1954,7 @@ const App = (() => {
       'cliEmail','cliTel','cliContacto','cliContrato','cliOC','cliProyecto','cliSistema',
       'prvNombre','prvRut','prvGiro','prvDir','prvCiudad','prvRegion','prvEmail','prvTel','prvContacto',
       'condPago','condMoneda','condReajuste','condNotas',
-      'presDesc','presSistema','presVigencia','presInicio','introMsg','descServicio',
+      'introMsg','descServicio',
     ];
     campos.forEach(id => setField(id, ''));
     setField('numDoc',       pre + Date.now().toString().slice(-4));
@@ -2065,10 +2285,6 @@ const Calc = (() => {
 
 /* ════════════════════════════════════════════════════════════════════════
    MÓDULO: Clients
-   ── FIX: list expuesto como getter/setter para que la variable interna
-      del closure se actualice cuando se hace Clients.list = [...] desde
-      App.init() y syncFromSupabase(). Sin esto las rutas y el render
-      interno usaban una lista desactualizada. ──
 ════════════════════════════════════════════════════════════════════════ */
 const Clients = (() => {
   let list      = DB.lsRead('clients', []);
@@ -2185,17 +2401,8 @@ const Clients = (() => {
   const saveFromDoc = () => {
     const nombre = fv('cliNombre').trim();
     if (!nombre) { Toast.show('⚠️ Escribe la razón social del cliente'); return; }
-
-    const data = {
-      nombre,
-      rut:    fv('cliRut'),
-      giro:   fv('cliGiro'),
-      dir:    fv('cliDir'),
-      ciudad: fv('cliCiudad'),
-    };
-
+    const data = { nombre, rut: fv('cliRut'), giro: fv('cliGiro'), dir: fv('cliDir'), ciudad: fv('cliCiudad') };
     const idx = list.findIndex(c => c.nombre.trim().toLowerCase() === nombre.toLowerCase());
-
     if (idx >= 0) {
       data.rutas = list[idx].rutas || [];
       list[idx] = data;
@@ -2207,39 +2414,19 @@ const Clients = (() => {
       _setInlineStatus('clientSaveStatus', 'btnSaveClientInline', '✓ Cliente guardado nuevo: ' + nombre, 'ok', true);
       Toast.show('✅ Cliente guardado: ' + nombre);
     }
-
     DB.save('clients', list);
-    renderSelector();
-    render();
-    AutoSave.flush();
+    renderSelector(); render(); AutoSave.flush();
   };
 
   const saveProviderFromDoc = () => {
     const nombre = fv('prvNombre').trim();
     if (!nombre) { Toast.show('⚠️ Escribe la razón social del proveedor'); return; }
-
-    const data = {
-      nombre,
-      rut:    fv('prvRut'),
-      giro:   fv('prvGiro'),
-      dir:    fv('prvDir'),
-      ciudad: fv('prvCiudad'),
-      rutas:  [],
-    };
-
+    const data = { nombre, rut: fv('prvRut'), giro: fv('prvGiro'), dir: fv('prvDir'), ciudad: fv('prvCiudad'), rutas: [] };
     const idx = list.findIndex(c => c.nombre.trim().toLowerCase() === nombre.toLowerCase());
-    if (idx >= 0) {
-      data.rutas = list[idx].rutas || [];
-      list[idx] = data;
-      Toast.show('✏️ Proveedor actualizado en lista: ' + nombre);
-    } else {
-      list.push(data);
-      Toast.show('✅ Proveedor guardado como cliente: ' + nombre);
-    }
-
+    if (idx >= 0) { data.rutas = list[idx].rutas || []; list[idx] = data; Toast.show('✏️ Proveedor actualizado en lista: ' + nombre); }
+    else          { list.push(data); Toast.show('✅ Proveedor guardado como cliente: ' + nombre); }
     DB.save('clients', list);
-    renderSelector();
-    render();
+    renderSelector(); render();
     _setInlineStatus('providerSaveStatus', 'btnSaveProviderInline', '✓ Guardado en lista de clientes', 'ok', true);
   };
 
@@ -2248,14 +2435,12 @@ const Clients = (() => {
     const statusEl = document.getElementById('clientSaveStatus');
     const btnEl    = document.getElementById('btnSaveClientInline');
     if (!statusEl || !btnEl) return;
-
     if (!nombre) {
       statusEl.textContent = 'Escribe el nombre del cliente para guardar';
       statusEl.className   = 'inline-save-status';
       btnEl.className      = 'btn-inline-save';
       return;
     }
-
     const exists = list.some(c => c.nombre.trim().toLowerCase() === nombre.toLowerCase());
     if (exists) {
       statusEl.textContent = '↻ Ya guardado · click para actualizar';
@@ -2276,10 +2461,6 @@ const Clients = (() => {
     if (reset) setTimeout(() => updateInlineStatus(), 2500);
   };
 
-  // ── FIX PRINCIPAL: getter/setter para `list` ──────────────────────────
-  // Exportar list como getter/setter garantiza que cualquier asignación
-  // externa (Clients.list = [...]) actualice la variable interna del
-  // closure, manteniendo sincronizados render(), save(), del() y Routes.
   return {
     get list() { return list; },
     set list(v) { list = v; },
@@ -2309,7 +2490,6 @@ const Routes = (() => {
   const save = () => {
     if (Clients.activeIdx === null) { alert('Selecciona un cliente primero.'); return; }
     const name = gf('nr_nombre'); if (!name) { alert('Ingresa el nombre de la ruta.'); return; }
-    // Asegurar que el array de rutas existe en el cliente activo
     if (!Clients.list[Clients.activeIdx].rutas) Clients.list[Clients.activeIdx].rutas = [];
     const rawIdx = document.getElementById('nr_editIdx').value;
     const data   = { nombre: name, desc: gf('nr_desc') };
@@ -2456,15 +2636,11 @@ const History = (() => {
   return { filter, render, load, del };
 })();
 
-// Alias global para compatibilidad legacy
 window._restoreSnapshot = (snap) => App.restoreSnapshot(snap);
 
 
 /* ════════════════════════════════════════════════════════════════════════
    MÓDULO: PDF
-   ── FIX: pdfTitle incluye la ruta del primer servicio cuando existe,
-      generando nombres como:
-      "Cotización · COT-2401 · G4S Security Services · ARICA - PAMPA CAMARONES · 2026-03-16"
 ════════════════════════════════════════════════════════════════════════ */
 const PDF = (() => {
   const MESES = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
@@ -2526,17 +2702,7 @@ const PDF = (() => {
         ${fv('condNotas') ? `<div class="cond-notas"><strong>Notas:</strong> ${fv('condNotas')}</div>` : ''}
       </div>` : '';
 
-    const presHTML = isCot && (fv('presDesc') || fv('cliProyecto') || fv('presSistema') || fv('presVigencia') || fv('presInicio')) ? `
-      <div class="hdiv"></div>
-      <div class="pres-section no-break">
-        <div class="sec-title">Resumen de la Propuesta</div>
-        <div class="pres-grid">
-          ${fv('presDesc')||fv('cliProyecto') ? `<div class="pc full"><span class="pl">Proyecto / Servicio</span><span class="pv">${fv('presDesc')||fv('cliProyecto')}</span></div>` : ''}
-          ${fv('presSistema')||fv('cliSistema') ? `<div class="pc"><span class="pl">Sistema operacional</span><span class="pv">${fv('presSistema')||fv('cliSistema')}</span></div>` : ''}
-          ${fv('presVigencia') ? `<div class="pc"><span class="pl">Vigencia oferta</span><span class="pv">${fv('presVigencia')}</span></div>` : ''}
-          ${fv('presInicio')   ? `<div class="pc"><span class="pl">Inicio estimado</span><span class="pv">${fv('presInicio')}</span></div>` : ''}
-        </div>
-      </div>` : '';
+    const presHTML = '';
 
     const introHTML = isCot && fv('introMsg') ? `
       <div class="hdiv"></div>
@@ -2549,8 +2715,6 @@ const PDF = (() => {
         ${caractsOn.length ? `<div><div class="sec-title">Características Incluidas</div><ul class="caract-ul">${caractsOn.map(c=>`<li>✓ ${c}</li>`).join('')}</ul></div>` : ''}
       </div></div>` : '';
 
-    // ── FIX: nombre del PDF incluye ruta del primer servicio ──────────────
-    // Formato: "Cotización · COT-2401 · G4S Security Services · ARICA - PAMPA CAMARONES · 2026-03-16"
     const _firstRuta = (State.rows.length && State.rows[0].ruta) ? State.rows[0].ruta.trim() : '';
     const pdfTitle = [
       isCot ? 'Cotización' : 'Estado de Pago',
@@ -2686,7 +2850,7 @@ tbody td:first-child{text-align:left;padding-left:2.5mm}tbody td:last-child{text
     </table>
   </div>
 </div>
-${condHTML}${presHTML}${introHTML}${descHTML}
+${condHTML}${introHTML}${descHTML}
 <div class="hdiv"></div>
 <div class="tbl-section no-break">
   <div class="sec-title">Detalle de Servicios</div>
@@ -2738,6 +2902,118 @@ document.fonts.ready.then(function(){setTimeout(function(){window.print();},500)
   };
 
   return { print };
+})();
+
+
+/* ════════════════════════════════════════════════════════════════════════
+   MÓDULO: Rut
+   ──────────────────────────────────────────────────────────────────────
+   Maneja tres funciones:
+
+   1. calcularDV(cuerpo)  → devuelve el dígito verificador (string)
+      Implementa el algoritmo módulo 11:
+        - Multiplica cada dígito de derecha a izquierda por 2,3,4,5,6,7
+          y luego vuelve a 2 (secuencia cíclica).
+        - Suma los productos.
+        - DV = 11 - (suma % 11)  →  si 11 → '0', si 10 → 'K'.
+
+   2. formatear(raw)  → string con formato NN.NNN.NNN-D
+      - Elimina puntos y guion.
+      - Separa cuerpo y DV.
+      - Agrega puntos de miles al cuerpo.
+      - Devuelve cuerpo + '-' + DV en mayúscula.
+
+   3. onInput(inputEl, badgeId)  → llamado desde oninput del HTML
+      - Formatea mientras el usuario escribe.
+      - Valida el DV calculado vs el escrito.
+      - Actualiza el badge visual (✓ verde / ✗ rojo).
+      - Si el RUT no tiene DV todavía, no muestra badge.
+════════════════════════════════════════════════════════════════════════ */
+const Rut = (() => {
+
+  /* Calcula el dígito verificador dado el cuerpo numérico (sin DV) */
+  const calcularDV = (cuerpo) => {
+    let suma = 0;
+    let mult = 2;
+    for (let i = cuerpo.length - 1; i >= 0; i--) {
+      suma += parseInt(cuerpo[i], 10) * mult;
+      mult = mult === 7 ? 2 : mult + 1;
+    }
+    const resto = 11 - (suma % 11);
+    if (resto === 11) return '0';
+    if (resto === 10) return 'K';
+    return String(resto);
+  };
+
+  /* Devuelve el RUT formateado con puntos y guion */
+  const formatear = (raw) => {
+    // solo dígitos y K
+    const limpio = raw.toUpperCase().replace(/[^0-9K]/g, '');
+    if (limpio.length < 2) return limpio;
+
+    const dv     = limpio.slice(-1);
+    const cuerpo = limpio.slice(0, -1);
+
+    // puntos de miles
+    const conPuntos = cuerpo.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+
+    return conPuntos + '-' + dv;
+  };
+
+  /* Actualiza input + badge mientras el usuario escribe */
+  const onInput = (inputEl, badgeId) => {
+    const raw    = inputEl.value;
+    const badge  = document.getElementById(badgeId);
+
+    /* Formatear */
+    const formateado = formatear(raw);
+    inputEl.value = formateado;
+
+    if (!badge) return;
+
+    /* Necesitamos al menos cuerpo + '-' + DV para validar */
+    const limpio = formateado.toUpperCase().replace(/[^0-9K]/g, '');
+    if (limpio.length < 2) {
+      badge.className = 'rut-ok-badge';
+      badge.textContent = '';
+      return;
+    }
+
+    const dv     = limpio.slice(-1);
+    const cuerpo = limpio.slice(0, -1);
+
+    /* Solo validar si el cuerpo tiene al menos 7 dígitos (RUT mínimo real) */
+    if (cuerpo.length < 7) {
+      badge.className = 'rut-ok-badge';
+      badge.textContent = '';
+      return;
+    }
+
+    const dvEsperado = calcularDV(cuerpo);
+    const valido     = dv === dvEsperado;
+
+    badge.textContent = valido ? '✓' : '✗';
+    badge.className   = 'rut-ok-badge show ' + (valido ? 'ok' : 'err');
+  };
+
+  /* Valida un RUT ya formateado (útil para validar al guardar) */
+  const validar = (rutFormateado) => {
+    const limpio = rutFormateado.toUpperCase().replace(/[^0-9K]/g, '');
+    if (limpio.length < 8) return false;
+    const dv     = limpio.slice(-1);
+    const cuerpo = limpio.slice(0, -1);
+    return calcularDV(cuerpo) === dv;
+  };
+
+  /* Inicializa los campos que ya tienen valor (ej: al restaurar snapshot) */
+  const initAll = () => {
+    [['cliRut','cliRutBadge'],['prvRut','prvRutBadge']].forEach(([id, bid]) => {
+      const el = document.getElementById(id);
+      if (el && el.value) onInput(el, bid);
+    });
+  };
+
+  return { calcularDV, formatear, onInput, validar, initAll };
 })();
 
 
