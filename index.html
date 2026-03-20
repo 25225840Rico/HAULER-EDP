@@ -724,7 +724,7 @@ table.extras-table tbody td input:focus { border-color: #e0a030; }
 .rut-modal-wrap .rut-ok-badge { right: .6rem; }
 
 /* ═══════════════════════════════════════════════
-   ★ EMAIL READER — widget flotante minimizable
+   ★ EMAIL READER — widget flotante minimizable (ahora con OLLAMA local)
 ═══════════════════════════════════════════════ */
 
 /* Botón flotante */
@@ -896,7 +896,7 @@ table.extras-table tbody td input:focus { border-color: #e0a030; }
 }
 .ai-filled { animation: aiFlash 1s ease-out forwards; }
 
-/* Ollama config inline dentro del panel */
+/* Configuración de Ollama dentro del panel */
 .ep-config {
   display: none; flex-direction: column; gap: .45rem;
   padding: .7rem .85rem; background: #f8f9ff;
@@ -1330,13 +1330,13 @@ table.extras-table tbody td input:focus { border-color: #e0a030; }
 </div>
 
 <!-- ══════════════════════════════════════════════
-   ★ EMAIL READER — panel flotante minimizable
+   ★ EMAIL READER — panel flotante minimizable (ahora con OLLAMA local)
 ══════════════════════════════════════════════ -->
 
 <!-- Botón flotante -->
 <button class="email-fab idle" id="emailFab" onclick="EmailPanel.toggle()">
   <span class="fab-dot"></span>
-  📧 Leer Email
+  📧 Email → 🤖 Ollama
 </button>
 
 <!-- Panel flotante -->
@@ -1344,7 +1344,7 @@ table.extras-table tbody td input:focus { border-color: #e0a030; }
 
   <div class="ep-head" id="epHead">
     <span class="ep-head-icon">📧</span>
-    <span class="ep-head-title">Email → Autofill con IA</span>
+    <span class="ep-head-title">Email → Autofill con Ollama</span>
     <span class="ep-head-status chk" id="epStatus" onclick="EmailPanel.toggleConfig()" title="Click para configurar Ollama">🤖 verificando…</span>
     <button class="ep-close" onclick="EmailPanel.close()" title="Cerrar">✕</button>
   </div>
@@ -1354,30 +1354,21 @@ table.extras-table tbody td input:focus { border-color: #e0a030; }
     <!-- Config Ollama inline (colapsable) -->
     <div class="ep-config" id="epConfig">
       <div class="ep-config-row">
-        <label>URL</label>
-        <input type="text" id="epOllamaUrl" value="http://localhost:11434" placeholder="http://localhost:11434">
+        <label>URL Ollama</label>
+        <input type="text" id="epOllamaURL" placeholder="http://localhost:11434">
       </div>
       <div class="ep-config-row">
         <label>Modelo</label>
-        <select id="epOllamaModel">
-          <option value="llama3.2">llama3.2</option>
-          <option value="llama3.1">llama3.1</option>
-          <option value="llama3">llama3</option>
-          <option value="mistral">mistral</option>
-          <option value="gemma2">gemma2</option>
-          <option value="phi3">phi3</option>
-          <option value="qwen2.5">qwen2.5</option>
-        </select>
+        <input type="text" id="epOllamaModel" placeholder="llama3.2">
       </div>
       <div class="ep-config-note">
-        Si Ollama no está disponible se usa el <strong>parser local</strong> automáticamente.
-        <br>Instalar: <code style="font-family:var(--font-mono);font-size:.6rem">ollama pull llama3.2</code>
+        Asegúrate de tener Ollama ejecutándose localmente. Puedes probar con "llama3.2", "llama3.1", "mistral", etc.
       </div>
       <button class="btn primary" style="font-size:.65rem;padding:.38rem .8rem;border-radius:99px;width:fit-content" onclick="EmailPanel.saveConfig()">✓ Guardar y reconectar</button>
     </div>
 
     <div class="ep-tip">
-      💡 Pega el correo completo (incluye De:, Asunto:). La IA extrae empresa, RUT, contacto, ruta, pasajeros y más, y rellena el formulario automáticamente.
+      💡 Pega el correo completo (incluye De:, Asunto:). La IA extrae empresa, RUT, contacto, ruta, pasajeros y más, y rellena el formulario automáticamente usando Ollama local.
     </div>
 
     <textarea class="ep-textarea" id="epEmailText"
@@ -1389,10 +1380,10 @@ Asunto: Cotización transporte Faena Norte
 
     <div class="ep-actions">
       <button class="btn primary" id="epBtnExtract" onclick="EmailPanel.extract()" style="font-size:.68rem">
-        🤖 Extraer con IA
+        ✨ Extraer con Ollama
       </button>
       <button class="btn" onclick="EmailPanel.extractLocal()" style="font-size:.65rem">
-        ⚙️ Parser local
+        ⚙️ Sin IA (parser local)
       </button>
     </div>
 
@@ -1819,7 +1810,7 @@ const Rows = (() => {
         <td class="num"><input type="number" min="0" id="vu_${id}" value="${esc(r.valorUnit)}" placeholder="0" style="max-width:95px"  oninput="Rows.setNum('${id}','valorUnit',this.value)"></td>
         <td class="num total-cell" id="rtot_${id}">${rowTotal(r)}</td>
         <td><button class="btn-del" onclick="Rows.remove('${id}')">✕</button></td>
-      </tr>`;
+       </tr>`;
     }).join('');
   };
   const setField  = (id, key, val) => { const r = State.rows.find(r => String(r.id) === String(id)); if (!r) return; r[key] = val; };
@@ -1852,7 +1843,7 @@ const Extras = (() => {
         <td class="num"><input type="number" min="0" value="${esc(e.valorUnit)}" placeholder="0" style="max-width:100px" oninput="Extras.setNum('${id}','valorUnit',this.value)"></td>
         <td class="num total-cell" id="etot_${id}">${extraTotal(e)}</td>
         <td><button class="btn-del" onclick="Extras.remove('${id}')">✕</button></td>
-      </tr>`;
+       </tr>`;
     }).join('');
     Calc.run();
   };
@@ -2130,58 +2121,65 @@ const setf   = (id, v) => { const el = document.getElementById(id); if (el) el.v
 const setField = setf;
 
 /* ════════════════════════════════════════════════════════════════════════
-   ★ MÓDULO: EmailPanel — panel flotante con IA (NUEVO, no toca nada original)
+   ★ MÓDULO: EmailPanel — con OLLAMA local
 ════════════════════════════════════════════════════════════════════════ */
 const EmailPanel = (() => {
   let _open       = false;
   let _configOpen = false;
   let _data       = null;
-  let _ollamaOk   = false;
-  let _url        = localStorage.getItem('ep_ollama_url')   || 'http://localhost:11434';
-  let _model      = localStorage.getItem('ep_ollama_model') || 'llama3.2';
+  let _aiOk       = false;
+
+  /* Configuración por defecto */
+  const _getURL   = () => localStorage.getItem('ep_ollama_url')   || 'http://localhost:11434';
+  const _getModel = () => localStorage.getItem('ep_ollama_model') || 'llama3.2';
 
   /* ── Abrir / cerrar ── */
   const toggle = () => _open ? close() : open();
-  const open   = () => { _open = true; document.getElementById('emailPanel').classList.add('open'); checkOllama(); };
+  const open   = () => { _open = true; document.getElementById('emailPanel').classList.add('open'); checkAI(); };
   const close  = () => { _open = false; document.getElementById('emailPanel').classList.remove('open'); };
 
-  /* ── Config Ollama inline ── */
+  /* ── Config inline ── */
   const toggleConfig = () => {
     _configOpen = !_configOpen;
-    const cfg = document.getElementById('epConfig');
-    cfg.classList.toggle('show', _configOpen);
+    document.getElementById('epConfig').classList.toggle('show', _configOpen);
     if (_configOpen) {
-      setf('epOllamaUrl',   _url);
-      setf('epOllamaModel', _model);
+      setf('epOllamaURL',   _getURL());
+      setf('epOllamaModel', _getModel());
     }
   };
 
   const saveConfig = () => {
-    _url   = fv('epOllamaUrl')   || _url;
-    _model = fv('epOllamaModel') || _model;
-    localStorage.setItem('ep_ollama_url',   _url);
-    localStorage.setItem('ep_ollama_model', _model);
+    const url = fv('epOllamaURL').trim();
+    const mdl = fv('epOllamaModel').trim();
+    if (url)  localStorage.setItem('ep_ollama_url',   url);
+    if (mdl)  localStorage.setItem('ep_ollama_model', mdl);
     _configOpen = false;
     document.getElementById('epConfig').classList.remove('show');
-    checkOllama();
+    checkAI();
     Toast.show('✓ Configuración Ollama guardada');
   };
 
   /* ── Verificar Ollama ── */
-  const checkOllama = async () => {
+  const checkAI = async () => {
     const st  = document.getElementById('epStatus');
     const fab = document.getElementById('emailFab');
-    st.className = 'ep-head-status chk'; st.textContent = '🤖 verificando…';
+    st.className   = 'ep-head-status chk';
+    st.textContent = '🤖 Conectando Ollama…';
+    const base = _getURL();
     try {
-      const r = await fetch(_url + '/api/tags', { signal: AbortSignal.timeout(3000) });
-      _ollamaOk = r.ok;
-    } catch(e) { _ollamaOk = false; }
-    if (_ollamaOk) {
-      st.className = 'ep-head-status ok'; st.textContent = '🤖 Ollama ON';
-      fab.className = 'email-fab ollama-on';
+      const res = await fetch(base + '/api/tags', { method: 'GET', signal: AbortSignal.timeout(3000) });
+      _aiOk = res.ok;
+      if (!_aiOk) console.warn('[Ollama] tags endpoint error', res.status);
+    } catch(e) { _aiOk = false; console.warn('[Ollama] no responde', e); }
+
+    if (_aiOk) {
+      st.className   = 'ep-head-status ok';
+      st.textContent = '🤖 Ollama ON';
+      fab.className  = 'email-fab ollama-on';
     } else {
-      st.className = 'ep-head-status err'; st.textContent = '🤖 Offline → parser local';
-      fab.className = 'email-fab ollama-off';
+      st.className   = 'ep-head-status err';
+      st.textContent = '🤖 Sin Ollama → parser local';
+      fab.className  = 'email-fab ollama-off';
     }
   };
 
@@ -2190,17 +2188,23 @@ const EmailPanel = (() => {
     const text = fv('epEmailText').trim();
     if (!text) { Toast.show('⚠️ Pega el contenido del correo primero'); return; }
     const btn = document.getElementById('epBtnExtract');
-    btn.innerHTML = '<span class="spinner"></span> Procesando…'; btn.disabled = true;
+    btn.innerHTML = '<span class="spinner"></span> Procesando con Ollama…';
+    btn.disabled  = true;
     let data = null;
-    if (_ollamaOk) data = await _callOllama(text);
-    if (!data) { data = _parseLocal(text); if (_ollamaOk) Toast.show('⚠️ Ollama sin respuesta — usando parser local'); else Toast.show('⚙️ Parser local aplicado'); }
-    else { Toast.show('🤖 Ollama extrajo los datos correctamente'); }
-    btn.innerHTML = '🤖 Extraer con IA'; btn.disabled = false;
+    if (_aiOk) data = await _callOllama(text);
+    if (!data) {
+      data = _parseLocal(text);
+      Toast.show(_aiOk ? '⚠️ Ollama sin respuesta — usando parser local' : '⚙️ Parser local aplicado');
+    } else {
+      Toast.show('🤖 Ollama procesó el correo correctamente');
+    }
+    btn.innerHTML = '✨ Extraer con Ollama';
+    btn.disabled  = false;
     _data = data;
     _showResult(data);
   };
 
-  /* ── Extracción solo con parser local ── */
+  /* ── Parser local sin IA (fallback) ── */
   const extractLocal = () => {
     const text = fv('epEmailText').trim();
     if (!text) { Toast.show('⚠️ Pega el contenido del correo primero'); return; }
@@ -2209,92 +2213,53 @@ const EmailPanel = (() => {
     Toast.show('⚙️ Parser local aplicado');
   };
 
-  /* ── Llamada a Ollama ── */
+  /* ── Llamada a Ollama (chat endpoint) ── */
   const _callOllama = async (text) => {
-    const prompt = `Analiza el siguiente correo de solicitud de transporte de pasajeros.
-Devuelve SOLO un JSON válido, sin markdown, sin explicación:
-    const prompt = `Eres un ejecutivo comercial senior de HAULER SpA, empresa chilena de transporte corporativo de pasajeros con altos estándares de seguridad y servicio. Analizas correos de clientes y preparas propuestas comerciales profesionales y persuasivas.
+    const base = _getURL();
+    const model = _getModel();
 
-Analiza el siguiente correo y completa el JSON.
+    const systemPrompt =
+      'Eres un ejecutivo comercial senior de HAULER SpA, empresa chilena de transporte corporativo de pasajeros. ' +
+      'Tu tarea es analizar correos de clientes y extraer datos para completar una cotización comercial.';
 
-REGLAS POR TIPO DE CAMPO:
-
-EXTRACCIÓN (solo si aparece en el correo, si no deja ""):
-- cliNombre: razón social o empresa
-- cliRut: RUT formato XX.XXX.XXX-X
-- cliGiro: giro o actividad económica
-- cliEmail: email del remitente (De: o From:)
-- cliTel: teléfono
-- cliContacto: nombre de quien escribe
-- cliDir: dirección
-- cliCiudad: ciudad o localidad
-- cliProyecto: asunto o nombre del proyecto
-- cliSistema: turno o frecuencia (ej: 7x7, lunes a viernes)
-- ruta: trayecto origen → destino
-- pasajeros: número de personas
-
-REDACCIÓN PERSUASIVA (usa los datos del correo como contexto, redacta en español formal y convincente):
-- condNotas: 2-3 oraciones con las condiciones comerciales de la propuesta. Menciona vigencia de 30 días, forma de pago a 30 días factura, y cualquier condición especial del correo. Tono ejecutivo.
-- introMsg: párrafo introductorio de 3-4 oraciones. Debe ser cálido, profesional y persuasivo. Muestra que HAULER entendió el requerimiento del cliente y tiene la capacidad y experiencia para cubrirlo. Comienza con "HAULER SpA presenta la siguiente propuesta de servicio de transporte...". Personaliza con el nombre del cliente o proyecto si están disponibles.
-- descServicio: 3-4 oraciones describiendo el servicio con convicción comercial. Destaca: seguridad vial, conductores certificados, vehículos en óptimas condiciones, puntualidad, coordinación operativa. Incorpora los datos concretos del correo (ruta, cantidad de personas, turno). Cierra con una frase que refuerce el valor del servicio.
-
-Devuelve SOLO un JSON válido, sin markdown, sin texto adicional:
-{
-  "cliNombre": "razón social o empresa del remitente",
-  "cliRut": "RUT con formato XX.XXX.XXX-X si aparece",
-  "cliGiro": "giro o actividad económica",
-  "cliEmail": "email del remitente",
-  "cliTel": "teléfono",
-  "cliContacto": "nombre de la persona que escribe",
-  "cliDir": "dirección",
-  "cliCiudad": "ciudad",
-  "cliProyecto": "descripción del proyecto o servicio solicitado",
-  "cliSistema": "sistema operacional, turno o frecuencia del servicio",
-  "ruta": "ruta o trayecto origen → destino",
-  "pasajeros": "número de personas como string",
-  "condNotas": "condiciones o requerimientos especiales"
-}
-Usa cadena vacía "" para campos no encontrados.
-TEXTO: ${text.slice(0, 3500)}`;
-  "cliNombre":   "",
-  "cliRut":      "",
-  "cliGiro":     "",
-  "cliEmail":    "",
-  "cliTel":      "",
-  "cliContacto": "",
-  "cliDir":      "",
-  "cliCiudad":   "",
-  "cliProyecto": "",
-  "cliSistema":  "",
-  "ruta":        "",
-  "pasajeros":   "",
-  "condNotas":   "",
-  "introMsg":    "",
-  "descServicio":""
-}
-
-CORREO:
-${text.slice(0, 4000)}`;
+    const userPrompt =
+      'Analiza el siguiente correo y completa el JSON con estas reglas:\n\n' +
+      'EXTRACCIÓN ESTRICTA (solo si aparece literalmente en el correo, si no deja ""):\n' +
+      'cliNombre, cliRut, cliGiro, cliEmail, cliTel, cliContacto, cliDir, cliCiudad, cliProyecto, cliSistema, ruta, pasajeros\n\n' +
+      'REDACCIÓN PERSUASIVA (usa los datos del correo como contexto, redacta en español formal):\n' +
+      '- condNotas: 2-3 oraciones ejecutivas con condiciones comerciales. Incluir: vigencia 30 días, pago a 30 días factura, condiciones operativas mencionadas.\n' +
+      '- introMsg: párrafo introductorio de 3-4 oraciones, cálido y persuasivo. Personalizar con datos del correo. Empieza con "HAULER SpA presenta la siguiente propuesta de servicio de transporte...". Transmitir confianza y capacidad.\n' +
+      '- descServicio: 3-4 oraciones convincentes describiendo el servicio. Incorporar datos concretos del correo (ruta, pasajeros, turno). Destacar: conductores certificados, vehículos óptimos, puntualidad, seguridad, coordinación 24/7.\n\n' +
+      'Responde SOLO con el JSON, sin markdown, sin texto adicional:\n' +
+      '{"cliNombre":"","cliRut":"","cliGiro":"","cliEmail":"","cliTel":"","cliContacto":"","cliDir":"","cliCiudad":"",' +
+      '"cliProyecto":"","cliSistema":"","ruta":"","pasajeros":"","condNotas":"","introMsg":"","descServicio":""}\n\n' +
+      'CORREO:\n' + text.slice(0, 4000);
 
     try {
-      const res = await fetch(_url + '/api/generate', {
+      const res = await fetch(base + '/api/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ model: _model, prompt, stream: false }),
-        signal: AbortSignal.timeout(35000),
-        signal: AbortSignal.timeout(60000),
+        body: JSON.stringify({
+          model: model,
+          messages: [
+            { role: 'system', content: systemPrompt },
+            { role: 'user',   content: userPrompt }
+          ],
+          stream: false,
+          options: { temperature: 0.3, max_tokens: 1500 }
+        }),
+        signal: AbortSignal.timeout(45000),
       });
-      if (!res.ok) return null;
-      const d   = await res.json();
-      const raw = (d.response || '').trim();
-      const m   = raw.match(/\{[\s\S]*\}/);
-      if (!m) return null;
+      if (!res.ok) { console.warn('[Ollama]', res.status, await res.text().catch(()=>'')); return null; }
+      const d = await res.json();
+      const raw = d.message?.content || '';
+      const m = raw.match(/\{[\s\S]*\}/);
+      if (!m) { console.warn('[Ollama] no JSON in:', raw.slice(0,200)); return null; }
       return JSON.parse(m[0]);
-    } catch(e) { console.warn('[EmailPanel Ollama]', e); return null; }
+    } catch(e) { console.warn('[Ollama error]', e); return null; }
   };
 
-  /* ── Parser local heurístico ── */
-  /* ── Parser local heurístico (fallback sin Ollama) ── */
+  /* ── Parser local heurístico (igual que antes) ── */
   const _parseLocal = (text) => {
     const ex = (patterns) => {
       for (const p of patterns) {
@@ -2302,47 +2267,26 @@ ${text.slice(0, 4000)}`;
       }
       return '';
     };
-
-    const empresa   = ex(['empresa\\s*[:\\-–]\\s*([^\\n]+)','razón social\\s*[:\\-–]\\s*([^\\n]+)','De:\\s*([^<\\n]+?)\\s*(?:<|$)','From:\\s*([^<\\n]+?)\\s*(?:<|$)']);
-    const proyecto  = ex(['asunto\\s*[:\\-–]\\s*([^\\n]+)','subject\\s*[:\\-–]\\s*([^\\n]+)','proyecto\\s*[:\\-–]\\s*([^\\n]+)','solicitud\\s+(?:de\\s+)?([^\\n]+)']);
-    const ruta      = ex(['ruta\\s*[:\\-–]\\s*([^\\n]+)','recorrido\\s*[:\\-–]\\s*([^\\n]+)','entre\\s+([^\\ny]+?)\\s+y\\s+','traslado\\s+(?:desde|de)\\s+([^\\n]+)']);
-    const pax       = ex(['(\\d+)\\s+persona[s]?','(\\d+)\\s+trabajador[es]?','(\\d+)\\s+empleado[s]?','(\\d+)\\s+pasajero[s]?']);
-    const sistema   = ex(['(turno\\s+\\d+[x×]\\d+)','(servicio diario)','(lunes a viernes)','sistema\\s*[:\\-–]\\s*([^\\n]+)','turno\\s*[:\\-–]\\s*([^\\n]+)']);
-    const ciudad    = ex(['ciudad\\s*[:\\-–]\\s*([^\\n]+)','(Antofagasta|Santiago|Calama|Iquique|Copiapó|La Serena|Valparaíso|Concepción|Temuco|Valdivia|Puerto Montt|Punta Arenas)']);
-
-    const clienteStr  = empresa  ? `${empresa}`                       : 'su organización';
-    const proyectoStr = proyecto ? `"${proyecto}"`                    : 'el servicio de transporte solicitado';
-    const rutaStr     = ruta     ? ` en la ruta ${ruta}`              : '';
-    const paxStr      = pax      ? ` para ${pax} personas`            : '';
-    const sistemaStr  = sistema  ? ` bajo régimen de ${sistema}`      : '';
-    const ciudadStr   = ciudad   ? ` en ${ciudad}`                    : '';
-
-    const condNotas = `Los precios presentados tienen una vigencia de 30 días desde la fecha de emisión. ${sistema ? `El servicio operará bajo el esquema ${sistema}, con puntualidad garantizada en cada turno. ` : ''}La oferta contempla todos los costos operativos asociados al traslado, incluyendo conductor, combustible y peajes. Condiciones de pago: 30 días fecha de factura.`;
-
-    const introMsg = `HAULER SpA presenta la siguiente propuesta de servicio de transporte de pasajeros${empresa ? ` para ${clienteStr}` : ''}, elaborada en respuesta a ${proyectoStr}. Nuestra empresa cuenta con amplia experiencia en el transporte corporativo${ciudadStr}, operando con los más altos estándares de seguridad vial y calidad de servicio. ${ruta || pax ? `La presente propuesta ha sido diseñada considerando ${ruta ? `la ruta ${ruta}` : ''}${pax ? `${ruta ? ' y ' : ''}el traslado de ${pax} personas` : ''}${sistemaStr}.` : ''} Quedamos disponibles para ajustar cualquier aspecto de esta propuesta según las necesidades específicas de ${clienteStr}.`;
-
-    const descServicio = `El servicio comprende el traslado${paxStr} de personal${rutaStr}${sistemaStr}${ciudadStr}, a cargo de conductores profesionales certificados y vehículos en óptimas condiciones mecánicas y de presentación. HAULER SpA garantiza puntualidad, seguridad y coordinación permanente con el cliente para asegurar la continuidad operacional. ${sistema ? `El esquema ${sistema} será respetado rigurosamente, con protocolos de contingencia ante cualquier imprevisto.` : 'Cada traslado cuenta con seguimiento en tiempo real y atención ante contingencias las 24 horas.'} Nuestro equipo asegura una experiencia de transporte confiable, segura y eficiente en cada operación.`;
-
+    const empresa  = ex(['empresa\\s*[:\\-\u2013]\\s*([^\\n]+)', 'raz\u00f3n social\\s*[:\\-\u2013]\\s*([^\\n]+)', 'De:\\s*([^<\\n]+?)\\s*(?:<|$)', 'From:\\s*([^<\\n]+?)\\s*(?:<|$)']);
+    const proyecto = ex(['asunto\\s*[:\\-\u2013]\\s*([^\\n]+)', 'subject\\s*[:\\-\u2013]\\s*([^\\n]+)', 'proyecto\\s*[:\\-\u2013]\\s*([^\\n]+)', 'solicitud\\s+(?:de\\s+)?([^\\n]+)']);
+    const ruta     = ex(['ruta\\s*[:\\-\u2013]\\s*([^\\n]+)', 'recorrido\\s*[:\\-\u2013]\\s*([^\\n]+)', 'entre\\s+([^\\ny]+?)\\s+y\\s+', 'traslado\\s+(?:desde|de)\\s+([^\\n]+)']);
+    const pax      = ex(['(\\d+)\\s+persona[s]?', '(\\d+)\\s+trabajador[es]?', '(\\d+)\\s+empleado[s]?', '(\\d+)\\s+pasajero[s]?']);
+    const sistema  = ex(['(turno\\s+\\d+[x\u00d7]\\d+)', '(servicio diario)', '(lunes a viernes)', 'sistema\\s*[:\\-\u2013]\\s*([^\\n]+)', 'turno\\s*[:\\-\u2013]\\s*([^\\n]+)']);
+    const ciudad   = ex(['ciudad\\s*[:\\-\u2013]\\s*([^\\n]+)', '(Antofagasta|Santiago|Calama|Iquique|Copiap\u00f3|La Serena|Valpara\u00edso|Concepci\u00f3n|Temuco|Valdivia|Puerto Montt|Punta Arenas)']);
+    const cli      = empresa || 'su organizaci\u00f3n';
+    const condNotas    = 'La presente oferta tiene una vigencia de 30 d\u00edas a partir de la fecha de emisi\u00f3n. ' + (sistema ? 'El servicio operar\u00e1 bajo el r\u00e9gimen de ' + sistema + ', garantizando puntualidad en cada turno. ' : '') + 'Las condiciones de pago son a 30 d\u00edas fecha de factura, incluyendo conductor profesional, veh\u00edculo en \u00f3ptimas condiciones, combustible y peajes.';
+    const introMsg     = 'HAULER SpA presenta la siguiente propuesta de servicio de transporte de pasajeros' + (empresa ? ' para ' + cli : '') + (proyecto ? ', en atenci\u00f3n a la solicitud: "' + proyecto + '"' : '') + '. Contamos con amplia experiencia en transporte corporativo' + (ciudad ? ' en la regi\u00f3n de ' + ciudad : '') + ', operando con los m\u00e1s altos est\u00e1ndares de seguridad vial y calidad de servicio. ' + (ruta ? 'Nuestra propuesta contempla el traslado' + (pax ? ' de ' + pax + ' personas' : '') + ' en la ruta ' + ruta + (sistema ? ', bajo el esquema ' + sistema : '') + '.' : '') + ' Quedamos disponibles para coordinar todos los detalles operativos necesarios.';
+    const descServicio = 'El servicio comprende el traslado' + (pax ? ' de ' + pax + ' personas' : '') + (ruta ? ' en la ruta ' + ruta : '') + (sistema ? ' bajo el r\u00e9gimen de ' + sistema : '') + ', a cargo de conductores profesionales certificados y veh\u00edculos en \u00f3ptimas condiciones mec\u00e1nicas y de presentaci\u00f3n. HAULER SpA garantiza puntualidad, seguridad vial y coordinaci\u00f3n operativa las 24 horas del d\u00eda. ' + (sistema ? 'El esquema ' + sistema + ' ser\u00e1 respetado rigurosamente, con protocolos de contingencia ante cualquier eventualidad.' : 'Cada operaci\u00f3n cuenta con seguimiento en tiempo real y atenci\u00f3n de contingencias permanente.') + ' Nuestro equipo garantiza una experiencia de transporte confiable y de alto est\u00e1ndar en cada servicio.';
     return {
-      cliNombre:   ex(['empresa\\s*[:\\-–]\\s*([^\\n]+)','razón social\\s*[:\\-–]\\s*([^\\n]+)','De:\\s*([^<\\n]+?)\\s*(?:<|$)','From:\\s*([^<\\n]+?)\\s*(?:<|$)']),
-      cliNombre:   empresa,
-      cliRut:      ex(['rut\\s*[:\\-–]?\\s*([0-9\\.]{7,12}[\\-–][0-9kK])','([0-9]{1,2}\\.[0-9]{3}\\.[0-9]{3}[\\-–][0-9kK])']),
-      cliGiro:     ex(['giro\\s*[:\\-–]\\s*([^\\n]+)','actividad\\s*[:\\-–]\\s*([^\\n]+)','rubro\\s*[:\\-–]\\s*([^\\n]+)']),
-      cliEmail:    ex(['De:\\s*[^<]*<([^>]+)>','From:\\s*[^<]*<([^>]+)>','([\\w.+\\-]+@[\\w\\-]+\\.[\\w.]{2,})']),
-      cliTel:      ex(['tel[eé]fono\\s*[:\\-–]\\s*([+\\d\\s\\-\\.]{7,20})','fono\\s*[:\\-–]\\s*([+\\d\\s\\-]{7,20})','(\\+56\\s*9\\s*[\\d\\s]{8})','(\\+56\\s*[\\d\\s]{9})']),
-      cliContacto: ex(['contacto\\s*[:\\-–]\\s*([^\\n]+)','atenci[oó]n\\s*[:\\-–]\\s*([^\\n]+)','att[e]?\\.?\\s*[:\\-–]\\s*([^\\n]+)']),
-      cliDir:      ex(['direcci[oó]n\\s*[:\\-–]\\s*([^\\n]+)','domicilio\\s*[:\\-–]\\s*([^\\n]+)']),
-      cliCiudad:   ex(['ciudad\\s*[:\\-–]\\s*([^\\n]+)','(Antofagasta|Santiago|Calama|Iquique|Copiapó|La Serena|Valparaíso|Concepción|Temuco|Valdivia|Puerto Montt|Punta Arenas)']),
-      cliProyecto: ex(['asunto\\s*[:\\-–]\\s*([^\\n]+)','subject\\s*[:\\-–]\\s*([^\\n]+)','proyecto\\s*[:\\-–]\\s*([^\\n]+)','solicitud\\s+(?:de\\s+)?([^\\n]+)','requerimiento\\s*[:\\-–]\\s*([^\\n]+)']),
-      cliSistema:  ex(['(turno\\s+\\d+[x×]\\d+)','(servicio diario)','(lunes a viernes)','sistema\\s*[:\\-–]\\s*([^\\n]+)','turno\\s*[:\\-–]\\s*([^\\n]+)']),
-      ruta:        ex(['ruta\\s*[:\\-–]\\s*([^\\n]+)','recorrido\\s*[:\\-–]\\s*([^\\n]+)','entre\\s+([^\\ny]+?)\\s+y\\s+','traslado\\s+(?:desde|de)\\s+([^\\n]+)']),
-      pasajeros:   ex(['(\\d+)\\s+persona[s]?','(\\d+)\\s+trabajador[es]?','(\\d+)\\s+empleado[s]?','(\\d+)\\s+pasajero[s]?']),
-      condNotas:   ex(['condici[oó]n(?:es)?\\s*[:\\-–]\\s*([^\\n]+)','requisito[s]?\\s*[:\\-–]\\s*([^\\n]+)']),
-      cliCiudad:   ciudad,
-      cliProyecto: proyecto,
-      cliSistema:  sistema,
-      ruta, pasajeros: pax,
-      condNotas, introMsg, descServicio,
+      cliNombre: empresa,
+      cliRut:      ex(['rut\\s*[:\\-\u2013]?\\s*([0-9\\.]{7,12}[\\-\u2013][0-9kK])', '([0-9]{1,2}\\.[0-9]{3}\\.[0-9]{3}[\\-\u2013][0-9kK])']),
+      cliGiro:     ex(['giro\\s*[:\\-\u2013]\\s*([^\\n]+)', 'actividad\\s*[:\\-\u2013]\\s*([^\\n]+)']),
+      cliEmail:    ex(['De:\\s*[^<]*<([^>]+)>', 'From:\\s*[^<]*<([^>]+)>', '([\\w.+\\-]+@[\\w\\-]+\\.[\\w.]{2,})']),
+      cliTel:      ex(['tel[\u00e9e]fono\\s*[:\\-\u2013]\\s*([+\\d\\s\\-\\.]{7,20})', 'fono\\s*[:\\-\u2013]\\s*([+\\d\\s\\-]{7,20})', '(\\+56\\s*9\\s*[\\d\\s]{8})']),
+      cliContacto: ex(['contacto\\s*[:\\-\u2013]\\s*([^\\n]+)', 'atenci[\u00f3o]n\\s*[:\\-\u2013]\\s*([^\\n]+)']),
+      cliDir:      ex(['direcci[\u00f3o]n\\s*[:\\-\u2013]\\s*([^\\n]+)', 'domicilio\\s*[:\\-\u2013]\\s*([^\\n]+)']),
+      cliCiudad: ciudad, cliProyecto: proyecto, cliSistema: sistema,
+      ruta, pasajeros: pax, condNotas, introMsg, descServicio,
     };
   };
 
@@ -2350,67 +2294,42 @@ ${text.slice(0, 4000)}`;
   const _showResult = (data) => {
     const labels = {
       cliNombre:'Empresa', cliRut:'RUT', cliGiro:'Giro',
-      cliEmail:'Email', cliTel:'Teléfono', cliContacto:'Contacto',
-      cliDir:'Dirección', cliCiudad:'Ciudad',
-      cliProyecto:'Proyecto', cliSistema:'Sistema / Turno',
-      ruta:'Ruta', pasajeros:'Pasajeros', condNotas:'Notas',
+      cliEmail:'Email', cliTel:'Tel\u00e9fono', cliContacto:'Contacto',
+      cliDir:'Direcci\u00f3n', cliCiudad:'Ciudad',
       cliProyecto:'Proyecto / Asunto', cliSistema:'Sistema / Turno',
       ruta:'Ruta', pasajeros:'Pasajeros',
       condNotas:'Notas / Condiciones',
       introMsg:'Mensaje introductorio',
-      descServicio:'Descripción del servicio',
+      descServicio:'Descripci\u00f3n del servicio',
     };
     const items = Object.entries(labels)
       .filter(([k]) => data[k] && data[k].trim())
-      .map(([k, label]) => `
-        <div class="ep-result-item">
       .map(([k, label]) => {
-        const isLong = ['condNotas','introMsg','descServicio'].includes(k);
-        const preview = isLong ? data[k].slice(0,90)+(data[k].length>90?'…':'') : data[k];
-        return `<div class="ep-result-item${isLong?' full':''}">
-          <label>${label}</label>
-          <span title="${esc(data[k])}">${esc(data[k])}</span>
-        </div>`).join('');
-          <span title="${esc(data[k])}">${esc(preview)}</span>
-        </div>`;
+        const isLong  = ['condNotas','introMsg','descServicio'].includes(k);
+        const preview = isLong ? data[k].slice(0, 90) + (data[k].length > 90 ? '\u2026' : '') : data[k];
+        return '<div class="ep-result-item' + (isLong ? ' full' : '') + '">' +
+          '<label>' + label + '</label>' +
+          '<span title="' + esc(data[k]) + '">' + esc(preview) + '</span></div>';
       }).join('');
-
     document.getElementById('epResultGrid').innerHTML = items ||
-      '<div style="color:var(--t3);font-size:.68rem;grid-column:1/-1;padding:.3rem">No se encontraron datos. Intenta con más contenido.</div>';
-      '<div style="color:var(--t3);font-size:.68rem;grid-column:1/-1;padding:.3rem">No se encontraron datos reconocibles en el correo.</div>';
+      '<div style="color:var(--t3);font-size:.68rem;grid-column:1/-1;padding:.3rem">No se encontraron datos en el correo.</div>';
     document.getElementById('epResult').classList.add('show');
     document.getElementById('epBtnApply').style.display = items ? 'inline-flex' : 'none';
   };
 
-  /* ── Aplicar datos al formulario principal ── */
   /* ── Aplicar al formulario ── */
   const apply = () => {
     const data = _data; if (!data) return;
-
-    /* Mapa: campo del resultado → id del input en el doc */
     const map = {
-      cliNombre:   'cliNombre',
-      cliRut:      'cliRut',
-      cliGiro:     'cliGiro',
-      cliDir:      'cliDir',
-      cliCiudad:   'cliCiudad',
-      cliEmail:    'cliEmail',
-      cliTel:      'cliTel',
-      cliContacto: 'cliContacto',
-      cliProyecto: 'cliProyecto',
-      cliSistema:  'cliSistema',
-      condNotas:   'condNotas',
       cliNombre:'cliNombre', cliRut:'cliRut', cliGiro:'cliGiro',
       cliDir:'cliDir', cliCiudad:'cliCiudad', cliEmail:'cliEmail',
       cliTel:'cliTel', cliContacto:'cliContacto',
       cliProyecto:'cliProyecto', cliSistema:'cliSistema',
       condNotas:'condNotas', introMsg:'introMsg', descServicio:'descServicio',
     };
-
     let filled = 0;
     Object.entries(map).forEach(([src, dest]) => {
-      const v  = data[src];
-      const el = document.getElementById(dest);
+      const v = data[src]; const el = document.getElementById(dest);
       if (el && v && v.trim()) {
         el.value = v.trim();
         el.classList.add('ai-filled');
@@ -2418,65 +2337,34 @@ ${text.slice(0, 4000)}`;
         filled++;
       }
     });
-
-    /* Ruta: aplicar a la primera fila de servicios si existe */
-    /* Ruta → primera fila de servicios */
     if (data.ruta && State.rows.length) {
-      const r   = State.rows[0];
-      const el  = document.getElementById('r_' + r.id)
-               || document.querySelector(`tr[data-id="${r.id}"] td:nth-child(3) input`);
-      const r  = State.rows[0];
-      const el = document.querySelector(`tr[data-id="${r.id}"] td:nth-child(3) input`);
-      if (el) {
-        el.value = data.ruta;
-        el.classList.add('ai-filled');
-        setTimeout(() => el.classList.remove('ai-filled'), 1200);
-        r.ruta = data.ruta;
-        filled++;
-      }
+      const r = State.rows[0];
+      const el = document.querySelector('tr[data-id="' + r.id + '"] td:nth-child(3) input');
+      if (el) { el.value = data.ruta; el.classList.add('ai-filled'); setTimeout(()=>el.classList.remove('ai-filled'),1200); r.ruta=data.ruta; filled++; }
     }
-
-    /* Pasajeros: primera fila */
-    /* Pasajeros → primera fila */
     if (data.pasajeros && State.rows.length) {
-      const r  = State.rows[0];
-      const el = document.querySelector(`tr[data-id="${r.id}"] td:nth-child(5) input`);
-      if (el) {
-        el.value = data.pasajeros;
-        el.classList.add('ai-filled');
-        setTimeout(() => el.classList.remove('ai-filled'), 1200);
-        r.pasajeros = data.pasajeros;
-        filled++;
-      }
+      const r = State.rows[0];
+      const el = document.querySelector('tr[data-id="' + r.id + '"] td:nth-child(5) input');
+      if (el) { el.value=data.pasajeros; el.classList.add('ai-filled'); setTimeout(()=>el.classList.remove('ai-filled'),1200); r.pasajeros=data.pasajeros; filled++; }
     }
-
-    /* Disparar autosave y actualizar campos relacionados */
     AutoSave.flush();
     Clients.updateInlineStatus();
     if (data.cliRut) Rut.onInput(document.getElementById('cliRut'), 'cliRutBadge');
-
-    /* Hacer scroll suave hasta el campo de empresa */
-    const cliEl = document.getElementById('cliNombre');
-    if (cliEl) cliEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
-    document.getElementById('cliNombre')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
-
+    document.getElementById('cliNombre')?.scrollIntoView({ behavior:'smooth', block:'center' });
     close();
-    Toast.show(`✅ ${filled} campo${filled !== 1 ? 's' : ''} rellenado${filled !== 1 ? 's' : ''} automáticamente`);
-    Toast.show(`✅ ${filled} campo${filled !== 1 ? 's' : ''} extraído${filled !== 1 ? 's' : ''} del correo`);
+    Toast.show('\u2705 ' + filled + ' campo' + (filled!==1?'s':'') + ' aplicado' + (filled!==1?'s':'') + ' al formulario');
   };
 
-  /* ── Limpiar panel ── */
+  /* ── Limpiar ── */
   const clear = () => {
-    setf('epEmailText', '');
+    setf('epEmailText','');
     document.getElementById('epResult').classList.remove('show');
     document.getElementById('epBtnApply').style.display = 'none';
     _data = null;
   };
 
-  /* ── Init: comprobar Ollama al arrancar en background ── */
-  const init = () => {
-    setTimeout(() => checkOllama(), 1200);
-  };
+  /* ── Init ── */
+  const init = () => { setTimeout(() => checkAI(), 800); };
 
   return { toggle, open, close, toggleConfig, saveConfig, extract, extractLocal, apply, clear, init };
 })();
@@ -2521,7 +2409,7 @@ window.addEventListener('DOMContentLoaded', () => {
   } catch(e) {}
 
   App.init();
-  EmailPanel.init();   /* ← única línea nueva en el arranque */
+  EmailPanel.init();
 });
 </script>
 </body>
