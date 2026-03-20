@@ -862,6 +862,9 @@ table.extras-table tbody td input:focus { border-color: #e0a030; }
   background: #fff; border: 1px solid var(--border); border-radius: 7px;
   padding: .26rem .45rem; display: flex; flex-direction: column; gap: .08rem;
 }
+.ep-result-item.full { grid-column: 1 / -1; background: var(--blue-lt); border-color: #c0d0ff; }
+.ep-result-item.full span { white-space: normal; font-size: .65rem !important; color: var(--t2); }
+.ep-result-item.full label { color: var(--blue); }
 .ep-result-item label {
   font: 700 .42rem/1 var(--font-sans); text-transform: uppercase;
   letter-spacing: .6px; color: var(--t3);
@@ -2208,31 +2211,59 @@ const EmailPanel = (() => {
 
   /* ── Llamada a Ollama ── */
   const _callOllama = async (text) => {
-    const prompt = `Analiza el siguiente correo de solicitud de transporte de pasajeros.
-Devuelve SOLO un JSON válido, sin markdown, sin explicación:
+    const prompt = `Eres un ejecutivo comercial senior de HAULER SpA, empresa chilena de transporte corporativo de pasajeros con altos estándares de seguridad y servicio. Analizas correos de clientes y preparas propuestas comerciales profesionales y persuasivas.
+
+Analiza el siguiente correo y completa el JSON.
+
+REGLAS POR TIPO DE CAMPO:
+
+EXTRACCIÓN (solo si aparece en el correo, si no deja ""):
+- cliNombre: razón social o empresa
+- cliRut: RUT formato XX.XXX.XXX-X
+- cliGiro: giro o actividad económica
+- cliEmail: email del remitente (De: o From:)
+- cliTel: teléfono
+- cliContacto: nombre de quien escribe
+- cliDir: dirección
+- cliCiudad: ciudad o localidad
+- cliProyecto: asunto o nombre del proyecto
+- cliSistema: turno o frecuencia (ej: 7x7, lunes a viernes)
+- ruta: trayecto origen → destino
+- pasajeros: número de personas
+
+REDACCIÓN PERSUASIVA (usa los datos del correo como contexto, redacta en español formal y convincente):
+- condNotas: 2-3 oraciones con las condiciones comerciales de la propuesta. Menciona vigencia de 30 días, forma de pago a 30 días factura, y cualquier condición especial del correo. Tono ejecutivo.
+- introMsg: párrafo introductorio de 3-4 oraciones. Debe ser cálido, profesional y persuasivo. Muestra que HAULER entendió el requerimiento del cliente y tiene la capacidad y experiencia para cubrirlo. Comienza con "HAULER SpA presenta la siguiente propuesta de servicio de transporte...". Personaliza con el nombre del cliente o proyecto si están disponibles.
+- descServicio: 3-4 oraciones describiendo el servicio con convicción comercial. Destaca: seguridad vial, conductores certificados, vehículos en óptimas condiciones, puntualidad, coordinación operativa. Incorpora los datos concretos del correo (ruta, cantidad de personas, turno). Cierra con una frase que refuerce el valor del servicio.
+
+Devuelve SOLO un JSON válido, sin markdown, sin texto adicional:
 {
-  "cliNombre": "razón social o empresa del remitente",
-  "cliRut": "RUT con formato XX.XXX.XXX-X si aparece",
-  "cliGiro": "giro o actividad económica",
-  "cliEmail": "email del remitente",
-  "cliTel": "teléfono",
-  "cliContacto": "nombre de la persona que escribe",
-  "cliDir": "dirección",
-  "cliCiudad": "ciudad",
-  "cliProyecto": "descripción del proyecto o servicio solicitado",
-  "cliSistema": "sistema operacional, turno o frecuencia del servicio",
-  "ruta": "ruta o trayecto origen → destino",
-  "pasajeros": "número de personas como string",
-  "condNotas": "condiciones o requerimientos especiales"
+  "cliNombre":   "",
+  "cliRut":      "",
+  "cliGiro":     "",
+  "cliEmail":    "",
+  "cliTel":      "",
+  "cliContacto": "",
+  "cliDir":      "",
+  "cliCiudad":   "",
+  "cliProyecto": "",
+  "cliSistema":  "",
+  "ruta":        "",
+  "pasajeros":   "",
+  "condNotas":   "",
+  "introMsg":    "",
+  "descServicio":""
 }
-Usa cadena vacía "" para campos no encontrados.
-TEXTO: ${text.slice(0, 3500)}`;
+
+CORREO:
+${text.slice(0, 4000)}`;
+
     try {
       const res = await fetch(_url + '/api/generate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ model: _model, prompt, stream: false }),
-        signal: AbortSignal.timeout(35000),
+        signal: AbortSignal.timeout(60000),
       });
       if (!res.ok) return null;
       const d   = await res.json();
@@ -2243,7 +2274,7 @@ TEXTO: ${text.slice(0, 3500)}`;
     } catch(e) { console.warn('[EmailPanel Ollama]', e); return null; }
   };
 
-  /* ── Parser local heurístico ── */
+  /* ── Parser local heurístico (fallback sin Ollama) ── */
   const _parseLocal = (text) => {
     const ex = (patterns) => {
       for (const p of patterns) {
@@ -2251,20 +2282,40 @@ TEXTO: ${text.slice(0, 3500)}`;
       }
       return '';
     };
+
+    const empresa   = ex(['empresa\\s*[:\\-–]\\s*([^\\n]+)','razón social\\s*[:\\-–]\\s*([^\\n]+)','De:\\s*([^<\\n]+?)\\s*(?:<|$)','From:\\s*([^<\\n]+?)\\s*(?:<|$)']);
+    const proyecto  = ex(['asunto\\s*[:\\-–]\\s*([^\\n]+)','subject\\s*[:\\-–]\\s*([^\\n]+)','proyecto\\s*[:\\-–]\\s*([^\\n]+)','solicitud\\s+(?:de\\s+)?([^\\n]+)']);
+    const ruta      = ex(['ruta\\s*[:\\-–]\\s*([^\\n]+)','recorrido\\s*[:\\-–]\\s*([^\\n]+)','entre\\s+([^\\ny]+?)\\s+y\\s+','traslado\\s+(?:desde|de)\\s+([^\\n]+)']);
+    const pax       = ex(['(\\d+)\\s+persona[s]?','(\\d+)\\s+trabajador[es]?','(\\d+)\\s+empleado[s]?','(\\d+)\\s+pasajero[s]?']);
+    const sistema   = ex(['(turno\\s+\\d+[x×]\\d+)','(servicio diario)','(lunes a viernes)','sistema\\s*[:\\-–]\\s*([^\\n]+)','turno\\s*[:\\-–]\\s*([^\\n]+)']);
+    const ciudad    = ex(['ciudad\\s*[:\\-–]\\s*([^\\n]+)','(Antofagasta|Santiago|Calama|Iquique|Copiapó|La Serena|Valparaíso|Concepción|Temuco|Valdivia|Puerto Montt|Punta Arenas)']);
+
+    const clienteStr  = empresa  ? `${empresa}`                       : 'su organización';
+    const proyectoStr = proyecto ? `"${proyecto}"`                    : 'el servicio de transporte solicitado';
+    const rutaStr     = ruta     ? ` en la ruta ${ruta}`              : '';
+    const paxStr      = pax      ? ` para ${pax} personas`            : '';
+    const sistemaStr  = sistema  ? ` bajo régimen de ${sistema}`      : '';
+    const ciudadStr   = ciudad   ? ` en ${ciudad}`                    : '';
+
+    const condNotas = `Los precios presentados tienen una vigencia de 30 días desde la fecha de emisión. ${sistema ? `El servicio operará bajo el esquema ${sistema}, con puntualidad garantizada en cada turno. ` : ''}La oferta contempla todos los costos operativos asociados al traslado, incluyendo conductor, combustible y peajes. Condiciones de pago: 30 días fecha de factura.`;
+
+    const introMsg = `HAULER SpA presenta la siguiente propuesta de servicio de transporte de pasajeros${empresa ? ` para ${clienteStr}` : ''}, elaborada en respuesta a ${proyectoStr}. Nuestra empresa cuenta con amplia experiencia en el transporte corporativo${ciudadStr}, operando con los más altos estándares de seguridad vial y calidad de servicio. ${ruta || pax ? `La presente propuesta ha sido diseñada considerando ${ruta ? `la ruta ${ruta}` : ''}${pax ? `${ruta ? ' y ' : ''}el traslado de ${pax} personas` : ''}${sistemaStr}.` : ''} Quedamos disponibles para ajustar cualquier aspecto de esta propuesta según las necesidades específicas de ${clienteStr}.`;
+
+    const descServicio = `El servicio comprende el traslado${paxStr} de personal${rutaStr}${sistemaStr}${ciudadStr}, a cargo de conductores profesionales certificados y vehículos en óptimas condiciones mecánicas y de presentación. HAULER SpA garantiza puntualidad, seguridad y coordinación permanente con el cliente para asegurar la continuidad operacional. ${sistema ? `El esquema ${sistema} será respetado rigurosamente, con protocolos de contingencia ante cualquier imprevisto.` : 'Cada traslado cuenta con seguimiento en tiempo real y atención ante contingencias las 24 horas.'} Nuestro equipo asegura una experiencia de transporte confiable, segura y eficiente en cada operación.`;
+
     return {
-      cliNombre:   ex(['empresa\\s*[:\\-–]\\s*([^\\n]+)','razón social\\s*[:\\-–]\\s*([^\\n]+)','De:\\s*([^<\\n]+?)\\s*(?:<|$)','From:\\s*([^<\\n]+?)\\s*(?:<|$)']),
+      cliNombre:   empresa,
       cliRut:      ex(['rut\\s*[:\\-–]?\\s*([0-9\\.]{7,12}[\\-–][0-9kK])','([0-9]{1,2}\\.[0-9]{3}\\.[0-9]{3}[\\-–][0-9kK])']),
       cliGiro:     ex(['giro\\s*[:\\-–]\\s*([^\\n]+)','actividad\\s*[:\\-–]\\s*([^\\n]+)','rubro\\s*[:\\-–]\\s*([^\\n]+)']),
       cliEmail:    ex(['De:\\s*[^<]*<([^>]+)>','From:\\s*[^<]*<([^>]+)>','([\\w.+\\-]+@[\\w\\-]+\\.[\\w.]{2,})']),
       cliTel:      ex(['tel[eé]fono\\s*[:\\-–]\\s*([+\\d\\s\\-\\.]{7,20})','fono\\s*[:\\-–]\\s*([+\\d\\s\\-]{7,20})','(\\+56\\s*9\\s*[\\d\\s]{8})','(\\+56\\s*[\\d\\s]{9})']),
       cliContacto: ex(['contacto\\s*[:\\-–]\\s*([^\\n]+)','atenci[oó]n\\s*[:\\-–]\\s*([^\\n]+)','att[e]?\\.?\\s*[:\\-–]\\s*([^\\n]+)']),
       cliDir:      ex(['direcci[oó]n\\s*[:\\-–]\\s*([^\\n]+)','domicilio\\s*[:\\-–]\\s*([^\\n]+)']),
-      cliCiudad:   ex(['ciudad\\s*[:\\-–]\\s*([^\\n]+)','(Antofagasta|Santiago|Calama|Iquique|Copiapó|La Serena|Valparaíso|Concepción|Temuco|Valdivia|Puerto Montt|Punta Arenas)']),
-      cliProyecto: ex(['asunto\\s*[:\\-–]\\s*([^\\n]+)','subject\\s*[:\\-–]\\s*([^\\n]+)','proyecto\\s*[:\\-–]\\s*([^\\n]+)','solicitud\\s+(?:de\\s+)?([^\\n]+)','requerimiento\\s*[:\\-–]\\s*([^\\n]+)']),
-      cliSistema:  ex(['(turno\\s+\\d+[x×]\\d+)','(servicio diario)','(lunes a viernes)','sistema\\s*[:\\-–]\\s*([^\\n]+)','turno\\s*[:\\-–]\\s*([^\\n]+)']),
-      ruta:        ex(['ruta\\s*[:\\-–]\\s*([^\\n]+)','recorrido\\s*[:\\-–]\\s*([^\\n]+)','entre\\s+([^\\ny]+?)\\s+y\\s+','traslado\\s+(?:desde|de)\\s+([^\\n]+)']),
-      pasajeros:   ex(['(\\d+)\\s+persona[s]?','(\\d+)\\s+trabajador[es]?','(\\d+)\\s+empleado[s]?','(\\d+)\\s+pasajero[s]?']),
-      condNotas:   ex(['condici[oó]n(?:es)?\\s*[:\\-–]\\s*([^\\n]+)','requisito[s]?\\s*[:\\-–]\\s*([^\\n]+)']),
+      cliCiudad:   ciudad,
+      cliProyecto: proyecto,
+      cliSistema:  sistema,
+      ruta, pasajeros: pax,
+      condNotas, introMsg, descServicio,
     };
   };
 
@@ -2274,40 +2325,39 @@ TEXTO: ${text.slice(0, 3500)}`;
       cliNombre:'Empresa', cliRut:'RUT', cliGiro:'Giro',
       cliEmail:'Email', cliTel:'Teléfono', cliContacto:'Contacto',
       cliDir:'Dirección', cliCiudad:'Ciudad',
-      cliProyecto:'Proyecto', cliSistema:'Sistema / Turno',
-      ruta:'Ruta', pasajeros:'Pasajeros', condNotas:'Notas',
+      cliProyecto:'Proyecto / Asunto', cliSistema:'Sistema / Turno',
+      ruta:'Ruta', pasajeros:'Pasajeros',
+      condNotas:'Notas / Condiciones',
+      introMsg:'Mensaje introductorio',
+      descServicio:'Descripción del servicio',
     };
     const items = Object.entries(labels)
       .filter(([k]) => data[k] && data[k].trim())
-      .map(([k, label]) => `
-        <div class="ep-result-item">
+      .map(([k, label]) => {
+        const isLong = ['condNotas','introMsg','descServicio'].includes(k);
+        const preview = isLong ? data[k].slice(0,90)+(data[k].length>90?'…':'') : data[k];
+        return `<div class="ep-result-item${isLong?' full':''}">
           <label>${label}</label>
-          <span title="${esc(data[k])}">${esc(data[k])}</span>
-        </div>`).join('');
+          <span title="${esc(data[k])}">${esc(preview)}</span>
+        </div>`;
+      }).join('');
 
     document.getElementById('epResultGrid').innerHTML = items ||
-      '<div style="color:var(--t3);font-size:.68rem;grid-column:1/-1;padding:.3rem">No se encontraron datos. Intenta con más contenido.</div>';
+      '<div style="color:var(--t3);font-size:.68rem;grid-column:1/-1;padding:.3rem">No se encontraron datos reconocibles en el correo.</div>';
     document.getElementById('epResult').classList.add('show');
     document.getElementById('epBtnApply').style.display = items ? 'inline-flex' : 'none';
   };
 
-  /* ── Aplicar datos al formulario principal ── */
+  /* ── Aplicar al formulario ── */
   const apply = () => {
     const data = _data; if (!data) return;
 
-    /* Mapa: campo del resultado → id del input en el doc */
     const map = {
-      cliNombre:   'cliNombre',
-      cliRut:      'cliRut',
-      cliGiro:     'cliGiro',
-      cliDir:      'cliDir',
-      cliCiudad:   'cliCiudad',
-      cliEmail:    'cliEmail',
-      cliTel:      'cliTel',
-      cliContacto: 'cliContacto',
-      cliProyecto: 'cliProyecto',
-      cliSistema:  'cliSistema',
-      condNotas:   'condNotas',
+      cliNombre:'cliNombre', cliRut:'cliRut', cliGiro:'cliGiro',
+      cliDir:'cliDir', cliCiudad:'cliCiudad', cliEmail:'cliEmail',
+      cliTel:'cliTel', cliContacto:'cliContacto',
+      cliProyecto:'cliProyecto', cliSistema:'cliSistema',
+      condNotas:'condNotas', introMsg:'introMsg', descServicio:'descServicio',
     };
 
     let filled = 0;
@@ -2322,11 +2372,10 @@ TEXTO: ${text.slice(0, 3500)}`;
       }
     });
 
-    /* Ruta: aplicar a la primera fila de servicios si existe */
+    /* Ruta → primera fila de servicios */
     if (data.ruta && State.rows.length) {
-      const r   = State.rows[0];
-      const el  = document.getElementById('r_' + r.id)
-               || document.querySelector(`tr[data-id="${r.id}"] td:nth-child(3) input`);
+      const r  = State.rows[0];
+      const el = document.querySelector(`tr[data-id="${r.id}"] td:nth-child(3) input`);
       if (el) {
         el.value = data.ruta;
         el.classList.add('ai-filled');
@@ -2336,7 +2385,7 @@ TEXTO: ${text.slice(0, 3500)}`;
       }
     }
 
-    /* Pasajeros: primera fila */
+    /* Pasajeros → primera fila */
     if (data.pasajeros && State.rows.length) {
       const r  = State.rows[0];
       const el = document.querySelector(`tr[data-id="${r.id}"] td:nth-child(5) input`);
@@ -2349,17 +2398,13 @@ TEXTO: ${text.slice(0, 3500)}`;
       }
     }
 
-    /* Disparar autosave y actualizar campos relacionados */
     AutoSave.flush();
     Clients.updateInlineStatus();
     if (data.cliRut) Rut.onInput(document.getElementById('cliRut'), 'cliRutBadge');
-
-    /* Hacer scroll suave hasta el campo de empresa */
-    const cliEl = document.getElementById('cliNombre');
-    if (cliEl) cliEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    document.getElementById('cliNombre')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
 
     close();
-    Toast.show(`✅ ${filled} campo${filled !== 1 ? 's' : ''} rellenado${filled !== 1 ? 's' : ''} automáticamente`);
+    Toast.show(`✅ ${filled} campo${filled !== 1 ? 's' : ''} extraído${filled !== 1 ? 's' : ''} del correo`);
   };
 
   /* ── Limpiar panel ── */
