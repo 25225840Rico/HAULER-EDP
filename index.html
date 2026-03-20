@@ -2126,22 +2126,32 @@ const setf   = (id, v) => { const el = document.getElementById(id); if (el) el.v
 const setField = setf;
 
 /* ════════════════════════════════════════════════════════════════════════
-   ★ MÓDULO: EmailPanel — panel flotante con Google Gemini AI
+   ★ MÓDULO: EmailPanel — Google Gemini AI
 ════════════════════════════════════════════════════════════════════════ */
 const EmailPanel = (() => {
   let _open       = false;
   let _configOpen = false;
   let _data       = null;
   let _aiOk       = false;
-  let _model      = localStorage.getItem('ep_gemini_model') || 'gemini-2.0-flash';
 
-  const _getKey   = () => localStorage.getItem('ep_gemini_key') || 'AIzaSyA6zHVU02hqa6Sx0ex4vc0qsH1_C_N7EcI';
-  const _apiUrl   = () => `https://generativelanguage.googleapis.com/v1beta/models/${_model}:generateContent?key=${_getKey()}`;
+  const GEMINI_API_KEY = 'AIzaSyA6zHVU02hqa6Sx0ex4vc0qsH1_C_N7EcI';
+
+  const _getKey   = () => localStorage.getItem('ep_gemini_key') || GEMINI_API_KEY;
+  const _getModel = () => localStorage.getItem('ep_gemini_model') || 'gemini-2.0-flash';
+  const _apiUrl   = () =>
+    'https://generativelanguage.googleapis.com/v1beta/models/' + _getModel() + ':generateContent?key=' + _getKey();
 
   /* ── Abrir / cerrar ── */
   const toggle = () => _open ? close() : open();
-  const open   = () => { _open = true; document.getElementById('emailPanel').classList.add('open'); checkAI(); };
-  const close  = () => { _open = false; document.getElementById('emailPanel').classList.remove('open'); };
+  const open   = () => {
+    _open = true;
+    document.getElementById('emailPanel').classList.add('open');
+    checkAI();
+  };
+  const close  = () => {
+    _open = false;
+    document.getElementById('emailPanel').classList.remove('open');
+  };
 
   /* ── Config inline ── */
   const toggleConfig = () => {
@@ -2149,7 +2159,7 @@ const EmailPanel = (() => {
     document.getElementById('epConfig').classList.toggle('show', _configOpen);
     if (_configOpen) {
       setf('epGeminiKey',   _getKey());
-      setf('epGeminiModel', _model);
+      setf('epGeminiModel', _getModel());
     }
   };
 
@@ -2157,33 +2167,46 @@ const EmailPanel = (() => {
     const key = fv('epGeminiKey').trim();
     const mdl = fv('epGeminiModel').trim();
     if (key) localStorage.setItem('ep_gemini_key',   key);
-    if (mdl) { _model = mdl; localStorage.setItem('ep_gemini_model', mdl); }
+    if (mdl) localStorage.setItem('ep_gemini_model', mdl);
     _configOpen = false;
     document.getElementById('epConfig').classList.remove('show');
     checkAI();
     Toast.show('✓ Configuración Gemini guardada');
   };
 
-  /* ── Verificar API Gemini ── */
+  /* ── Verificar API — hace una llamada real mínima ── */
   const checkAI = async () => {
     const st  = document.getElementById('epStatus');
     const fab = document.getElementById('emailFab');
-    st.className = 'ep-head-status chk'; st.textContent = '✨ verificando…';
+    st.className  = 'ep-head-status chk';
+    st.textContent = '✨ Conectando…';
     try {
-      const r = await fetch(_apiUrl(), {
-        method: 'POST',
+      const res = await fetch(_apiUrl(), {
+        method:  'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ contents:[{ parts:[{ text:'hola' }] }] }),
-        signal: AbortSignal.timeout(7000),
+        body: JSON.stringify({
+          contents: [{ parts: [{ text: 'Responde solo: ok' }] }],
+          generationConfig: { maxOutputTokens: 5 },
+        }),
+        signal: AbortSignal.timeout(8000),
       });
-      _aiOk = r.ok;
-    } catch(e) { _aiOk = false; }
+      _aiOk = res.ok;
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        console.warn('[Gemini check]', res.status, err);
+      }
+    } catch(e) {
+      _aiOk = false;
+      console.warn('[Gemini check error]', e);
+    }
     if (_aiOk) {
-      st.className = 'ep-head-status ok'; st.textContent = '✨ Gemini ON';
-      fab.className = 'email-fab ollama-on';
+      st.className  = 'ep-head-status ok';
+      st.textContent = '✨ Gemini ON';
+      fab.className  = 'email-fab ollama-on';
     } else {
-      st.className = 'ep-head-status err'; st.textContent = '✨ Sin conexión → parser local';
-      fab.className = 'email-fab ollama-off';
+      st.className  = 'ep-head-status err';
+      st.textContent = '✨ Sin conexión → parser local';
+      fab.className  = 'email-fab ollama-off';
     }
   };
 
@@ -2192,7 +2215,8 @@ const EmailPanel = (() => {
     const text = fv('epEmailText').trim();
     if (!text) { Toast.show('⚠️ Pega el contenido del correo primero'); return; }
     const btn = document.getElementById('epBtnExtract');
-    btn.innerHTML = '<span class="spinner"></span> Procesando con Gemini…'; btn.disabled = true;
+    btn.innerHTML = '<span class="spinner"></span> Procesando con Gemini…';
+    btn.disabled  = true;
     let data = null;
     if (_aiOk) data = await _callGemini(text);
     if (!data) {
@@ -2201,12 +2225,13 @@ const EmailPanel = (() => {
     } else {
       Toast.show('✨ Gemini procesó el correo correctamente');
     }
-    btn.innerHTML = '✨ Extraer con Gemini'; btn.disabled = false;
+    btn.innerHTML = '✨ Extraer con Gemini';
+    btn.disabled  = false;
     _data = data;
     _showResult(data);
   };
 
-  /* ── Extracción solo con parser local ── */
+  /* ── Parser local sin IA ── */
   const extractLocal = () => {
     const text = fv('epEmailText').trim();
     if (!text) { Toast.show('⚠️ Pega el contenido del correo primero'); return; }
@@ -2217,53 +2242,49 @@ const EmailPanel = (() => {
 
   /* ── Llamada a Google Gemini ── */
   const _callGemini = async (text) => {
-    const prompt = `Eres un ejecutivo comercial senior de HAULER SpA, empresa chilena de transporte corporativo de pasajeros. Analizas correos de clientes y preparas propuestas comerciales profesionales y persuasivas.
-
-Analiza el siguiente correo y completa todos los campos del JSON.
-
-CAMPO POR CAMPO:
-- cliNombre: razón social o empresa — extrae SOLO si aparece escrita. Si no, deja "".
-- cliRut: RUT formato XX.XXX.XXX-X — extrae SOLO si aparece. Si no, deja "".
-- cliGiro: giro o actividad — extrae SOLO si aparece. Si no, deja "".
-- cliEmail: email del remitente — extrae del encabezado De: o From:. Si no aparece, deja "".
-- cliTel: teléfono — extrae SOLO si aparece. Si no, deja "".
-- cliContacto: nombre de quien escribe — extrae SOLO si aparece. Si no, deja "".
-- cliDir: dirección — extrae SOLO si aparece. Si no, deja "".
-- cliCiudad: ciudad o localidad — extrae SOLO si aparece. Si no, deja "".
-- cliProyecto: asunto o nombre del proyecto — extrae del campo Asunto/Subject o del contexto. Si no, deja "".
-- cliSistema: turno o frecuencia (ej: 7x7, lunes a viernes, diario) — extrae SOLO si aparece. Si no, deja "".
-- ruta: trayecto origen-destino — extrae SOLO si aparece. Si no, deja "".
-- pasajeros: número de personas — extrae SOLO si aparece. Si no, deja "".
-- condNotas: REDACTA en español formal y ejecutivo (2-3 oraciones) las condiciones comerciales de esta propuesta. Incluye: vigencia de oferta 30 días, pago a 30 días factura, y cualquier condición operativa mencionada en el correo. Si no hay condiciones específicas en el correo, redacta condiciones estándar profesionales.
-- introMsg: REDACTA un párrafo introductorio ejecutivo y persuasivo (3-4 oraciones) para la cotización. Personalízalo con el nombre del cliente, proyecto o servicio que aparezca en el correo. Muestra que HAULER entendió el requerimiento y tiene la capacidad de cubrirlo. Comienza con: "HAULER SpA presenta la siguiente propuesta de servicio de transporte...".
-- descServicio: REDACTA (3-4 oraciones) una descripción profesional y convincente del servicio. Incorpora los datos concretos del correo (ruta, pasajeros, turno si los hay). Destaca: conductores certificados, vehículos en óptimas condiciones, puntualidad, seguridad vial, coordinación operativa 24/7. Cierra con una frase que transmita valor y confianza.
-
-Devuelve SOLO el JSON, sin markdown, sin explicación, sin texto antes ni después:
-{"cliNombre":"","cliRut":"","cliGiro":"","cliEmail":"","cliTel":"","cliContacto":"","cliDir":"","cliCiudad":"","cliProyecto":"","cliSistema":"","ruta":"","pasajeros":"","condNotas":"","introMsg":"","descServicio":""}
-
-CORREO A ANALIZAR:
-${text.slice(0, 4000)}`;
+    const prompt =
+      'Eres un ejecutivo comercial senior de HAULER SpA, empresa chilena de transporte corporativo de pasajeros.\n' +
+      'Analiza el siguiente correo y completa el JSON.\n\n' +
+      'REGLAS:\n' +
+      '- cliNombre, cliRut, cliGiro, cliEmail, cliTel, cliContacto, cliDir, cliCiudad, cliProyecto, cliSistema, ruta, pasajeros: ' +
+      'extrae SOLO lo que aparece literalmente en el correo. Si no está, deja "".\n' +
+      '- condNotas: redacta 2-3 oraciones ejecutivas con las condiciones comerciales de la propuesta (vigencia 30 días, ' +
+      'pago a 30 días factura, condiciones operativas del correo). Tono formal y profesional.\n' +
+      '- introMsg: párrafo introductorio persuasivo de 3-4 oraciones para la cotización, personalizado con los datos del correo. ' +
+      'Comienza con: "HAULER SpA presenta la siguiente propuesta de servicio de transporte...". ' +
+      'Transmite confianza, profesionalismo y capacidad de cubrir el requerimiento.\n' +
+      '- descServicio: 3-4 oraciones describiendo el servicio con convicción comercial. ' +
+      'Incorpora datos concretos del correo (ruta, pasajeros, turno si existen). ' +
+      'Destaca: conductores certificados, vehículos en óptimas condiciones, puntualidad, seguridad, coordinación 24/7.\n\n' +
+      'Devuelve SOLO el JSON sin markdown ni texto adicional:\n' +
+      '{"cliNombre":"","cliRut":"","cliGiro":"","cliEmail":"","cliTel":"","cliContacto":"","cliDir":"","cliCiudad":"",' +
+      '"cliProyecto":"","cliSistema":"","ruta":"","pasajeros":"","condNotas":"","introMsg":"","descServicio":""}\n\n' +
+      'CORREO:\n' + text.slice(0, 4000);
 
     try {
       const res = await fetch(_apiUrl(), {
-        method: 'POST',
+        method:  'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           contents: [{ parts: [{ text: prompt }] }],
-          generationConfig: { temperature: 0.3, maxOutputTokens: 1200 },
+          generationConfig: { temperature: 0.3, maxOutputTokens: 1500 },
         }),
         signal: AbortSignal.timeout(30000),
       });
-      if (!res.ok) { console.warn('[Gemini]', res.status, await res.text()); return null; }
-      const d    = await res.json();
-      const raw  = d?.candidates?.[0]?.content?.parts?.[0]?.text?.trim() || '';
-      const m    = raw.match(/\{[\s\S]*\}/);
-      if (!m) return null;
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        console.warn('[Gemini generate]', res.status, err);
+        return null;
+      }
+      const d   = await res.json();
+      const raw = (d.candidates?.[0]?.content?.parts?.[0]?.text || '').trim();
+      const m   = raw.match(/\{[\s\S]*\}/);
+      if (!m) { console.warn('[Gemini] no JSON found in:', raw.slice(0,200)); return null; }
       return JSON.parse(m[0]);
     } catch(e) { console.warn('[Gemini error]', e); return null; }
   };
 
-  /* ── Parser local heurístico (fallback sin API) ── */
+  /* ── Parser local heurístico (fallback) ── */
   const _parseLocal = (text) => {
     const ex = (patterns) => {
       for (const p of patterns) {
@@ -2271,24 +2292,41 @@ ${text.slice(0, 4000)}`;
       }
       return '';
     };
-    const empresa  = ex(['empresa\\s*[:\\-–]\\s*([^\\n]+)','razón social\\s*[:\\-–]\\s*([^\\n]+)','De:\\s*([^<\\n]+?)\\s*(?:<|$)','From:\\s*([^<\\n]+?)\\s*(?:<|$)']);
-    const proyecto = ex(['asunto\\s*[:\\-–]\\s*([^\\n]+)','subject\\s*[:\\-–]\\s*([^\\n]+)','proyecto\\s*[:\\-–]\\s*([^\\n]+)']);
-    const ruta     = ex(['ruta\\s*[:\\-–]\\s*([^\\n]+)','recorrido\\s*[:\\-–]\\s*([^\\n]+)','entre\\s+([^\\ny]+?)\\s+y\\s+','traslado\\s+(?:desde|de)\\s+([^\\n]+)']);
-    const pax      = ex(['(\\d+)\\s+persona[s]?','(\\d+)\\s+trabajador[es]?','(\\d+)\\s+empleado[s]?','(\\d+)\\s+pasajero[s]?']);
-    const sistema  = ex(['(turno\\s+\\d+[x×]\\d+)','(servicio diario)','(lunes a viernes)','sistema\\s*[:\\-–]\\s*([^\\n]+)','turno\\s*[:\\-–]\\s*([^\\n]+)']);
-    const ciudad   = ex(['ciudad\\s*[:\\-–]\\s*([^\\n]+)','(Antofagasta|Santiago|Calama|Iquique|Copiapó|La Serena|Valparaíso|Concepción|Temuco|Valdivia|Puerto Montt|Punta Arenas)']);
-    const clienteStr  = empresa ? empresa : 'su organización';
-    const condNotas   = `La presente oferta tiene una vigencia de 30 días a partir de la fecha de emisión. ${sistema ? `El servicio operará bajo el régimen de ${sistema}, garantizando puntualidad en cada turno. ` : ''}Las condiciones de pago son a 30 días fecha de factura. Los precios incluyen conductor profesional, vehículo en óptimas condiciones, combustible y peajes.`;
-    const introMsg    = `HAULER SpA presenta la siguiente propuesta de servicio de transporte de pasajeros${empresa ? ` para ${clienteStr}` : ''}${proyecto ? `, en atención a la solicitud: "${proyecto}"` : ''}. Contamos con amplia experiencia en transporte corporativo${ciudad ? ` en la región de ${ciudad}` : ''}, operando con los más altos estándares de seguridad vial y calidad de servicio. ${ruta ? `Nuestra propuesta contempla el traslado${pax ? ` de ${pax} personas` : ''} en la ruta ${ruta}${sistema ? `, bajo el esquema ${sistema}` : ''}.` : ''} Quedamos disponibles para coordinar todos los detalles operativos que sean necesarios.`;
-    const descServicio = `El servicio comprende el traslado${pax ? ` de ${pax} personas` : ''}${ruta ? ` en la ruta ${ruta}` : ''}${sistema ? ` bajo el régimen de ${sistema}` : ''}, ejecutado por conductores profesionales certificados y vehículos en óptimas condiciones mecánicas y de presentación. HAULER SpA garantiza puntualidad, seguridad vial y coordinación operativa permanente, asegurando la continuidad del servicio en cada turno. ${sistema ? `El esquema ${sistema} será respetado rigurosamente, con protocolos de contingencia ante cualquier eventualidad.` : 'Cada operación cuenta con seguimiento en tiempo real y atención de contingencias las 24 horas del día.'} Nuestro equipo asegura una experiencia de transporte confiable, eficiente y de alto estándar en cada servicio prestado.`;
+    const empresa  = ex(['empresa\\s*[:\\-\u2013]\\s*([^\\n]+)', 'raz\u00f3n social\\s*[:\\-\u2013]\\s*([^\\n]+)', 'De:\\s*([^<\\n]+?)\\s*(?:<|$)', 'From:\\s*([^<\\n]+?)\\s*(?:<|$)']);
+    const proyecto = ex(['asunto\\s*[:\\-\u2013]\\s*([^\\n]+)', 'subject\\s*[:\\-\u2013]\\s*([^\\n]+)', 'proyecto\\s*[:\\-\u2013]\\s*([^\\n]+)', 'solicitud\\s+(?:de\\s+)?([^\\n]+)']);
+    const ruta     = ex(['ruta\\s*[:\\-\u2013]\\s*([^\\n]+)', 'recorrido\\s*[:\\-\u2013]\\s*([^\\n]+)', 'entre\\s+([^\\ny]+?)\\s+y\\s+', 'traslado\\s+(?:desde|de)\\s+([^\\n]+)']);
+    const pax      = ex(['(\\d+)\\s+persona[s]?', '(\\d+)\\s+trabajador[es]?', '(\\d+)\\s+empleado[s]?', '(\\d+)\\s+pasajero[s]?']);
+    const sistema  = ex(['(turno\\s+\\d+[x\u00d7]\\d+)', '(servicio diario)', '(lunes a viernes)', 'sistema\\s*[:\\-\u2013]\\s*([^\\n]+)', 'turno\\s*[:\\-\u2013]\\s*([^\\n]+)']);
+    const ciudad   = ex(['ciudad\\s*[:\\-\u2013]\\s*([^\\n]+)', '(Antofagasta|Santiago|Calama|Iquique|Copiap\u00f3|La Serena|Valpara\u00edso|Concepci\u00f3n|Temuco|Valdivia|Puerto Montt|Punta Arenas)']);
+    const clienteStr = empresa || 'su organizaci\u00f3n';
+    const condNotas  = 'La presente oferta tiene una vigencia de 30 d\u00edas a partir de la fecha de emisi\u00f3n. ' +
+      (sistema ? 'El servicio operar\u00e1 bajo el r\u00e9gimen de ' + sistema + ', garantizando puntualidad en cada turno. ' : '') +
+      'Las condiciones de pago son a 30 d\u00edas fecha de factura. Los precios incluyen conductor profesional, veh\u00edculo en \u00f3ptimas condiciones, combustible y peajes.';
+    const introMsg = 'HAULER SpA presenta la siguiente propuesta de servicio de transporte de pasajeros' +
+      (empresa ? ' para ' + clienteStr : '') +
+      (proyecto ? ', en atenci\u00f3n a la solicitud: "' + proyecto + '"' : '') +
+      '. Contamos con amplia experiencia en transporte corporativo' +
+      (ciudad ? ' en la regi\u00f3n de ' + ciudad : '') +
+      ', operando con los m\u00e1s altos est\u00e1ndares de seguridad vial y calidad de servicio. ' +
+      (ruta ? 'Nuestra propuesta contempla el traslado' + (pax ? ' de ' + pax + ' personas' : '') + ' en la ruta ' + ruta + (sistema ? ', bajo el esquema ' + sistema : '') + '.' : '') +
+      ' Quedamos disponibles para coordinar todos los detalles operativos necesarios.';
+    const descServicio = 'El servicio comprende el traslado' +
+      (pax ? ' de ' + pax + ' personas' : '') +
+      (ruta ? ' en la ruta ' + ruta : '') +
+      (sistema ? ' bajo el r\u00e9gimen de ' + sistema : '') +
+      ', ejecutado por conductores profesionales certificados y veh\u00edculos en \u00f3ptimas condiciones. ' +
+      'HAULER SpA garantiza puntualidad, seguridad vial y coordinaci\u00f3n operativa las 24 horas del d\u00eda. ' +
+      (sistema ? 'El esquema ' + sistema + ' ser\u00e1 respetado con protocolos de contingencia ante cualquier eventualidad.' :
+        'Cada operaci\u00f3n cuenta con seguimiento en tiempo real y atenci\u00f3n permanente.') +
+      ' Nuestro equipo garantiza una experiencia de transporte confiable y de alto est\u00e1ndar.';
     return {
       cliNombre:   empresa,
-      cliRut:      ex(['rut\\s*[:\\-–]?\\s*([0-9\\.]{7,12}[\\-–][0-9kK])','([0-9]{1,2}\\.[0-9]{3}\\.[0-9]{3}[\\-–][0-9kK])']),
-      cliGiro:     ex(['giro\\s*[:\\-–]\\s*([^\\n]+)','actividad\\s*[:\\-–]\\s*([^\\n]+)']),
-      cliEmail:    ex(['De:\\s*[^<]*<([^>]+)>','From:\\s*[^<]*<([^>]+)>','([\\w.+\\-]+@[\\w\\-]+\\.[\\w.]{2,})']),
-      cliTel:      ex(['tel[eé]fono\\s*[:\\-–]\\s*([+\\d\\s\\-\\.]{7,20})','(\\+56\\s*9\\s*[\\d\\s]{8})']),
-      cliContacto: ex(['contacto\\s*[:\\-–]\\s*([^\\n]+)','atenci[oó]n\\s*[:\\-–]\\s*([^\\n]+)']),
-      cliDir:      ex(['direcci[oó]n\\s*[:\\-–]\\s*([^\\n]+)','domicilio\\s*[:\\-–]\\s*([^\\n]+)']),
+      cliRut:      ex(['rut\\s*[:\\-\u2013]?\\s*([0-9\\.]{7,12}[\\-\u2013][0-9kK])', '([0-9]{1,2}\\.[0-9]{3}\\.[0-9]{3}[\\-\u2013][0-9kK])']),
+      cliGiro:     ex(['giro\\s*[:\\-\u2013]\\s*([^\\n]+)', 'actividad\\s*[:\\-\u2013]\\s*([^\\n]+)']),
+      cliEmail:    ex(['De:\\s*[^<]*<([^>]+)>', 'From:\\s*[^<]*<([^>]+)>', '([\\w.+\\-]+@[\\w\\-]+\\.[\\w.]{2,})']),
+      cliTel:      ex(['tel[\u00e9e]fono\\s*[:\\-\u2013]\\s*([+\\d\\s\\-\\.]{7,20})', 'fono\\s*[:\\-\u2013]\\s*([+\\d\\s\\-]{7,20})', '(\\+56\\s*9\\s*[\\d\\s]{8})']),
+      cliContacto: ex(['contacto\\s*[:\\-\u2013]\\s*([^\\n]+)', 'atenci[\u00f3o]n\\s*[:\\-\u2013]\\s*([^\\n]+)']),
+      cliDir:      ex(['direcci[\u00f3o]n\\s*[:\\-\u2013]\\s*([^\\n]+)', 'domicilio\\s*[:\\-\u2013]\\s*([^\\n]+)']),
       cliCiudad:   ciudad, cliProyecto: proyecto, cliSistema: sistema,
       ruta, pasajeros: pax, condNotas, introMsg, descServicio,
     };
@@ -2298,26 +2336,26 @@ ${text.slice(0, 4000)}`;
   const _showResult = (data) => {
     const labels = {
       cliNombre:'Empresa', cliRut:'RUT', cliGiro:'Giro',
-      cliEmail:'Email', cliTel:'Teléfono', cliContacto:'Contacto',
-      cliDir:'Dirección', cliCiudad:'Ciudad',
+      cliEmail:'Email', cliTel:'Tel\u00e9fono', cliContacto:'Contacto',
+      cliDir:'Direcci\u00f3n', cliCiudad:'Ciudad',
       cliProyecto:'Proyecto / Asunto', cliSistema:'Sistema / Turno',
       ruta:'Ruta', pasajeros:'Pasajeros',
       condNotas:'Notas / Condiciones',
       introMsg:'Mensaje introductorio',
-      descServicio:'Descripción del servicio',
+      descServicio:'Descripci\u00f3n del servicio',
     };
     const items = Object.entries(labels)
       .filter(([k]) => data[k] && data[k].trim())
       .map(([k, label]) => {
         const isLong  = ['condNotas','introMsg','descServicio'].includes(k);
-        const preview = isLong ? data[k].slice(0,90)+(data[k].length>90?'…':'') : data[k];
-        return `<div class="ep-result-item${isLong?' full':''}">
-          <label>${label}</label>
-          <span title="${esc(data[k])}">${esc(preview)}</span>
-        </div>`;
+        const preview = isLong ? data[k].slice(0, 90) + (data[k].length > 90 ? '\u2026' : '') : data[k];
+        return '<div class="ep-result-item' + (isLong ? ' full' : '') + '">' +
+          '<label>' + label + '</label>' +
+          '<span title="' + esc(data[k]) + '">' + esc(preview) + '</span>' +
+          '</div>';
       }).join('');
     document.getElementById('epResultGrid').innerHTML = items ||
-      '<div style="color:var(--t3);font-size:.68rem;grid-column:1/-1;padding:.3rem">No se encontraron datos reconocibles en el correo.</div>';
+      '<div style="color:var(--t3);font-size:.68rem;grid-column:1/-1;padding:.3rem">No se encontraron datos en el correo.</div>';
     document.getElementById('epResult').classList.add('show');
     document.getElementById('epBtnApply').style.display = items ? 'inline-flex' : 'none';
   };
@@ -2344,25 +2382,25 @@ ${text.slice(0, 4000)}`;
     });
     if (data.ruta && State.rows.length) {
       const r = State.rows[0];
-      const el = document.querySelector(`tr[data-id="${r.id}"] td:nth-child(3) input`);
-      if (el) { el.value = data.ruta; el.classList.add('ai-filled'); setTimeout(()=>el.classList.remove('ai-filled'),1200); r.ruta=data.ruta; filled++; }
+      const el = document.querySelector('tr[data-id="' + r.id + '"] td:nth-child(3) input');
+      if (el) { el.value = data.ruta; el.classList.add('ai-filled'); setTimeout(()=>el.classList.remove('ai-filled'),1200); r.ruta = data.ruta; filled++; }
     }
     if (data.pasajeros && State.rows.length) {
       const r = State.rows[0];
-      const el = document.querySelector(`tr[data-id="${r.id}"] td:nth-child(5) input`);
-      if (el) { el.value = data.pasajeros; el.classList.add('ai-filled'); setTimeout(()=>el.classList.remove('ai-filled'),1200); r.pasajeros=data.pasajeros; filled++; }
+      const el = document.querySelector('tr[data-id="' + r.id + '"] td:nth-child(5) input');
+      if (el) { el.value = data.pasajeros; el.classList.add('ai-filled'); setTimeout(()=>el.classList.remove('ai-filled'),1200); r.pasajeros = data.pasajeros; filled++; }
     }
     AutoSave.flush();
     Clients.updateInlineStatus();
     if (data.cliRut) Rut.onInput(document.getElementById('cliRut'), 'cliRutBadge');
-    document.getElementById('cliNombre')?.scrollIntoView({ behavior:'smooth', block:'center' });
+    document.getElementById('cliNombre')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
     close();
-    Toast.show(`✅ ${filled} campo${filled!==1?'s':''} aplicado${filled!==1?'s':''} al formulario`);
+    Toast.show('\u2705 ' + filled + ' campo' + (filled !== 1 ? 's' : '') + ' aplicado' + (filled !== 1 ? 's' : '') + ' al formulario');
   };
 
   /* ── Limpiar ── */
   const clear = () => {
-    setf('epEmailText','');
+    setf('epEmailText', '');
     document.getElementById('epResult').classList.remove('show');
     document.getElementById('epBtnApply').style.display = 'none';
     _data = null;
