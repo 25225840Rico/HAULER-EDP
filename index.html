@@ -397,104 +397,226 @@ body.modo-ep  .doc { border-top: 3px solid var(--blue); }
 .caract-item:has(input:checked) { background: var(--blue-lt); border-color: #c0d0ff; color: var(--t1); }
 
 /* ═══════════════════════════════════════════════
-   8. TABLA DE SERVICIOS
+   8. TABLA DE SERVICIOS — CORREGIDA ✓
 ═══════════════════════════════════════════════ */
-.table-section { padding: 1.1rem 2rem; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+.table-section { 
+  padding: 1.1rem 2rem; 
+  overflow-x: auto; 
+  -webkit-overflow-scrolling: touch; 
+}
 
 .section-row {
   display: flex; align-items: center; justify-content: space-between; margin-bottom: 1rem;
 }
 .section-row .section-title { margin-bottom: 0; }
 
-table { width: 100%; min-width: 760px; border-collapse: collapse; font-size: .76rem; table-layout: fixed; }
+table {
+  width: 100%; 
+  min-width: 100%;
+  border-collapse: collapse;
+  font-size: .76rem; 
+  table-layout: auto;
+  background: #fff;
+}
 
 thead th {
-  background: #f5f6f9;
-  font: 600 .56rem/1 var(--font-sans); letter-spacing: .4px; text-transform: uppercase;
-  color: var(--t2); padding: .65rem .5rem; text-align: center;
-  white-space: nowrap; border-bottom: 1px solid var(--border);
-  overflow: hidden; text-overflow: ellipsis;
+  background: #f2f5ff;
+  font: 600 .56rem/1 var(--font-sans); 
+  letter-spacing: .4px; 
+  text-transform: uppercase;
+  color: #0055CC;
+  padding: .7rem .6rem;
+  text-align: center;
+  white-space: nowrap;
+  border-bottom: 1.2px solid #c0d0ff;
+  position: sticky;
+  top: 0;
+  z-index: 10;
 }
-thead th:first-child { text-align: left; padding-left: .9rem; }
-thead th:last-child  { width: 2.2rem; }
+thead th:first-child { text-align: left; padding-left: 1rem; }
+thead th:last-child  { text-align: center; width: 2.2rem; }
 
-table.serv-table th:nth-child(1) { width: 16%; }
-table.serv-table th:nth-child(2) { width:  9%; }
-table.serv-table th:nth-child(3) { width: 16%; }
-table.serv-table th:nth-child(4) { width: 18%; }
-table.serv-table th:nth-child(5) { width:  7%; }
-table.serv-table th:nth-child(6) { width:  8%; }
-table.serv-table th:nth-child(7) { width: 11%; }
-table.serv-table th:nth-child(8) { width: 10%; }
-table.serv-table th:nth-child(9) { width:  5%; }
+table th:nth-child(1) { min-width: 100px; }
+table th:nth-child(2) { min-width: 85px; }
+table th:nth-child(3) { min-width: 110px; }
+table th:nth-child(4) { min-width: 150px; }
+table th:nth-child(5) { min-width: 70px; }
+table th:nth-child(6) { min-width: 75px; }
+table th:nth-child(7) { min-width: 95px; }
+table th:nth-child(8) { min-width: 90px; }
+table th:nth-child(9) { width: 2.2rem; }
 
-tbody tr { position: relative; transition: background .12s; }
-tbody tr:hover { background: #fafbff; }
-tbody tr + tr::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 1px; background: var(--grad-h); }
-tbody td { padding: .5rem .4rem; text-align: center; vertical-align: middle; }
-tbody td:first-child { text-align: left; padding-left: .9rem; }
+tbody tr { 
+  height: auto; 
+  position: relative; 
+  transition: background .12s; 
+  border-bottom: 1px solid #f0f2f8;
+}
+tbody tr:hover { background: #f8faff; }
+tbody tr + tr::before { display: none; }
 
-tbody td input[type=text], tbody td input[type=number] {
-  width: 100%; min-width: 0; background: transparent; border: 1px solid transparent;
-  font: 400 .76rem/1 var(--font-sans); color: var(--t1);
-  text-align: center; padding: .38rem .3rem; border-radius: 7px; transition: all .15s; box-sizing: border-box;
+tbody td { 
+  padding: .6rem .5rem;
+  text-align: center; 
+  vertical-align: middle;
+  overflow: visible;
+}
+tbody td:first-child { 
+  text-align: left; 
+  padding-left: 1rem;
+}
+
+tbody td input[type=text],
+tbody td input[type=number] {
+  width: 100%; 
+  min-width: 0; 
+  background: transparent;
+  border: 1px solid transparent;
+  font: 400 .75rem/1 var(--font-sans); 
+  color: var(--t1);
+  text-align: center; 
+  padding: .35rem .4rem; 
+  border-radius: 6px;
+  transition: all .15s; 
+  box-sizing: border-box;
 }
 tbody td:first-child input { text-align: left; }
-tbody td input:hover  { background: #f5f6f9; }
-tbody td input:focus  { outline: none; background: #fff; border-color: var(--blue); }
+tbody td input:hover  { background: #f5f6f9; border-color: #dde0e8; }
+tbody td input:focus  { outline: none; background: #fff; border-color: var(--blue); box-shadow: 0 0 0 2px rgba(0,85,255,.1); }
 
-.ruta-cell { display: flex; align-items: center; gap: .2rem; min-width: 0; }
-.ruta-cell input { flex: 1; min-width: 0; }
-.btn-ruta {
-  background: transparent; border: 1px solid var(--border); border-radius: 99px;
-  width: 1.6rem; height: 1.6rem; display: flex; align-items: center; justify-content: center;
-  cursor: pointer; font-size: .8rem; color: var(--t3); flex-shrink: 0; transition: all .15s;
-}
-.btn-ruta:hover { background: var(--blue-lt); border-color: var(--blue); color: var(--blue); }
-
-td.num input, td.num { font-family: var(--font-mono); font-size: .74rem; }
-.total-cell { font-family: var(--font-mono); font-weight: 500; font-size: .76rem; }
-
-.btn-del {
-  background: transparent; border: none; color: var(--t3); cursor: pointer;
-  font-size: .9rem; width: 1.9rem; height: 1.9rem; border-radius: 50%;
-  display: flex; align-items: center; justify-content: center; margin: 0 auto; transition: all .15s;
-}
-.btn-del:hover { background: rgba(217,48,48,.1); color: var(--red); }
-
+td.num input, td.num { font-family: var(--font-mono); font-size: .73rem; }
+.total-cell { font-family: var(--font-mono); font-weight: 600; font-size: .75rem; color: var(--blue); }
 .empty-row td { padding: 2.5rem; text-align: center; color: var(--t3); font-size: .76rem; }
 
+.ruta-cell { display: flex; align-items: center; gap: .35rem; }
+.ruta-cell input { flex: 1; }
+.btn-ruta {
+  flex-shrink: 0;
+  width: 32px; height: 32px;
+  border: 1px solid #dde0e8;
+  background: #f8f9ff;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: .8rem;
+  transition: all .15s;
+  display: flex; align-items: center; justify-content: center;
+  padding: 0;
+}
+.btn-ruta:hover { background: #e6eeff; border-color: var(--blue); }
+
+.btn-del {
+  width: 28px; height: 28px;
+  border: 1px solid transparent;
+  background: transparent;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: .8rem;
+  transition: all .15s;
+  padding: 0;
+  display: flex; align-items: center; justify-content: center;
+  color: #999;
+  margin: 0 auto;
+}
+.btn-del:hover { background: rgba(217,48,48,.08); color: var(--red); border-color: #f5b0b0; }
+
 /* ═══════════════════════════════════════════════
-   9. PERÍODO
+   PERÍODO — Compacto y Funcional
 ═══════════════════════════════════════════════ */
 .periodo-wrap {
-  background: #f7f8fa; border: 1px solid var(--border); border-radius: 10px;
-  padding: .4rem .5rem; display: flex; flex-direction: column; gap: .3rem;
-  transition: border-color .15s; width: 100%; box-sizing: border-box;
+  width: 100%;
+  max-width: 100%;
+  background: #f7f8fa;
+  border: 1px solid #dde0e8;
+  border-radius: 8px;
+  padding: .45rem;
+  display: flex;
+  flex-direction: column;
+  gap: .25rem;
+  box-sizing: border-box;
+  transition: border-color .15s;
 }
-.periodo-wrap:focus-within { border-color: var(--blue); }
-.tipo-pills { display: flex; gap: 2px; background: #eaecf0; border-radius: 7px; padding: 2px; }
+.periodo-wrap:focus-within { border-color: var(--blue); background: #fff; }
+
+.tipo-pills {
+  display: flex;
+  gap: 1px;
+  background: transparent;
+  border-radius: 6px;
+  padding: 0;
+  width: 100%;
+  box-sizing: border-box;
+}
 .tipo-pill {
-  flex: 1; padding: .2rem 0; border: none; border-radius: 5px; cursor: pointer;
-  font: 600 .56rem/1 var(--font-sans); color: var(--t3); background: transparent; transition: all .15s;
+  flex: 1;
+  padding: .18rem 0;
+  border: 1px solid #dde0e8;
+  border-radius: 5px;
+  cursor: pointer;
+  font: 500 .54rem/1.1 var(--font-sans);
+  color: var(--t3);
+  background: #fff;
+  transition: all .12s;
+  white-space: nowrap;
+  text-align: center;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
-.tipo-pill.act { background: #fff; color: var(--blue); box-shadow: 0 1px 4px rgba(0,0,0,.08); }
-.periodo-inputs { display: flex; flex-direction: column; gap: .25rem; }
-.periodo-inputs input {
-  width: 100%; background: #fff; border: 1px solid var(--border); border-radius: 6px;
-  font: 400 .68rem/1 var(--font-mono); color: var(--t1); padding: .28rem .5rem; transition: border-color .15s;
+.tipo-pill.act { 
+  background: var(--blue); 
+  color: #fff;
+  border-color: var(--blue);
+  font-weight: 600;
 }
-.periodo-inputs input:focus { outline: none; border-color: var(--blue); }
-.periodo-rango-row { display: flex; align-items: center; gap: .3rem; }
-.periodo-rango-row input { flex: 1; }
-.periodo-sep { font-size: .6rem; color: var(--t3); flex-shrink: 0; }
-.dias-badge { display: inline-flex; align-items: center; gap: .25rem; background: var(--blue-lt); color: var(--blue); font: 600 .6rem/1 var(--font-sans); padding: .18rem .5rem; border-radius: 99px; }
+
+.periodo-inputs {
+  display: flex;
+  flex-direction: column;
+  gap: .2rem;
+}
+.periodo-inputs input,
+.periodo-rango-row input {
+  width: 100%;
+  background: #fff;
+  border: 1px solid #dde0e8;
+  border-radius: 5px;
+  font: 400 .66rem/1 var(--font-mono);
+  color: var(--t1);
+  padding: .25rem .35rem;
+  transition: border-color .15s;
+  box-sizing: border-box;
+}
+.periodo-inputs input:focus,
+.periodo-rango-row input:focus { 
+  outline: none; 
+  border-color: var(--blue); 
+  background: #fff;
+  box-shadow: 0 0 0 2px rgba(0,85,255,.1);
+}
+
+.periodo-rango-row {
+  display: flex;
+  align-items: center;
+  gap: .25rem;
+}
+.periodo-rango-row input { flex: 1; min-width: 0; }
+.periodo-sep { font-size: .55rem; color: var(--t3); flex-shrink: 0; padding: 0 .1rem; }
+
+.dias-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: .2rem;
+  background: var(--blue-lt);
+  color: var(--blue);
+  font: 600 .58rem/1 var(--font-sans);
+  padding: .15rem .4rem;
+  border-radius: 99px;
+  font-size: .6rem;
+  margin-top: .15rem;
+}
 .dias-badge.warn { background: var(--gold-lt); color: var(--gold); }
-.btn-usar {
-  background: transparent; border: 1px solid var(--blue); color: var(--blue); border-radius: 99px;
-  font: 500 .55rem/1 var(--font-sans); padding: .15rem .5rem; cursor: pointer; transition: all .15s; white-space: nowrap;
-}
-.btn-usar:hover { background: var(--blue); color: #fff; }
+
+.btn-usar { display: none; }
 
 /* ═══════════════════════════════════════════════
    10. ÍTEMS ADICIONALES
@@ -1183,6 +1305,9 @@ table.extras-table tbody td input:focus { border-color: #e0a030; }
       </div>
     </div>
     <table class="serv-table">
+      <colgroup>
+        <col><col><col><col><col><col><col><col><col>
+      </colgroup>
       <thead>
         <tr>
           <th style="text-align:left;padding-left:.9rem">Vehículo</th>
@@ -1778,20 +1903,83 @@ const Periodo = (() => {
     if (t === 'rango') { if (!r.periodoDesde || !r.periodoHasta) return 0; const d1 = new Date(r.periodoDesde), d2 = new Date(r.periodoHasta); return d2 < d1 ? 0 : Math.round((d2 - d1) / 864e5) + 1; }
     return 1;
   };
+
+  /* Widget inline — ocupa exactamente el ancho de .periodo-wrap (220px fijo) */
   const html = (r) => {
     const t = r.periodoTipo || 'dia', dias = calcDias(r), id = r.id;
-    const pills = ['dia','rango','mes','anio'].map(pt => { const labels = { dia:'Día', rango:'Rango', mes:'Mes', anio:'Año' }; return `<button class="tipo-pill${t === pt ? ' act' : ''}" onclick="Periodo.setType('${id}','${pt}')">${labels[pt]}</button>`; }).join('');
+    const pills = ['dia','rango','mes','anio'].map(pt => {
+      const lbl = { dia:'Día', rango:'Rango', mes:'Mes', anio:'Año' };
+      return `<button class="tipo-pill${t===pt?' act':''}" onclick="Periodo.setType('${id}','${pt}')">${lbl[pt]}</button>`;
+    }).join('');
     let inp = '';
-    if (t === 'dia') { inp = `<input type="date" value="${esc(r.periodoDesde)}" onchange="Periodo.set('${id}','periodoDesde',this.value)">`; }
-    else if (t === 'rango') { const badge = dias > 0 ? `<span class="dias-badge">📅 ${dias} día${dias !== 1 ? 's' : ''}</span><button class="btn-usar" onclick="Periodo.useDays('${id}')">→ usar</button>` : `<span class="dias-badge warn">Elige fechas</span>`; inp = `<div class="periodo-rango-row"><input type="date" value="${esc(r.periodoDesde)}" onchange="Periodo.set('${id}','periodoDesde',this.value)"><span class="periodo-sep">→</span><input type="date" value="${esc(r.periodoHasta)}" onchange="Periodo.set('${id}','periodoHasta',this.value)"></div><div style="display:flex;align-items:center;gap:.3rem;flex-wrap:wrap;margin-top:.2rem">${badge}</div>`; }
-    else if (t === 'mes') { inp = `<input type="month" value="${esc(r.periodoMes)}" onchange="Periodo.set('${id}','periodoMes',this.value)">`; if (r.periodoMes) inp += `<span class="dias-badge">📅 ${dias} días</span>`; }
-    else if (t === 'anio') { inp = `<input type="number" min="2000" max="2099" value="${esc(r.periodoAnio) || new Date().getFullYear()}" style="width:80px" onchange="Periodo.set('${id}','periodoAnio',this.value)">`; if (r.periodoAnio) inp += `<span class="dias-badge">📅 ${dias} días</span>`; }
+    if (t === 'dia') {
+      inp = `<input type="date" value="${esc(r.periodoDesde)}" onchange="Periodo.set('${id}','periodoDesde',this.value)">`;
+    } else if (t === 'rango') {
+      const badge = dias > 0
+        ? `<span class="dias-badge">📅 ${dias} día${dias!==1?'s':''}</span><button class="btn-usar" onclick="Periodo.useDays('${id}')">→ usar</button>`
+        : `<span class="dias-badge warn">Elige fechas</span>`;
+      inp = `<div class="periodo-rango-row">
+               <input type="date" value="${esc(r.periodoDesde)}" onchange="Periodo.set('${id}','periodoDesde',this.value)">
+               <span class="periodo-sep">→</span>
+               <input type="date" value="${esc(r.periodoHasta)}" onchange="Periodo.set('${id}','periodoHasta',this.value)">
+             </div>
+             <div style="display:flex;align-items:center;gap:.3rem;flex-wrap:wrap;margin-top:.2rem">${badge}</div>`;
+    } else if (t === 'mes') {
+      inp = `<input type="month" value="${esc(r.periodoMes)}" onchange="Periodo.set('${id}','periodoMes',this.value)">`;
+      if (r.periodoMes) inp += `<span class="dias-badge">📅 ${dias} días</span>`;
+    } else if (t === 'anio') {
+      const yr = esc(r.periodoAnio) || new Date().getFullYear();
+      inp = `<input type="number" min="2000" max="2099" value="${yr}" style="width:72px" onchange="Periodo.set('${id}','periodoAnio',this.value)">`;
+      if (r.periodoAnio) inp += `<span class="dias-badge">📅 ${dias} días</span>`;
+    }
     return `<div class="periodo-wrap"><div class="tipo-pills">${pills}</div><div class="periodo-inputs">${inp}</div></div>`;
   };
-  const setType = (id, tipo) => { const r = State.rows.find(r => String(r.id) === String(id)); if (!r) return; r.periodoTipo = tipo; r.periodoHasta = ''; r.periodoMes = ''; r.periodoAnio = ''; if (tipo === 'anio') r.periodoAnio = String(new Date().getFullYear()); updateCell(id); Calc.run(); AutoSave.schedule(); };
-  const set     = (id, key, val) => { const r = State.rows.find(r => String(r.id) === String(id)); if (!r) return; r[key] = val; updateCell(id); Calc.run(); AutoSave.schedule(); };
-  const useDays = (id) => { const r = State.rows.find(r => String(r.id) === String(id)); if (!r) return; const d = calcDias(r); r.viajes = d; const inp = document.getElementById('vi_' + id); if (inp) inp.value = d; Calc.run(); AutoSave.schedule(); Toast.show(`📅 ${d} días → Viajes/Días`); };
-  const updateCell = (id) => { const tr = document.querySelector(`tr[data-id="${id}"]`); if (!tr) return; const r = State.rows.find(r => String(r.id) === String(id)); if (!r) return; tr.cells[3].innerHTML = html(r); };
+
+  const setType = (id, tipo) => {
+    const r = State.rows.find(r => String(r.id) === String(id)); if (!r) return;
+    /* FIX: sync DOM → State antes de cambiar */
+    const viEl = document.getElementById('vi_' + id);
+    const vuEl = document.getElementById('vu_' + id);
+    if (viEl) r.viajes    = +viEl.value || 0;
+    if (vuEl) r.valorUnit = +vuEl.value || 0;
+    r.periodoTipo = tipo; r.periodoHasta = ''; r.periodoMes = ''; r.periodoAnio = '';
+    if (tipo === 'anio') r.periodoAnio = String(new Date().getFullYear());
+    updateCell(id); Calc.run(); AutoSave.schedule();
+  };
+
+  const set = (id, key, val) => {
+    const r = State.rows.find(r => String(r.id) === String(id)); if (!r) return;
+    /* FIX: sync DOM → State antes de actualizar */
+    const viEl = document.getElementById('vi_' + id);
+    const vuEl = document.getElementById('vu_' + id);
+    if (viEl) r.viajes    = +viEl.value || 0;
+    if (vuEl) r.valorUnit = +vuEl.value || 0;
+    r[key] = val;
+    updateCell(id); Calc.run(); AutoSave.schedule();
+  };
+
+  const useDays = (id) => {
+    const r = State.rows.find(r => String(r.id) === String(id)); if (!r) return;
+    const d = calcDias(r);
+    r.viajes = d;
+    const inp = document.getElementById('vi_' + id);
+    if (inp) inp.value = d;
+    /* FIX: también sync valorUnit */
+    const vuEl = document.getElementById('vu_' + id);
+    if (vuEl) r.valorUnit = +vuEl.value || 0;
+    Calc.run(); AutoSave.schedule();
+    Toast.show('📅 ' + d + ' días → Viajes/Días');
+  };
+
+  /* Redibuja solo la celda del período sin tocar el resto de la fila */
+  const updateCell = (id) => {
+    const tr = document.querySelector(`tr[data-id="${id}"]`);
+    if (!tr) return;
+    const r = State.rows.find(r => String(r.id) === String(id));
+    if (!r) return;
+    tr.cells[3].innerHTML = html(r);
+  };
+
   return { html, setType, set, useDays, calcDias };
 })();
 
@@ -1800,9 +1988,28 @@ const Periodo = (() => {
 ════════════════════════════════════════════════════════════════════════ */
 const Rows = (() => {
   let _routeTarget = null;
-  const add = (data = {}) => { State.rows.push({ id: uid(), periodoTipo:'dia', periodoDesde:'', periodoHasta:'', periodoMes:'', periodoAnio:'', vehiculo:'', patente:'', ruta:'', pasajeros:'', viajes:0, valorUnit:0, ...data }); render(); Calc.run(); };
-  const remove = (id) => { State.rows = State.rows.filter(r => String(r.id) !== String(id)); render(); Calc.run(); AutoSave.flush(); };
-  const removeLast = () => { if (!State.rows.length) return; State.rows.pop(); render(); Calc.run(); AutoSave.flush(); };
+  /* Copia TODOS los inputs del DOM al State antes de cualquier re-render */
+  const _syncDOMToState = () => {
+    State.rows.forEach(r => {
+      const vi = document.getElementById('vi_' + r.id);
+      const vu = document.getElementById('vu_' + r.id);
+      if (vi) r.viajes    = +vi.value || 0;
+      if (vu) r.valorUnit = +vu.value || 0;
+      /* También capturar campos de texto */
+      ['vehiculo','patente','ruta','pasajeros'].forEach(k => {
+        const el = document.querySelector('tr[data-id="' + r.id + '"] td input[oninput*="' + k + '"]');
+        if (el) r[k] = el.value;
+      });
+    });
+  };
+  const add = (data = {}) => {
+    _syncDOMToState();
+    State.rows.push({ id: uid(), periodoTipo:'dia', periodoDesde:'', periodoHasta:'', periodoMes:'', periodoAnio:'', vehiculo:'', patente:'', ruta:'', pasajeros:'', viajes:0, valorUnit:0, ...data });
+    render();
+    Calc.run();
+  };
+  const remove = (id) => { _syncDOMToState(); State.rows = State.rows.filter(r => String(r.id) !== String(id)); render(); Calc.run(); AutoSave.flush(); };
+  const removeLast = () => { if (!State.rows.length) return; _syncDOMToState(); State.rows.pop(); render(); Calc.run(); AutoSave.flush(); };
   const render = () => {
     const tbody = document.getElementById('tbodyServ');
     if (!State.rows.length) { tbody.innerHTML = '<tr class="empty-row"><td colspan="9">Sin servicios — haz clic en ➕ Servicio</td></tr>'; return; }
@@ -1812,7 +2019,7 @@ const Rows = (() => {
         <td><input type="text"   value="${esc(r.vehiculo)}"  placeholder="Bus · Van…"  oninput="Rows.setField('${id}','vehiculo',this.value)"></td>
         <td><input type="text"   value="${esc(r.patente)}"   placeholder="AB-CD-12"    style="max-width:80px" oninput="Rows.setField('${id}','patente',this.value)"></td>
         <td><div class="ruta-cell"><input type="text" value="${esc(r.ruta)}" placeholder="Ruta…" oninput="Rows.setField('${id}','ruta',this.value)"><button class="btn-ruta" onclick="Rows.pickRoute('${id}')" title="Elegir ruta">📍</button></div></td>
-        <td style="padding:.4rem">${Periodo.html(r)}</td>
+        <td style="padding:.3rem .3rem; vertical-align:middle;">${Periodo.html(r)}</td>
         <td class="num"><input type="number" min="0" value="${esc(r.pasajeros)}" placeholder="0" style="max-width:55px" oninput="Rows.setField('${id}','pasajeros',this.value)"></td>
         <td class="num"><input type="number" min="0" id="vi_${id}" value="${esc(r.viajes)}"    placeholder="0" style="max-width:60px"  oninput="Rows.setNum('${id}','viajes',this.value)"></td>
         <td class="num"><input type="number" min="0" id="vu_${id}" value="${esc(r.valorUnit)}" placeholder="0" style="max-width:95px"  oninput="Rows.setNum('${id}','valorUnit',this.value)"></td>
@@ -1822,8 +2029,21 @@ const Rows = (() => {
     }).join('');
   };
   const setField  = (id, key, val) => { const r = State.rows.find(r => String(r.id) === String(id)); if (!r) return; r[key] = val; };
-  const setNum    = (id, key, val) => { const r = State.rows.find(r => String(r.id) === String(id)); if (!r) return; r[key] = +val || 0; Calc.run(); AutoSave.schedule(); };
-  const rowTotal  = (r) => { const vi = +r.viajes || 0, vu = +r.valorUnit || 0; return vi && vu ? getCur().sym + ' ' + fmt(vi * vu) : '—'; };
+  const setNum = (id, key, val) => {
+    const r = State.rows.find(r => String(r.id) === String(id)); if (!r) return;
+    r[key] = +val || 0;
+    /* Siempre leer ambos inputs del DOM — nunca del State que puede estar stale */
+    const viEl = document.getElementById('vi_' + id);
+    const vuEl = document.getElementById('vu_' + id);
+    r.viajes    = viEl ? (+viEl.value || 0) : r.viajes;
+    r.valorUnit = vuEl ? (+vuEl.value || 0) : r.valorUnit;
+    const tot = r.viajes * r.valorUnit;
+    const cel = document.getElementById('rtot_' + id);
+    if (cel) cel.textContent = (r.viajes > 0 && r.valorUnit > 0) ? getCur().sym + ' ' + fmt(tot) : '—';
+    Calc.run();
+    AutoSave.schedule();
+  };
+  const rowTotal  = (r) => { const vi = +r.viajes || 0, vu = +r.valorUnit || 0; return (vi > 0 && vu > 0) ? getCur().sym + ' ' + fmt(vi * vu) : '—'; };
   const pickRoute = (id) => { _routeTarget = id; Modal.openClients(); const name = fv('cliNombre').trim().toLowerCase(); if (name) { const idx = Clients.list.findIndex(c => (c.nombre || '').toLowerCase() === name); if (idx >= 0) setTimeout(() => Clients.selectForRoutes(idx), 80); } };
   const applyRoute = (routeName) => { if (_routeTarget == null) return; const r = State.rows.find(r => String(r.id) === String(_routeTarget)); if (r) { r.ruta = routeName; render(); AutoSave.flush(); } _routeTarget = null; Modal.close('modalClients'); };
   return { add, remove, removeLast, render, setField, setNum, rowTotal, pickRoute, applyRoute };
@@ -1866,10 +2086,18 @@ const Calc = (() => {
     const sym = getCur().sym;
     let brutoServ = 0;
     State.rows.forEach(r => {
-      const vi = +(document.getElementById('vi_' + r.id)?.value) || +r.viajes || 0;
-      const vu = +(document.getElementById('vu_' + r.id)?.value) || +r.valorUnit || 0;
-      const tot = vi * vu; brutoServ += tot;
-      const cel = document.getElementById('rtot_' + r.id); if (cel) cel.textContent = vi && vu ? sym + ' ' + fmt(tot) : '—';
+      /* Leer siempre del DOM — es la fuente de verdad */
+      const viEl = document.getElementById('vi_' + r.id);
+      const vuEl = document.getElementById('vu_' + r.id);
+      const vi   = viEl ? (+viEl.value || 0) : (+r.viajes    || 0);
+      const vu   = vuEl ? (+vuEl.value || 0) : (+r.valorUnit || 0);
+      r.viajes    = vi;
+      r.valorUnit = vu;
+      const tot   = vi * vu;
+      brutoServ  += tot;
+      /* Actualizar total de la fila */
+      const cel = document.getElementById('rtot_' + r.id);
+      if (cel) cel.textContent = (vi > 0 && vu > 0) ? sym + ' ' + fmt(tot) : '—';
     });
     let brutoExtra = 0;
     State.extras.forEach(e => {
