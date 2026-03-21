@@ -1250,49 +1250,19 @@ table.extras-table tbody td input:focus { border-color: #e0a030; }
           <label>Reajuste</label>
           <input type="text" id="condReajuste" placeholder="Sin reajuste / IPC / UF…" data-autosave>
         </div>
-        <div class="cond-item" style="grid-column:1/-1">
-          <label>Notas / Condiciones adicionales</label>
-          <textarea id="condNotas" rows="2" placeholder="Ej: Precio incluye peajes y conductores…" data-autosave></textarea>
-        </div>
       </div>
     </div>
     <div class="hdiv"></div>
   </div>
 
-  <div id="secIntro">
+  <div id="secResumen">
     <div class="section">
       <div class="section-title">
-        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
-        Mensaje introductorio
+        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+        Resumen del Servicio y Condiciones
       </div>
-      <textarea id="introMsg" class="doc-textarea" rows="3" data-autosave
-        placeholder="Párrafo introductorio de la propuesta…">HAULER SpA presenta la siguiente propuesta de servicio de transporte de pasajeros, diseñada para satisfacer los requerimientos operacionales del cliente, considerando seguridad, puntualidad y eficiencia en el traslado de personal.</textarea>
-      <p class="field-hint">Este texto aparecerá al inicio del documento impreso.</p>
-    </div>
-    <div class="hdiv"></div>
-  </div>
-
-  <div id="secDescServicio">
-    <div class="section">
-      <div class="section-title">
-        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="9" y1="9" x2="9" y2="21"/></svg>
-        Descripción del servicio
-      </div>
-      <div class="desc-cols">
-        <textarea id="descServicio" class="doc-textarea" rows="4" data-autosave
-          placeholder="Describe el alcance…">El servicio comprende el traslado de personal entre los puntos indicados, utilizando vehículos en óptimas condiciones con conductor profesional. Se ejecutará según la planificación acordada con el cliente.</textarea>
-        <div>
-          <span class="caract-label">Características incluidas en el servicio</span>
-          <div class="caract-grid">
-            <label class="caract-item"><input type="checkbox" id="caract1" data-autosave checked> Vehículo en óptimas condiciones</label>
-            <label class="caract-item"><input type="checkbox" id="caract2" data-autosave checked> Conductor profesional certificado</label>
-            <label class="caract-item"><input type="checkbox" id="caract3" data-autosave checked> Traslado seguro origen → destino</label>
-            <label class="caract-item"><input type="checkbox" id="caract4" data-autosave checked> Coordinación de horarios</label>
-            <label class="caract-item"><input type="checkbox" id="caract5" data-autosave checked> Cumplimiento de planificación</label>
-            <label class="caract-item"><input type="checkbox" id="caract6" data-autosave checked> Atención de contingencias</label>
-          </div>
-        </div>
-      </div>
+      <textarea id="resumenServicio" class="doc-textarea" rows="6" data-autosave
+        placeholder="Describe aquí el servicio: alcance, modalidad operativa, ruta, elementos incluidos (vehículo, conductor, combustible, peajes, seguros) y vigencia de la oferta…">HAULER SpA ofrece el servicio de transporte corporativo de pasajeros, que comprende el traslado de personal en vehículos en óptimas condiciones mecánicas y de presentación, operados por conductores profesionales certificados. El servicio incluye combustible, peajes, seguros obligatorios y atención ante contingencias operacionales, garantizando puntualidad, seguridad vial y coordinación permanente con el cliente. La presente oferta tiene una vigencia de 30 días a partir de su fecha de emisión.</textarea>
     </div>
     <div class="hdiv"></div>
   </div>
@@ -1737,9 +1707,8 @@ const AutoSave = (() => {
       cliContrato: fv('cliContrato'), cliOC: fv('cliOC'), cliProyecto: fv('cliProyecto'), cliSistema: fv('cliSistema'),
       prvNombre: fv('prvNombre'), prvRut: fv('prvRut'), prvGiro: fv('prvGiro'), prvDir: fv('prvDir'),
       prvCiudad: fv('prvCiudad'), prvRegion: fv('prvRegion'), prvEmail: fv('prvEmail'), prvTel: fv('prvTel'), prvContacto: fv('prvContacto'),
-      condPago: fv('condPago'), condMoneda: fv('condMoneda'), condReajuste: fv('condReajuste'), condNotas: fv('condNotas'),
-      introMsg: fv('introMsg'), descServicio: fv('descServicio'),
-      caracts: [1,2,3,4,5,6].map(i => document.getElementById('caract' + i)?.checked ?? true),
+      condPago: fv('condPago'), condMoneda: fv('condMoneda'), condReajuste: fv('condReajuste'),
+      resumenServicio: fv('resumenServicio'),
       conIva: document.getElementById('chkIva')?.checked ?? true,
       tieneLogo: document.getElementById('logoImg')?.style.display !== 'none',
       logoSrc: document.getElementById('imgLogo')?.src || '',
@@ -1785,9 +1754,9 @@ const App = (() => {
     if (snap.docId)    { State.docId    = snap.docId; }
     const selCur = document.getElementById('currencySelect'); if (selCur) selCur.value = State.currency;
     const modo = snap.mode || 'cot'; State.mode = modo; applyMode(modo, false);
-    const textFields = ['numDoc','fechaEmision','fechaVence','selValidez','cliNombre','cliRut','cliGiro','cliDir','cliCiudad','cliEmail','cliTel','cliContacto','cliContrato','cliOC','cliProyecto','cliSistema','prvNombre','prvRut','prvGiro','prvDir','prvCiudad','prvRegion','prvEmail','prvTel','prvContacto','condPago','condMoneda','condReajuste','condNotas','introMsg','descServicio'];
+    const textFields = ['numDoc','fechaEmision','fechaVence','selValidez','cliNombre','cliRut','cliGiro','cliDir','cliCiudad','cliEmail','cliTel','cliContacto','cliContrato','cliOC','cliProyecto','cliSistema','prvNombre','prvRut','prvGiro','prvDir','prvCiudad','prvRegion','prvEmail','prvTel','prvContacto','condPago','condMoneda','condReajuste','resumenServicio'];
     textFields.forEach(id => { if (snap[id] !== undefined) setField(id, snap[id]); });
-    if (Array.isArray(snap.caracts)) snap.caracts.forEach((v, i) => { const el = document.getElementById('caract' + (i + 1)); if (el) el.checked = !!v; });
+    /* caracts removed */
     const chkIva = document.getElementById('chkIva'); if (chkIva && snap.conIva !== undefined) chkIva.checked = !!snap.conIva;
     if (snap.tieneLogo && snap.logoSrc) { document.getElementById('imgLogo').src = snap.logoSrc; document.getElementById('logoText').style.display = 'none'; document.getElementById('logoImg').style.display = 'flex'; document.getElementById('logoSizeWrap').style.display = 'flex'; document.getElementById('btnRemoveLogo').style.display = 'inline-flex'; resizeLogo(snap.logoSize || 56); document.getElementById('logoSize').value = snap.logoSize || 56; } else { removeLogo(); }
     const normId = id => id ? 'r' + String(id).replace(/^r/, '') : uid();
@@ -1825,10 +1794,13 @@ const App = (() => {
     document.getElementById('rowValidez').style.display = isCot ? 'flex' : 'none';
     document.getElementById('rowContrato').style.display = isCot ? 'none' : 'block';
     document.getElementById('rowOC').style.display       = isCot ? 'none' : 'block';
-    ['secCondiciones','secIntro','secDescServicio'].forEach(id => { document.getElementById(id).style.display = isCot ? 'block' : 'none'; });
-    document.getElementById('glosaDoc').innerHTML = isCot
-      ? '<strong>Nota:</strong> Esta cotización tiene carácter de oferta comercial y no constituye factura ni documento tributario. Los precios son referenciales y están sujetos a variaciones en combustible, peajes u otros costos operativos. Válida según el plazo indicado.'
-      : '<strong>Importante:</strong> Este Estado de Pago constituye respaldo administrativo de los servicios prestados. Observaciones deben realizarse dentro de 5 días hábiles. La factura se regirá por la Ley de Pago a 30 Días.';
+    ['secCondiciones','secResumen'].forEach(id => {
+      const el = document.getElementById(id); if (el) el.style.display = isCot ? 'block' : 'none';
+    }); });
+    const glosaEl = document.getElementById('glosaDoc');
+    if (glosaEl) glosaEl.innerHTML = isCot
+      ? '<strong>Nota:</strong> Oferta comercial referencial. No constituye factura ni documento tributario.'
+      : '<strong>Importante:</strong> Respaldo administrativo de servicios prestados. Ley N° 19.983.';
     if (withTransition) {
       const num = fv('numDoc');
       if (isCot  && num.startsWith('EP-'))  setField('numDoc', 'COT-' + num.slice(3));
@@ -1857,10 +1829,10 @@ const App = (() => {
     State.docId = uid();
     const hoy = new Date(), v30 = new Date(hoy); v30.setDate(v30.getDate() + 30);
     const pre = State.mode === 'cot' ? 'COT-' : 'EP-';
-    ['numDoc','cliNombre','cliRut','cliGiro','cliDir','cliCiudad','cliEmail','cliTel','cliContacto','cliContrato','cliOC','cliProyecto','cliSistema','prvNombre','prvRut','prvGiro','prvDir','prvCiudad','prvRegion','prvEmail','prvTel','prvContacto','condPago','condMoneda','condReajuste','condNotas','introMsg','descServicio'].forEach(id => setField(id, ''));
+    ['numDoc','cliNombre','cliRut','cliGiro','cliDir','cliCiudad','cliEmail','cliTel','cliContacto','cliContrato','cliOC','cliProyecto','cliSistema','prvNombre','prvRut','prvGiro','prvDir','prvCiudad','prvRegion','prvEmail','prvTel','prvContacto','condPago','condMoneda','condReajuste','resumenServicio'].forEach(id => setField(id, ''));
     setField('numDoc', pre + Date.now().toString().slice(-4)); setField('fechaEmision', iso(hoy)); setField('fechaVence', iso(v30)); setField('selValidez', '30');
     document.getElementById('chkIva').checked = true;
-    [1,2,3,4,5,6].forEach(i => { const el = document.getElementById('caract'+i); if (el) el.checked = true; });
+    /* caracts removed */
     removeLogo(); State.rows = []; State.extras = [];
     Rows.render(); Extras.render(); Calc.run();
     Modal.close('modalHistory'); Rows.add(); AutoSave.flush();
@@ -2319,13 +2291,9 @@ const PDF = (() => {
     const filasHTML = State.rows.length ? State.rows.map(r => `<tr><td>${r.vehiculo||''}</td><td class="n">${r.patente||''}</td><td>${r.ruta||''}</td><td>${periodoStr(r)}</td><td class="n">${r.pasajeros||''}</td><td class="n">${r.viajes||''}</td><td class="n">${r.valorUnit ? fmt(r.valorUnit) : ''}</td><td>${Rows.rowTotal(r)}</td></tr>`).join('') : '<tr><td colspan="8" style="text-align:center;color:#aaa;padding:4mm;font-style:italic">Sin servicios registrados</td></tr>';
     const extrasHTML = State.extras.length ? `<div class="hdiv"></div><div class="tbl-section no-break"><div class="sec-title" style="color:var(--gold)">Ítems Adicionales</div><table><thead class="ext-head"><tr><th style="text-align:left;padding-left:2.5mm">Descripción</th><th>Tipo</th><th>Cant.</th><th>Valor unit.</th><th style="text-align:right;padding-right:2.5mm">Total</th></tr></thead><tbody>${State.extras.map(e => `<tr class="ext-row"><td style="text-align:left;padding-left:2.5mm">${e.desc||''}</td><td>${e.tipo==='dia'?'Por día':'Por unidad'}</td><td class="n">${e.cantidad||''}</td><td class="n">${e.valorUnit ? fmt(e.valorUnit) : ''}</td><td class="n ext-total">${Extras.extraTotal(e)}</td></tr>`).join('')}</tbody></table></div>` : '';
     const caracts = [1,2,3,4,5,6].map(i => document.getElementById('caract'+i)?.checked ?? true);
-    const caractsOn = CARACT_LABELS.filter((_, i) => caracts[i]);
-    const condHTML = isCot ? `<div class="hdiv"></div><div class="cond-section"><div class="sec-title">Condiciones de la Oferta</div><div class="cond-grid"><div class="cond-cell"><span class="cl">Forma de pago</span><span>${fv('condPago')||'—'}</span></div><div class="cond-cell"><span class="cl">Moneda</span><span>${fv('condMoneda')||'—'}</span></div><div class="cond-cell"><span class="cl">Reajuste</span><span>${fv('condReajuste')||'Sin reajuste'}</span></div></div>${fv('condNotas') ? `<div class="cond-notas"><strong>Notas:</strong> ${fv('condNotas')}</div>` : ''}</div>` : '';
-    const introHTML = isCot && fv('introMsg') ? `<div class="hdiv"></div><div class="intro-section no-break"><p class="intro-p">${fv('introMsg').replace(/\n/g,'<br>')}</p></div>` : '';
-    const descHTML  = isCot && (fv('descServicio') || caractsOn.length) ? `<div class="hdiv"></div><div class="desc-section no-break"><div class="desc-cols">${fv('descServicio') ? `<div><div class="sec-title">Descripción del Servicio</div><p class="desc-p">${fv('descServicio').replace(/\n/g,'<br>')}</p></div>` : ''}${caractsOn.length ? `<div><div class="sec-title">Características Incluidas</div><ul class="caract-ul">${caractsOn.map(c=>`<li>✓ ${c}</li>`).join('')}</ul></div>` : ''}</div></div>` : '';
-    const _firstRuta = (State.rows.length && State.rows[0].ruta) ? State.rows[0].ruta.trim() : '';
-    const pdfTitle = [isCot ? 'Cotización' : 'Estado de Pago', fv('numDoc') || '', fv('cliNombre') || 'Sin Cliente', _firstRuta, fv('fechaEmision') || iso(new Date())].filter(Boolean).join(' · ');
-    const html = `<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8"><title>${pdfTitle}</title><link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet"><style>*{margin:0;padding:0;box-sizing:border-box}:root{--blue:#0055FF;--blt:#dce8ff;--t1:#0d0d12;--t2:#4a4a58;--t3:#8a8a9a;--bdr:#d8dce8;--gold:#b07800;--m:'JetBrains Mono',monospace;--s:'Inter',sans-serif}@page{size:Letter portrait;margin:12mm 14mm 16mm 14mm}@media print{.no-break{page-break-inside:avoid}}*{-webkit-print-color-adjust:exact;print-color-adjust:exact}html,body{font-family:var(--s);font-size:9pt;color:var(--t1);background:#fff;line-height:1.4}.doc{width:100%;border:1.2pt solid #b8c8f0;border-radius:3pt}.hdiv{height:.6pt;background:linear-gradient(90deg,transparent,#a0b8e8 40%,#a0b8e8 60%,transparent)}.hdr{display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:6mm;padding:5mm 7mm 4mm;border-bottom:1pt solid var(--bdr);background:linear-gradient(135deg,#fff 50%,#f2f6ff)}.hdr-c{text-align:center}.eyebrow{font-size:5.5pt;font-weight:600;letter-spacing:2.5px;text-transform:uppercase;color:var(--t3);margin-bottom:1.5mm}.doc-tipo{font-size:16pt;font-weight:300;color:var(--t1)}.doc-badge{display:inline-block;margin-top:1.5mm;padding:1.5pt 7pt;border-radius:99pt;font-size:6pt;font-weight:700;background:var(--blt);color:var(--blue);border:1pt solid #b0c8ff}.hdr-meta{display:flex;flex-direction:column;gap:1.8mm;align-items:flex-end}.mr{display:flex;align-items:baseline;gap:3mm}.ml{font-size:5pt;font-weight:700;letter-spacing:.8px;text-transform:uppercase;color:var(--t3);white-space:nowrap}.mv{font:600 9pt/1 var(--m);color:var(--t1)}.mvn{font-size:11pt;font-weight:700;color:var(--blue)}.parties{display:grid;grid-template-columns:1fr 1.5pt 1fr}.party{padding:4mm 7mm}.pt{font-size:5.5pt;font-weight:700;letter-spacing:1.8px;text-transform:uppercase;color:var(--blue);padding-bottom:1.5mm;margin-bottom:2.5mm;border-bottom:1.2pt solid var(--blt);display:flex;align-items:center}.pd{background:linear-gradient(180deg,transparent,#b0c8f0 20%,#b0c8f0 80%,transparent)}.ft{width:100%;border-collapse:collapse}.ft td{padding:.7mm 0;vertical-align:top;line-height:1.35;border-bottom:.3pt solid #eff1f8}.ft tr:last-child td{border-bottom:none}.ft td:first-child{font-size:5pt;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--t3);white-space:nowrap;padding-right:3mm;width:22mm}.ft td:last-child{font-size:8.5pt;color:var(--t1)}.vs{font-weight:600}.sec-title{font-size:5.5pt;font-weight:700;letter-spacing:1.8px;text-transform:uppercase;color:var(--blue);margin-bottom:2mm;display:flex;align-items:center;gap:2mm}.sec-title::after{content:'';flex:1;height:.5pt;background:linear-gradient(90deg,var(--blt),transparent)}.cond-section{padding:3mm 7mm}.intro-section{padding:3mm 7mm}.desc-section{padding:3mm 7mm}.cond-grid{display:grid;grid-template-columns:1fr 1fr 1fr;border:1pt solid var(--bdr);border-radius:2pt;overflow:hidden}.cond-cell{padding:2mm 3mm;border-right:1pt solid var(--bdr)}.cond-cell:last-child{border-right:none}.cl{font-size:5pt;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--t3);display:block;margin-bottom:.7mm}.cond-notas{margin-top:2mm;padding:1.5mm 3mm;background:#f9faff;border:1pt solid var(--bdr);border-radius:2pt;font-size:7.5pt;color:var(--t2);line-height:1.5}.intro-p{font-size:8.5pt;line-height:1.7;color:var(--t2);font-style:italic;border-left:2.5pt solid var(--blt);padding:2.5mm 4mm;background:#f8faff}.desc-cols{display:grid;grid-template-columns:1fr 1fr;gap:4mm}.desc-p{font-size:8pt;line-height:1.65;color:var(--t2);margin-top:1mm}.caract-ul{list-style:none;margin-top:1mm;display:flex;flex-direction:column;gap:1mm}.caract-ul li{font-size:7.5pt;color:var(--t2);padding:.8mm 2mm;background:#f0f5ff;border-radius:1.5pt;border:1pt solid var(--blt)}.tbl-section{padding:3mm 7mm 2.5mm}table{width:100%;border-collapse:collapse}thead th{background:#e8eeff;font-size:5.5pt;font-weight:700;letter-spacing:.4px;text-transform:uppercase;color:var(--blue);padding:2mm 1.5mm;text-align:center;border-top:1pt solid #b0c8ff;border-bottom:1.2pt solid #b0c8ff;white-space:nowrap}thead th:first-child{text-align:left;padding-left:2.5mm}thead th:last-child{text-align:right;padding-right:2.5mm}tbody tr:nth-child(even) td{background:#f7f9ff}tbody td{padding:1.5mm 1.5mm;border-bottom:.4pt solid #e8edf8;font-size:8.5pt;text-align:center;vertical-align:middle}tbody td:first-child{text-align:left;padding-left:2.5mm}tbody td:last-child{text-align:right;padding-right:2.5mm;font-family:var(--m);font-weight:600}.n{font-family:var(--m);font-size:8pt}.ext-head th{background:#fdf6e8;color:var(--gold);border-top:1pt solid #f0d8a0;border-bottom:1.2pt solid #f0d8a0}.ext-row td{border-bottom:.4pt solid #f5edda}.ext-row:nth-child(even) td{background:#fffdf5}.ext-total{font-family:var(--m);font-weight:600;color:var(--gold)!important}.footer-g{display:grid;grid-template-columns:1fr auto;gap:6mm;align-items:end;padding:3mm 7mm 5mm}.glosa{border-left:2.5pt solid var(--blue);padding:2mm 3mm;background:#f6f9ff;font-size:7pt;line-height:1.6;color:var(--t2)}.glosa strong{color:var(--t1);font-weight:600}.tot-box{min-width:62mm;border:1pt solid var(--bdr);overflow:hidden;border-radius:2pt}.tr{display:flex;justify-content:space-between;align-items:center;padding:1.8mm 3mm;font-size:8pt;color:var(--t2);border-bottom:.4pt solid var(--bdr)}.tr:last-child{border-bottom:none}.tr .a{font:500 8pt/1 var(--m);color:var(--t1)}.tr.ext{color:var(--gold)}.tr.ext .a{color:var(--gold)}.tr.neto{border-top:1pt solid var(--bdr);font-weight:600;color:var(--t1)}.tr.neto .a{font-weight:700}.tr.grand{background:var(--blue);color:#fff;padding:2.5mm 3mm;font-size:10pt;font-weight:700}.tr.grand .a{font-size:11pt;font-weight:700;color:#fff;font-family:var(--m)}.firma-g{padding:3mm 7mm 4mm;display:grid;grid-template-columns:1fr 1fr;gap:12mm}.fbox{border-top:1pt solid var(--bdr);padding-top:1.5mm;margin-top:6mm}.fl{font-size:5pt;font-weight:700;text-transform:uppercase;letter-spacing:.7px;color:var(--t3)}.fn{font-size:8pt;color:var(--t2);margin-top:.5mm}.pie{display:flex;align-items:center;justify-content:space-between;gap:4mm;padding:2mm 7mm;background:linear-gradient(135deg,#edf2ff,#f2f6ff);border-top:1pt solid var(--blt)}.pie-b{font-size:6pt;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:var(--blue)}.pie-f{font-size:6pt;font-family:var(--m);color:var(--t2)}.pie-d{font-size:6pt;color:var(--t3)}</style></head><body><div class="doc"><div class="hdr"><div>${logoHTML}</div><div class="hdr-c"><div class="eyebrow">${isCot ? 'Cotización de Servicio de Transporte · Propuesta Comercial' : 'Documento de Cobro · Servicios de Transporte'}</div><div class="doc-tipo">${isCot ? 'Cotización' : 'Estado de Pago'}</div><div class="doc-badge">${isCot ? '📋 COT' : '✅ EP'}</div></div><div class="hdr-meta"><div class="mr"><span class="ml">${isCot ? 'N° Cotización' : 'N° Documento'}</span><span class="mv mvn">${fv('numDoc')}</span></div><div class="mr"><span class="ml">Emisión</span><span class="mv">${fv('fechaEmision')}</span></div><div class="mr"><span class="ml">${isCot ? 'Válida hasta' : 'Vencimiento'}</span><span class="mv">${fv('fechaVence')}</span></div></div></div><div class="hdiv"></div><div class="parties"><div class="party"><div class="pt">▸ ${isCot ? 'Cliente / Destinatario' : 'Mandante / Cliente'}</div><table class="ft">${fv('cliNombre') ? `<tr><td>Razón social</td><td class="vs">${fv('cliNombre')}</td></tr>` : ''}${fv('cliRut') ? `<tr><td>RUT</td><td>${fv('cliRut')}</td></tr>` : ''}${fv('cliGiro') ? `<tr><td>Giro</td><td>${fv('cliGiro')}</td></tr>` : ''}${fv('cliDir')||fv('cliCiudad') ? `<tr><td>Dirección</td><td>${[fv('cliDir'),fv('cliCiudad')].filter(Boolean).join(', ')}</td></tr>` : ''}${fv('cliEmail') ? `<tr><td>Email</td><td>${fv('cliEmail')}</td></tr>` : ''}${fv('cliTel') ? `<tr><td>Teléfono</td><td>${fv('cliTel')}</td></tr>` : ''}${fv('cliContacto') ? `<tr><td>Contacto</td><td>${fv('cliContacto')}</td></tr>` : ''}${fv('cliProyecto') ? `<tr><td>Proyecto</td><td class="vs">${fv('cliProyecto')}</td></tr>` : ''}${fv('cliSistema') ? `<tr><td>Sistema op.</td><td>${fv('cliSistema')}</td></tr>` : ''}${!isCot&&fv('cliContrato') ? `<tr><td>Contrato</td><td><strong>${fv('cliContrato')}</strong></td></tr>` : ''}${!isCot&&fv('cliOC') ? `<tr><td>OC</td><td><strong>${fv('cliOC')}</strong></td></tr>` : ''}</table></div><div class="pd"></div><div class="party"><div class="pt">▸ Proveedor / Oferente</div><table class="ft">${fv('prvNombre') ? `<tr><td>Razón social</td><td class="vs">${fv('prvNombre')}</td></tr>` : ''}${fv('prvRut') ? `<tr><td>RUT</td><td>${fv('prvRut')}</td></tr>` : ''}${fv('prvGiro') ? `<tr><td>Giro</td><td>${fv('prvGiro')}</td></tr>` : ''}${fv('prvDir')||fv('prvCiudad') ? `<tr><td>Dirección</td><td>${[fv('prvDir'),fv('prvCiudad'),fv('prvRegion')].filter(Boolean).join(', ')}</td></tr>` : ''}${fv('prvEmail') ? `<tr><td>Email</td><td>${fv('prvEmail')}</td></tr>` : ''}${fv('prvTel') ? `<tr><td>Teléfono</td><td>${fv('prvTel')}</td></tr>` : ''}${fv('prvContacto') ? `<tr><td>Contacto</td><td>${fv('prvContacto')}</td></tr>` : ''}</table></div></div>${condHTML}${introHTML}${descHTML}<div class="hdiv"></div><div class="tbl-section no-break"><div class="sec-title">Detalle de Servicios</div><table><thead><tr><th style="text-align:left;padding-left:2.5mm;width:20%">Vehículo</th><th style="width:9%">Patente</th><th style="width:18%">Ruta / Recorrido</th><th style="width:16%">Período</th><th style="width:7%">Pasaj.</th><th style="width:9%">Viajes/Días</th><th style="width:11%">Valor unit.</th><th style="text-align:right;padding-right:2.5mm;width:10%">Total</th></tr></thead><tbody>${filasHTML}</tbody></table></div>${extrasHTML}<div class="hdiv"></div><div class="footer-g no-break"><div class="glosa">${isCot ? '<strong>Nota:</strong> Oferta comercial referencial, no constituye factura ni documento tributario. Válida según el plazo indicado.' : '<strong>Importante:</strong> Respaldo administrativo de servicios prestados. Observaciones dentro de 5 días hábiles. Ley N° 19.983.'}</div><div class="tot-box"><div class="tr"><span>Subtotal servicios</span><span class="a">${cur.sym} ${fmt(brutoServ)}</span></div>${brutoExtra > 0 ? `<div class="tr ext"><span>Ítems adicionales</span><span class="a">${cur.sym} ${fmt(brutoExtra)}</span></div>` : ''}<div class="tr neto"><span>Subtotal neto</span><span class="a">${cur.sym} ${fmt(bruto)}</span></div>${conIva ? `<div class="tr"><span>IVA 19%</span><span class="a">${cur.sym} ${fmt(iva)}</span></div>` : ''}<div class="tr grand"><span>${isCot ? 'TOTAL COTIZACIÓN' : 'TOTAL A PAGAR'}</span><span class="a">${cur.sym} ${fmt(bruto + iva)}</span></div></div></div><div class="hdiv"></div><div class="firma-g"><div><div class="fbox"><div class="fl">Firma y timbre — Proveedor / Oferente</div><div class="fn">${fv('prvNombre')}${fv('prvRut') ? ' · ' + fv('prvRut') : ''}</div></div></div><div><div class="fbox"><div class="fl">Firma y timbre — ${isCot ? 'Cliente' : 'Mandante'}</div><div class="fn">${fv('cliNombre')}${fv('cliRut') ? ' · ' + fv('cliRut') : ''}</div></div></div></div><div class="pie"><span class="pie-b">HAULER · Transporte Corporativo de Pasajeros</span><span class="pie-f" id="_fn"></span><span class="pie-d" id="_gd"></span></div></div><script>(function(){var fn=document.getElementById('_fn');if(fn)fn.textContent=document.title+'.pdf';var gd=document.getElementById('_gd');if(gd){var n=new Date(),p=function(x){return x<10?'0'+x:x};gd.textContent='Generado: '+n.getFullYear()+'-'+p(n.getMonth()+1)+'-'+p(n.getDate())+' '+p(n.getHours())+':'+p(n.getMinutes());}})();document.fonts.ready.then(function(){setTimeout(function(){window.print();},500);});<\/script></body></html>`;
+    const const condHTML = isCot ? `<div class="hdiv"></div><div class="cond-section"><div class="sec-title">Condiciones de la Oferta</div><div class="cond-grid"><div class="cond-cell"><span class="cl">Forma de pago</span><span>${fv('condPago')||'—'}</span></div><div class="cond-cell"><span class="cl">Moneda</span><span>${fv('condMoneda')||'—'}</span></div><div class="cond-cell"><span class="cl">Reajuste</span><span>${fv('condReajuste')||'Sin reajuste'}</span></div></div></div>` : '';
+    const resumenHTML = isCot && fv('resumenServicio') ? `<div class="hdiv"></div><div class="resumen-section no-break"><div class="sec-title">Resumen del Servicio y Condiciones</div><p class="resumen-p">${fv('resumenServicio').replace(/\n/g,'<br>')}</p></div>` : '';
+    ${condHTML}${resumenHTML}<div class="hdiv"></div><div class="tbl-section no-break"><div class="sec-title">Detalle de Servicios</div><table><thead><tr><th style="text-align:left;padding-left:2.5mm;width:20%">Vehículo</th><th style="width:9%">Patente</th><th style="width:18%">Ruta / Recorrido</th><th style="width:16%">Período</th><th style="width:7%">Pasaj.</th><th style="width:9%">Viajes/Días</th><th style="width:11%">Valor unit.</th><th style="text-align:right;padding-right:2.5mm;width:10%">Total</th></tr></thead><tbody>${filasHTML}</tbody></table></div>${extrasHTML}<div class="hdiv"></div><div class="footer-g no-break"><div class="glosa">${isCot ? '<strong>Nota:</strong> Oferta comercial referencial, no constituye factura ni documento tributario. Válida según el plazo indicado.' : '<strong>Importante:</strong> Respaldo administrativo de servicios prestados. Observaciones dentro de 5 días hábiles. Ley N° 19.983.'}</div><div class="tot-box"><div class="tr"><span>Subtotal servicios</span><span class="a">${cur.sym} ${fmt(brutoServ)}</span></div>${brutoExtra > 0 ? `<div class="tr ext"><span>Ítems adicionales</span><span class="a">${cur.sym} ${fmt(brutoExtra)}</span></div>` : ''}<div class="tr neto"><span>Subtotal neto</span><span class="a">${cur.sym} ${fmt(bruto)}</span></div>${conIva ? `<div class="tr"><span>IVA 19%</span><span class="a">${cur.sym} ${fmt(iva)}</span></div>` : ''}<div class="tr grand"><span>${isCot ? 'TOTAL COTIZACIÓN' : 'TOTAL A PAGAR'}</span><span class="a">${cur.sym} ${fmt(bruto + iva)}</span></div></div></div><div class="hdiv"></div><div class="firma-g"><div><div class="fbox"><div class="fl">Firma y timbre — Proveedor / Oferente</div><div class="fn">${fv('prvNombre')}${fv('prvRut') ? ' · ' + fv('prvRut') : ''}</div></div></div><div><div class="fbox"><div class="fl">Firma y timbre — ${isCot ? 'Cliente' : 'Mandante'}</div><div class="fn">${fv('cliNombre')}${fv('cliRut') ? ' · ' + fv('cliRut') : ''}</div></div></div></div><div class="pie"><span class="pie-b">HAULER · Transporte Corporativo de Pasajeros</span><span class="pie-f" id="_fn"></span><span class="pie-d" id="_gd"></span></div></div><script>(function(){var fn=document.getElementById('_fn');if(fn)fn.textContent=document.title+'.pdf';var gd=document.getElementById('_gd');if(gd){var n=new Date(),p=function(x){return x<10?'0'+x:x};gd.textContent='Generado: '+n.getFullYear()+'-'+p(n.getMonth()+1)+'-'+p(n.getDate())+' '+p(n.getHours())+':'+p(n.getMinutes());}})();document.fonts.ready.then(function(){setTimeout(function(){window.print();},500);});<\/script></body></html>`;
     const w = window.open('', '_blank', 'width=900,height=700');
     if (!w) { alert('Permite las ventanas emergentes para imprimir.'); return; }
     w.document.open(); w.document.write(html); w.document.close();
@@ -2440,12 +2408,16 @@ const EmailPanel = (() => {
       'REGLAS:\n' +
       '- cliNombre, cliRut, cliGiro, cliEmail, cliTel, cliContacto, cliDir, cliCiudad, cliProyecto, cliSistema, ruta, pasajeros:\n' +
       '  Extrae SOLO lo que aparece literalmente en el correo. Si no está, deja "".\n' +
-      '- condNotas: Redacta 2-3 oraciones ejecutivas con condiciones comerciales (vigencia 30 días, pago 30 días factura, condiciones del correo).\n' +
-      '- introMsg: Párrafo introductorio persuasivo 3-4 oraciones, personalizado con datos del correo. Empieza con "HAULER SpA presenta la siguiente propuesta de servicio de transporte...".\n' +
-      '- descServicio: 3-4 oraciones convincentes describiendo el servicio con datos del correo (ruta, pasajeros, turno). Destaca conductores certificados, vehículos óptimos, puntualidad, seguridad 24/7.\n\n' +
+      '- resumenServicio: Redacta UN ÚNICO PÁRRAFO continuo, en tono corporativo formal, listo para impresión, personalizado con los datos reales del correo. ' +
+      'El párrafo debe integrar sin redundancias: (1) descripción concreta del servicio solicitado según el correo (ruta, pasajeros, frecuencia, turno si se mencionan), ' +
+      '(2) modalidad operativa y contexto del cliente, ' +
+      '(3) elementos incluidos en el servicio: vehículo en óptimas condiciones, conductor profesional certificado, combustible, peajes y seguros obligatorios, ' +
+      '(4) vigencia de 30 días desde la fecha de emisión. ' +
+      'NO mencionar forma de pago ni moneda (esos datos van en otra sección). ' +
+      'Si no hay datos suficientes en el correo, redacta igual con lo disponible de forma coherente.\\n\\n' +
       'Responde SOLO el JSON sin markdown:\n' +
       '{"cliNombre":"","cliRut":"","cliGiro":"","cliEmail":"","cliTel":"","cliContacto":"","cliDir":"","cliCiudad":"",' +
-      '"cliProyecto":"","cliSistema":"","ruta":"","pasajeros":"","condNotas":"","introMsg":"","descServicio":""}\n\n' +
+      '"cliProyecto":"","cliSistema":"","ruta":"","pasajeros":"","resumenServicio":""}\n\n' +
       'CORREO:\n' + text.slice(0, 3500);
     try {
       const res = await fetch(_getUrl() + '/api/generate', {
@@ -2478,36 +2450,29 @@ const EmailPanel = (() => {
     const sistema  = ex(['(turno\s+\d+[x]\d+)','(servicio diario)','(lunes a viernes)','sistema\s*[:\-]\s*([^\n]+)','turno\s*[:\-]\s*([^\n]+)']);
     const ciudad   = ex(['ciudad\s*[:\-]\s*([^\n]+)','(Antofagasta|Santiago|Calama|Iquique|Copiap.|La Serena|Valpara.so|Concepci.n|Temuco|Valdivia|Puerto Montt|Punta Arenas)']);
     const cli = empresa || 'su organización';
-    const condNotas = 'La presente oferta tiene una vigencia de 30 días a partir de su emisión. ' +
-      (sistema ? 'El servicio operará bajo el régimen de ' + sistema + ', garantizando puntualidad en cada turno. ' : '') +
-      'Condiciones de pago: 30 días fecha de factura. Precios incluyen conductor profesional, vehículo en óptimas condiciones, combustible y peajes.';
-    const introMsg = 'HAULER SpA presenta la siguiente propuesta de servicio de transporte de pasajeros' +
-      (empresa ? ' para ' + cli : '') +
-      (proyecto ? ', en atención a la solicitud: "' + proyecto + '"' : '') +
-      '. Contamos con amplia experiencia en transporte corporativo' +
-      (ciudad ? ' en ' + ciudad : '') +
-      ', operando con los más altos estándares de seguridad vial y calidad de servicio. ' +
-      (ruta ? 'La propuesta contempla el traslado' + (pax ? ' de ' + pax + ' personas' : '') + ' en la ruta ' + ruta + (sistema ? ', bajo el esquema ' + sistema : '') + '.' : '') +
-      ' Quedamos disponibles para coordinar todos los detalles operativos.';
-    const descServicio = 'El servicio comprende el traslado' +
-      (pax ? ' de ' + pax + ' personas' : '') +
-      (ruta ? ' en la ruta ' + ruta : '') +
-      (sistema ? ' bajo el régimen de ' + sistema : '') +
-      ', a cargo de conductores profesionales certificados y vehículos en óptimas condiciones mecánicas y de presentación. ' +
-      'HAULER SpA garantiza puntualidad, seguridad vial y coordinación operativa permanente. ' +
-      (sistema ? 'El esquema ' + sistema + ' será respetado rigurosamente, con protocolos de contingencia ante cualquier eventualidad.' :
-        'Cada operación cuenta con seguimiento en tiempo real y atención de contingencias las 24 horas.') +
-      ' Nuestro equipo asegura una experiencia de transporte confiable y de alto estándar.';
-    return {
-      cliNombre:   empresa,
-      cliRut:      ex(['rut\s*[:\-]?\s*([0-9.]{7,12}[-][0-9kK])','([0-9]{1,2}\.[0-9]{3}\.[0-9]{3}[-][0-9kK])']),
-      cliGiro:     ex(['giro\s*[:\-]\s*([^\n]+)','actividad\s*[:\-]\s*([^\n]+)']),
-      cliEmail:    ex(['De:\s*[^<]*<([^>]+)>','From:\s*[^<]*<([^>]+)>','([\w.+\-]+@[\w\-]+\.[\w.]{2,})']),
-      cliTel:      ex(['tel.fono\s*[:\-]\s*([+\d\s\-.]{7,20})','fono\s*[:\-]\s*([+\d\s\-]{7,20})','(\+56\s*9\s*[\d\s]{8})']),
-      cliContacto: ex(['contacto\s*[:\-]\s*([^\n]+)','atenci.n\s*[:\-]\s*([^\n]+)']),
-      cliDir:      ex(['direcci.n\s*[:\-]\s*([^\n]+)','domicilio\s*[:\-]\s*([^\n]+)']),
-      cliCiudad: ciudad, cliProyecto: proyecto, cliSistema: sistema,
-      ruta, pasajeros: pax, condNotas, introMsg, descServicio,
+          ruta, pasajeros: pax,
+      resumenServicio: (() => {
+        const partes = [];
+        /* Parte 1 — descripción específica del correo */
+        if (ruta || pax || sistema) {
+          let p1 = 'El servicio comprende el traslado';
+          if (pax)     p1 += ' de ' + pax + ' personas';
+          if (ruta)    p1 += ' en la ruta ' + ruta;
+          if (sistema) p1 += ', bajo el r\u00e9gimen de ' + sistema;
+          if (ciudad)  p1 += ', en ' + ciudad;
+          p1 += '.';
+          partes.push(p1);
+        }
+        /* Parte 2 — empresa cliente si está disponible */
+        if (empresa) partes.push('El servicio se presta a ' + empresa + ', en respuesta a los requerimientos operacionales indicados.');
+        /* Parte 3 — proyecto/asunto si está disponible */
+        if (proyecto) partes.push('El alcance de la propuesta cubre: ' + proyecto + '.');
+        /* Parte 4 — elementos incluidos (siempre) */
+        partes.push('El servicio incluye veh\u00edculo en \u00f3ptimas condiciones mec\u00e1nicas y de presentaci\u00f3n, conductor profesional certificado, combustible, peajes y seguros obligatorios, garantizando puntualidad, seguridad vial y coordinaci\u00f3n operativa permanente.');
+        /* Parte 5 — vigencia (siempre, sin mencionar pago) */
+        partes.push('La presente oferta tiene una vigencia de 30 d\u00edas a partir de su fecha de emisi\u00f3n.');
+        return partes.join(' ');
+      })(),
     };
   };
 
@@ -2519,14 +2484,12 @@ const EmailPanel = (() => {
       cliDir:'Dirección', cliCiudad:'Ciudad',
       cliProyecto:'Proyecto / Asunto', cliSistema:'Sistema / Turno',
       ruta:'Ruta', pasajeros:'Pasajeros',
-      condNotas:'Notas / Condiciones',
-      introMsg:'Mensaje introductorio',
-      descServicio:'Descripción del servicio',
+      resumenServicio:'Resumen del Servicio y Condiciones',
     };
     const items = Object.entries(labels)
       .filter(([k]) => data[k] && data[k].trim())
       .map(([k, lbl]) => {
-        const long    = ['condNotas','introMsg','descServicio'].includes(k);
+        const long    = ['resumenServicio'].includes(k);
         const preview = long ? data[k].slice(0,88) + (data[k].length>88?'…':'') : data[k];
         return '<div class="ep-result-item' + (long?' full':'') + '">' +
                '<label>' + lbl + '</label>' +
@@ -2546,7 +2509,7 @@ const EmailPanel = (() => {
       cliEmail:'cliEmail', cliTel:'cliTel', cliContacto:'cliContacto',
       cliDir:'cliDir', cliCiudad:'cliCiudad',
       cliProyecto:'cliProyecto', cliSistema:'cliSistema',
-      condNotas:'condNotas', introMsg:'introMsg', descServicio:'descServicio',
+      resumenServicio:'resumenServicio',
     };
     let filled = 0;
     Object.entries(map).forEach(([src, dest]) => {
