@@ -1425,6 +1425,51 @@ table.extras-table tbody td input:focus { border-color: #e0a030; }
 </div>
 
 <!-- ══════════════════════════════════════════════
+   MODAL: CONFIRMACIÓN DE IMPRESIÓN / CORRELATIVO
+   Permite imprimir con el número actual o avanzar al siguiente correlativo antes de imprimir.
+══════════════════════════════════════════════ -->
+<div id="modalPrintConfirm" class="modal">
+  <div class="modal-box tiny">
+    <div style="font-size:2rem;margin-bottom:.5rem">🖨</div>
+    <h3>Confirmar impresión</h3>
+    <p style="margin-bottom:.9rem">
+      Documento <strong id="printConfirmTipo">Cotización</strong>
+      &nbsp;·&nbsp;<strong id="printConfirmNum">—</strong><br>
+      <span style="font-size:.68rem;color:var(--t2)">
+        Cliente: <span id="printConfirmCliente">—</span>
+        &nbsp;·&nbsp;
+        Fecha: <span id="printConfirmFecha">—</span>
+      </span>
+    </p>
+
+    <!-- Aviso de correlativo -->
+    <div style="background:var(--blue-lt);border:1px solid #c0d0ff;border-radius:10px;padding:.7rem 1rem;margin-bottom:1.1rem;text-align:left">
+      <div style="font:700 .6rem/1 var(--font-sans);text-transform:uppercase;letter-spacing:.8px;color:var(--blue);margin-bottom:.4rem">
+        ⚡ Control de correlativo
+      </div>
+      <p style="font-size:.7rem;color:var(--t2);line-height:1.55;margin:0">
+        <strong style="color:var(--t1)">Imprimir con número actual</strong> si es la misma versión que ya guardaste.<br>
+        <strong style="color:var(--t1)">Avanzar y reimprimir</strong> si es una nueva emisión o copia oficial que debe quedar registrada con su propio número correlativo.
+      </p>
+    </div>
+
+    <div class="modal-action-row" style="flex-direction:column;gap:.5rem">
+      <div style="display:flex;gap:.5rem;justify-content:center;flex-wrap:wrap">
+        <button class="btn" onclick="document.getElementById('modalPrintConfirm').classList.remove('open')">
+          Cancelar
+        </button>
+        <button class="btn" onclick="PDF.doPrint()" style="border-color:var(--border)">
+          🖨 Imprimir con número actual
+        </button>
+        <button class="btn primary" onclick="PDF.advanceAndPrint()">
+          ⚡ Avanzar correlativo e imprimir
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════
    ★ EMAIL READER — panel flotante minimizable
 ══════════════════════════════════════════════ -->
 
@@ -1617,7 +1662,7 @@ const Modal = (() => {
 
   const openHistory = () => { History.render(); open('modalHistory'); };
 
-  ['modalConvert','modalClients','modalHistory'].forEach(id => {
+  ['modalConvert','modalClients','modalHistory','modalPrintConfirm'].forEach(id => {
     document.getElementById(id)?.addEventListener('click', e => { if (e.target.id === id) close(id); });
   });
 
@@ -1659,33 +1704,68 @@ const getCur = () => CURRENCIES.find(c => c.code === State.currency) || CURRENCI
 const fmt = n => { const c = getCur(); const v = Math.round(n * (10 ** c.dec)) / (10 ** c.dec); return v.toLocaleString(c.locale, { minimumFractionDigits: c.dec, maximumFractionDigits: c.dec }); };
 
 /* ════════════════════════════════════════════════════════════════════════
-   MÓDULO: Counter (original)
+   MÓDULO: Counter
+   - generate(silent): genera y aplica el siguiente correlativo.
+     silent=true → sin Toast, sin bloquear el botón (uso interno).
+     silent=false → con Toast y feedback visual (uso manual via botón).
+   - next(): wrapper del botón UI → llama generate(false).
 ════════════════════════════════════════════════════════════════════════ */
 const Counter = (() => {
   const LS_HIST = 'hauler_num_history';
-  const loadHist = () => { try { return JSON.parse(localStorage.getItem(LS_HIST) || '[]'); } catch { return []; } };
-  const saveHist = (num) => { const h = [num, ...loadHist().filter(n => n !== num)].slice(0, 10); try { localStorage.setItem(LS_HIST, JSON.stringify(h)); } catch {} renderTip(h); };
+  const loadHist  = () => { try { return JSON.parse(localStorage.getItem(LS_HIST) || '[]'); } catch { return []; } };
+  const saveHist  = (num) => { const h = [num, ...loadHist().filter(n => n !== num)].slice(0, 10); try { localStorage.setItem(LS_HIST, JSON.stringify(h)); } catch {} renderTip(h); };
   const renderTip = (hist) => { const el = document.getElementById('numHistoryList'); if (!el) return; el.textContent = hist.length ? hist.join('\n') : '— sin historial —'; };
-  const next = async () => {
+
+  /**
+   * Genera el siguiente número correlativo desde Supabase (o local como fallback).
+   * Aplica el número al campo #numDoc y lo guarda en historial.
+   * @param {boolean} silent - Si true, suprime Toasts y animación del botón.
+   * @returns {Promise<string>} El número generado.
+   */
+  const generate = async (silent = false) => {
     const btn = document.getElementById('btnAutoNum');
-    if (!btn) return;
-    btn.disabled = true; btn.classList.add('loading'); btn.textContent = '⏳ Generando…';
-    const isCot = State.mode === 'cot', prefix = isCot ? 'COT' : 'EP', year = new Date().getFullYear();
+    if (!silent && btn) { btn.disabled = true; btn.classList.add('loading'); btn.textContent = '⏳ Generando…'; }
+
+    const isCot     = State.mode === 'cot';
+    const prefix    = isCot ? 'COT' : 'EP';
+    const year      = new Date().getFullYear();
     const counterId = 'hauler__' + prefix + '__' + year;
-    let num = null, fromCloud = false;
+
+    let num       = null;
+    let fromCloud = false;
+
     try {
       const seq = await DB.rpc('hauler_next_num', { counter_id: counterId });
-      if (seq !== null && seq !== undefined) { num = prefix + '-' + year + '-' + String(seq).padStart(4, '0'); fromCloud = true; }
-    } catch (e) {}
-    if (!num) { num = prefix + '-' + year + '-L' + Date.now().toString().slice(-5); Toast.show('⚠️ Sin conexión a Supabase — número local generado'); }
+      if (seq !== null && seq !== undefined) {
+        num       = prefix + '-' + year + '-' + String(seq).padStart(4, '0');
+        fromCloud = true;
+      }
+    } catch (e) { /* red no disponible, fallback local */ }
+
+    if (!num) {
+      /* Fallback local: prefijo + año + 'L' + últimos 5 dígitos de timestamp */
+      num = prefix + '-' + year + '-L' + Date.now().toString().slice(-5);
+      if (!silent) Toast.show('⚠️ Sin conexión a Supabase — número local generado');
+    }
+
     setf('numDoc', num);
     saveHist((fromCloud ? '☁ ' : '💾 ') + num);
-    if (fromCloud) Toast.show('⚡ ' + num + ' — número correlativo generado');
-    btn.disabled = false; btn.classList.remove('loading'); btn.textContent = '⚡ N° Auto';
+
+    if (!silent && fromCloud) Toast.show('⚡ ' + num + ' — número correlativo generado');
+    if (!silent && btn) { btn.disabled = false; btn.classList.remove('loading'); btn.textContent = '⚡ N° Auto'; }
+
+    return num;
+  };
+
+  /* Wrapper para el botón UI — siempre muestra feedback y guarda */
+  const next = async () => {
+    await generate(false);
     AutoSave.flush();
   };
+
   const init = () => renderTip(loadHist());
-  return { next, init };
+
+  return { next, generate, init };
 })();
 
 /* ════════════════════════════════════════════════════════════════════════
@@ -1730,9 +1810,16 @@ const App = (() => {
   const init = async () => {
     Sync.setIdle();
     const localState = DB.lsRead('state'), localClients = DB.lsRead('clients', []);
-    if (localState) { restoreSnapshot(localState); } else {
+    if (localState) {
+      restoreSnapshot(localState);
+    } else {
+      /* Primera vez: establecer fecha de hoy y generar número correlativo */
       const hoy = new Date(), v30 = new Date(hoy); v30.setDate(v30.getDate() + 30);
-      setField('fechaEmision', iso(hoy)); setField('fechaVence', iso(v30)); Rows.add();
+      setField('fechaEmision', iso(hoy));
+      setField('fechaVence',   iso(v30));
+      Rows.add();
+      /* Generar número en background — no bloquea el render */
+      Counter.generate(true).then(() => AutoSave.flush());
     }
     Clients.list = localClients; Clients.renderSelector(); initCurrencySelect(); applyMode(State.mode, false);
     AutoSave.init(); Counter.init();
@@ -1824,26 +1911,52 @@ const App = (() => {
     Toast.show('💾 Guardado en Supabase');
   };
 
-  const newDoc = () => {
+  const newDoc = async () => {
     if (!confirm('¿Crear un nuevo documento en blanco?')) return;
     State.docId = uid();
-    const hoy = new Date(), v30 = new Date(hoy); v30.setDate(v30.getDate() + 30);
-    const pre = State.mode === 'cot' ? 'COT-' : 'EP-';
-    ['numDoc','cliNombre','cliRut','cliGiro','cliDir','cliCiudad','cliEmail','cliTel','cliContacto','cliContrato','cliOC','cliProyecto','cliSistema','prvNombre','prvRut','prvGiro','prvDir','prvCiudad','prvRegion','prvEmail','prvTel','prvContacto','condPago','condMoneda','condReajuste','resumenServicio'].forEach(id => setField(id, ''));
-    setField('numDoc', pre + Date.now().toString().slice(-4)); setField('fechaEmision', iso(hoy)); setField('fechaVence', iso(v30)); setField('selValidez', '30');
+
+    /* 1. Limpiar todos los campos de texto */
+    ['numDoc','cliNombre','cliRut','cliGiro','cliDir','cliCiudad','cliEmail','cliTel','cliContacto',
+     'cliContrato','cliOC','cliProyecto','cliSistema',
+     'prvNombre','prvRut','prvGiro','prvDir','prvCiudad','prvRegion','prvEmail','prvTel','prvContacto',
+     'condPago','condMoneda','condReajuste','resumenServicio'].forEach(id => setField(id, ''));
+
+    /* 2. Fecha de emision = HOY siempre */
+    const hoy = new Date();
+    const v30 = new Date(hoy); v30.setDate(v30.getDate() + 30);
+    setField('fechaEmision', iso(hoy));
+    setField('fechaVence',   iso(v30));
+    setField('selValidez',   '30');
+
     document.getElementById('chkIva').checked = true;
-    /* caracts removed */
-    removeLogo(); State.rows = []; State.extras = [];
+    removeLogo();
+    State.rows   = [];
+    State.extras = [];
     Rows.render(); Extras.render(); Calc.run();
-    Modal.close('modalHistory'); Rows.add(); AutoSave.flush();
-    Toast.show('📄 Nuevo documento en blanco');
+    Modal.close('modalHistory');
+    Rows.add();
+
+    /* 3. Numero correlativo automatico */
+    Toast.show('⏳ Generando número correlativo…');
+    await Counter.generate(true);
+    Toast.show('📄 Nuevo documento — ' + fv('numDoc'));
+
+    AutoSave.flush();
   };
 
-  const clearAll     = () => { if (!confirm('¿Dejar el documento completamente en blanco?')) return; newDoc(); };
-  const executeConvert = () => {
+  const clearAll = () => { if (!confirm('¿Dejar el documento completamente en blanco?')) return; newDoc(); };
+  const executeConvert = async () => {
     const newMode = State.mode === 'cot' ? 'ep' : 'cot';
-    State.docId = uid(); setMode(newMode); Modal.close('modalConvert');
-    Toast.show(newMode === 'ep' ? '✅ Convertido a Estado de Pago' : '📋 Convertido a Cotización');
+    State.docId = uid();
+    setMode(newMode);
+    /* Actualizar fecha de emision al dia actual tras conversión */
+    const hoy = new Date(), v30 = new Date(hoy); v30.setDate(v30.getDate() + 30);
+    setField('fechaEmision', iso(hoy));
+    setField('fechaVence',   iso(v30));
+    Modal.close('modalConvert');
+    Toast.show(newMode === 'ep' ? '✅ Convertido a EP — generando número…' : '📋 Convertido a Cotización — generando número…');
+    await Counter.generate(true);
+    Toast.show(newMode === 'ep' ? '✅ EP ' + fv('numDoc') : '📋 Cotización ' + fv('numDoc'));
     AutoSave.flush();
   };
   const loadLogo = (input) => {
@@ -2282,6 +2395,37 @@ const PDF = (() => {
     return '—';
   };
   const print = () => {
+    /* Mostrar modal de confirmación de impresión antes de generar PDF */
+    const num      = fv('numDoc') || '—';
+    const cliente  = fv('cliNombre') || 'Sin cliente';
+    const fecha    = fv('fechaEmision') || iso(new Date());
+    const isCot    = State.mode === 'cot';
+
+    document.getElementById('printConfirmNum').textContent    = num;
+    document.getElementById('printConfirmCliente').textContent = cliente;
+    document.getElementById('printConfirmFecha').textContent  = fecha;
+    document.getElementById('printConfirmTipo').textContent   = isCot ? 'Cotización' : 'Estado de Pago';
+    document.getElementById('modalPrintConfirm').classList.add('open');
+  };
+
+  /* Llamado por el modal: imprime con el número actual sin avanzar */
+  const doPrint = () => {
+    document.getElementById('modalPrintConfirm').classList.remove('open');
+    _executePrint();
+  };
+
+  /* Llamado por el modal: genera nuevo número correlativo y luego imprime */
+  const advanceAndPrint = async () => {
+    document.getElementById('modalPrintConfirm').classList.remove('open');
+    Toast.show('⏳ Avanzando correlativo…');
+    await Counter.generate(true);
+    AutoSave.flush();
+    Toast.show('🖨 Imprimiendo ' + fv('numDoc') + '…');
+    setTimeout(_executePrint, 400);   /* pequeña pausa para que el DOM se actualice */
+  };
+
+  /* Motor de impresión real (el contenido del print original) */
+  const _executePrint = () => {
     const isCot = State.mode === 'cot', cur = getCur(), conIva = document.getElementById('chkIva')?.checked ?? true;
     const tieneLogo = document.getElementById('logoImg')?.style.display !== 'none', logoSrc = document.getElementById('imgLogo')?.src || '', logoSize = document.getElementById('logoSize')?.value || '56';
     const brutoServ = State.rows.reduce((s, r) => s + ((+r.viajes || 0) * (+r.valorUnit || 0)), 0);
@@ -2300,7 +2444,7 @@ const PDF = (() => {
     if (!w) { alert('Permite las ventanas emergentes para imprimir.'); return; }
     w.document.open(); w.document.write(html); w.document.close();
   };
-  return { print };
+  return { print, doPrint, advanceAndPrint };
 })();
 
 /* ════════════════════════════════════════════════════════════════════════
@@ -2575,7 +2719,7 @@ document.addEventListener('keydown', e => {
   if (ctrl && e.key === 's') { e.preventDefault(); App.saveDoc(); }
   if (ctrl && e.key === 'p') { e.preventDefault(); PDF.print(); }
   if (e.key === 'Escape') {
-    ['modalConvert','modalClients','modalHistory'].forEach(id => Modal.close(id));
+    ['modalConvert','modalClients','modalHistory','modalPrintConfirm'].forEach(id => Modal.close(id));
     EmailPanel.close();
   }
 });
