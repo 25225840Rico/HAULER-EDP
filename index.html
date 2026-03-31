@@ -763,6 +763,46 @@ table.extras-table tbody td input:focus { border-color: #e0a030; }
 }
 .btn-new-doc:hover { background: #003ecc; }
 
+/* ═══════════════════════════════════════════════
+   ARCHIVE PANEL — filtrado por cliente
+═══════════════════════════════════════════════ */
+.archive-toolbar {
+  display: flex; gap: .4rem; padding: .5rem 1.3rem 0; flex-shrink: 0;
+  flex-wrap: wrap; align-items: center;
+}
+.archive-search {
+  flex: 1; min-width: 160px; padding: .38rem .75rem;
+  border: 1px solid var(--border); border-radius: 99px;
+  font: 400 .72rem/1 var(--font-sans); color: var(--t1);
+  background: #f8f9ff; transition: border-color .15s; outline: none;
+}
+.archive-search:focus { border-color: var(--blue); background: #fff; }
+.archive-search::placeholder { color: var(--t3); }
+.archive-client-select {
+  padding: .38rem .75rem; border: 1px solid var(--border); border-radius: 99px;
+  font: 500 .68rem/1 var(--font-sans); color: var(--t1);
+  background: #f8f9ff; cursor: pointer; outline: none; max-width: 200px;
+  transition: border-color .15s;
+}
+.archive-client-select:focus { border-color: var(--blue); }
+.archive-stats {
+  display: flex; gap: .6rem; padding: .2rem 1.3rem .3rem;
+  font: 500 .6rem/1 var(--font-sans); color: var(--t3);
+}
+.archive-stats span { display: inline-flex; align-items: center; gap: .2rem; }
+.archive-stats .stat-val { font-weight: 700; color: var(--blue); font-family: var(--font-mono); }
+.hist-item .hist-total { font-family: var(--font-mono); font-weight: 600; color: var(--blue); font-size: .7rem; }
+.hist-item .hist-mode-badge {
+  display: inline-flex; padding: 1px 6px; border-radius: 99px;
+  font: 700 .5rem/1 var(--font-sans); letter-spacing: .3px;
+}
+.hist-item .hist-mode-badge.cot { background: var(--blue-lt); color: var(--blue); }
+.hist-item .hist-mode-badge.ep  { background: #edfaf3; color: var(--green); }
+.hist-item .hist-active-badge {
+  background: var(--blue); color: #fff; font-size: .5rem;
+  padding: 1px 6px; border-radius: 99px; margin-left: 4px; font-weight: 700;
+}
+
 .panel { background: #f5f6f9; border-radius: 14px; padding: .9rem; }
 .panel h4 { font: 700 .6rem/1 var(--font-sans); color: var(--t3); text-transform: uppercase; letter-spacing: 1px; margin-bottom: .75rem; }
 .panel-sep { border: none; border-top: 1px solid var(--border); margin: .75rem 0; }
@@ -1070,7 +1110,7 @@ table.extras-table tbody td input:focus { border-color: #e0a030; }
   <button class="btn"         onclick="Rows.add()">➕ Servicio</button>
   <button class="btn"         onclick="Rows.removeLast()">➖ Quitar último</button>
   <button class="btn danger"  onclick="App.clearAll()">🗑 Limpiar</button>
-  <button class="btn"         onclick="Modal.openHistory()">🕓 Historial</button>
+  <button class="btn"         onclick="Modal.openHistory()">📁 Archivo</button>
   <button class="btn primary" onclick="App.saveDoc()">💾 Guardar</button>
   <button class="btn primary" onclick="Modal.openClients()">👥 Clientes y Rutas</button>
   <button class="btn primary" onclick="PDF.print()">🖨 Imprimir PDF</button>
@@ -1407,65 +1447,25 @@ table.extras-table tbody td input:focus { border-color: #e0a030; }
   </div>
 </div>
 
-<!-- MODAL: HISTORIAL (original intacto) -->
+<!-- MODAL: ARCHIVO DE DOCUMENTOS (mejorado con filtros) -->
 <div id="modalHistory" class="modal">
-  <div class="modal-box narrow">
+  <div class="modal-box" style="max-width:900px">
     <div class="modal-head">
-      <h3>🕓 Historial de Documentos</h3>
+      <h3>📁 Archivo de Documentos</h3>
       <button class="modal-close" onclick="Modal.close('modalHistory')">✕</button>
     </div>
-    <div class="hist-filters">
-      <button class="act" id="filtAll"  onclick="History.filter('all')">Todos</button>
-      <button id="filtCot" onclick="History.filter('cot')">📋 Cotizaciones</button>
-      <button id="filtEP"  onclick="History.filter('ep')">✅ EP</button>
+    <div class="archive-toolbar">
+      <input type="text" class="archive-search" id="archiveSearch" placeholder="Buscar por N°, cliente, ruta…" oninput="History.render()">
+      <select class="archive-client-select" id="archiveClientFilter" onchange="History.render()">
+        <option value="">Todos los clientes</option>
+      </select>
+      <button class="act" id="filtAll"  onclick="History.filter('all')" style="padding:.3rem .8rem;border-radius:99px;border:1px solid var(--border);font:500 .65rem/1 var(--font-sans);cursor:pointer;background:var(--blue);color:#fff;transition:all .15s">Todos</button>
+      <button id="filtCot" onclick="History.filter('cot')" style="padding:.3rem .8rem;border-radius:99px;border:1px solid var(--border);font:500 .65rem/1 var(--font-sans);cursor:pointer;background:#fff;color:var(--t3);transition:all .15s">📋 Cotizaciones</button>
+      <button id="filtEP"  onclick="History.filter('ep')" style="padding:.3rem .8rem;border-radius:99px;border:1px solid var(--border);font:500 .65rem/1 var(--font-sans);cursor:pointer;background:#fff;color:var(--t3);transition:all .15s">✅ EP</button>
     </div>
+    <div class="archive-stats" id="archiveStats"></div>
     <div class="hist-list" id="histList"></div>
     <button class="btn-new-doc" onclick="App.newDoc()">+ Nuevo documento en blanco</button>
-  </div>
-</div>
-
-<!-- ══════════════════════════════════════════════
-   MODAL: CONFIRMACIÓN DE IMPRESIÓN / CORRELATIVO
-   Permite imprimir con el número actual o avanzar al siguiente correlativo antes de imprimir.
-══════════════════════════════════════════════ -->
-<div id="modalPrintConfirm" class="modal">
-  <div class="modal-box tiny">
-    <div style="font-size:2rem;margin-bottom:.5rem">🖨</div>
-    <h3>Confirmar impresión</h3>
-    <p style="margin-bottom:.9rem">
-      Documento <strong id="printConfirmTipo">Cotización</strong>
-      &nbsp;·&nbsp;<strong id="printConfirmNum">—</strong><br>
-      <span style="font-size:.68rem;color:var(--t2)">
-        Cliente: <span id="printConfirmCliente">—</span>
-        &nbsp;·&nbsp;
-        Fecha: <span id="printConfirmFecha">—</span>
-      </span>
-    </p>
-
-    <!-- Aviso de correlativo -->
-    <div style="background:var(--blue-lt);border:1px solid #c0d0ff;border-radius:10px;padding:.7rem 1rem;margin-bottom:1.1rem;text-align:left">
-      <div style="font:700 .6rem/1 var(--font-sans);text-transform:uppercase;letter-spacing:.8px;color:var(--blue);margin-bottom:.4rem">
-        ⚡ Control de correlativo
-      </div>
-      <p style="font-size:.7rem;color:var(--t2);line-height:1.55;margin:0">
-        <strong style="color:var(--t1)">Imprimir con número actual</strong> si es la misma versión que ya guardaste.<br>
-        <strong style="color:var(--t1)">Avanzar y reimprimir</strong> si es una nueva emisión o copia oficial que debe quedar registrada con su propio número correlativo.
-      </p>
-    </div>
-
-    <div class="modal-action-row" style="flex-direction:column;gap:.5rem">
-      <div style="display:flex;gap:.5rem;justify-content:center;flex-wrap:wrap">
-        <button class="btn" onclick="document.getElementById('modalPrintConfirm').classList.remove('open')">
-          Cancelar
-        </button>
-        <button class="btn" onclick="PDF.doPrint()" style="border-color:var(--border)">
-          🖨 Imprimir con número actual
-        </button>
-        <button class="btn primary" onclick="PDF.advanceAndPrint()">
-          ⚡ Avanzar correlativo e imprimir
-        </button>
-      </div>
-    </div>
   </div>
 </div>
 
@@ -1660,9 +1660,15 @@ const Modal = (() => {
     open('modalClients');
   };
 
-  const openHistory = () => { History.render(); open('modalHistory'); };
+  const openHistory = () => {
+    const searchEl = document.getElementById('archiveSearch');
+    if (searchEl) searchEl.value = '';
+    History.filter('all');
+    History.render();
+    open('modalHistory');
+  };
 
-  ['modalConvert','modalClients','modalHistory','modalPrintConfirm'].forEach(id => {
+  ['modalConvert','modalClients','modalHistory'].forEach(id => {
     document.getElementById(id)?.addEventListener('click', e => { if (e.target.id === id) close(id); });
   });
 
@@ -1704,68 +1710,33 @@ const getCur = () => CURRENCIES.find(c => c.code === State.currency) || CURRENCI
 const fmt = n => { const c = getCur(); const v = Math.round(n * (10 ** c.dec)) / (10 ** c.dec); return v.toLocaleString(c.locale, { minimumFractionDigits: c.dec, maximumFractionDigits: c.dec }); };
 
 /* ════════════════════════════════════════════════════════════════════════
-   MÓDULO: Counter
-   - generate(silent): genera y aplica el siguiente correlativo.
-     silent=true → sin Toast, sin bloquear el botón (uso interno).
-     silent=false → con Toast y feedback visual (uso manual via botón).
-   - next(): wrapper del botón UI → llama generate(false).
+   MÓDULO: Counter (original)
 ════════════════════════════════════════════════════════════════════════ */
 const Counter = (() => {
   const LS_HIST = 'hauler_num_history';
-  const loadHist  = () => { try { return JSON.parse(localStorage.getItem(LS_HIST) || '[]'); } catch { return []; } };
-  const saveHist  = (num) => { const h = [num, ...loadHist().filter(n => n !== num)].slice(0, 10); try { localStorage.setItem(LS_HIST, JSON.stringify(h)); } catch {} renderTip(h); };
+  const loadHist = () => { try { return JSON.parse(localStorage.getItem(LS_HIST) || '[]'); } catch { return []; } };
+  const saveHist = (num) => { const h = [num, ...loadHist().filter(n => n !== num)].slice(0, 10); try { localStorage.setItem(LS_HIST, JSON.stringify(h)); } catch {} renderTip(h); };
   const renderTip = (hist) => { const el = document.getElementById('numHistoryList'); if (!el) return; el.textContent = hist.length ? hist.join('\n') : '— sin historial —'; };
-
-  /**
-   * Genera el siguiente número correlativo desde Supabase (o local como fallback).
-   * Aplica el número al campo #numDoc y lo guarda en historial.
-   * @param {boolean} silent - Si true, suprime Toasts y animación del botón.
-   * @returns {Promise<string>} El número generado.
-   */
-  const generate = async (silent = false) => {
+  const next = async () => {
     const btn = document.getElementById('btnAutoNum');
-    if (!silent && btn) { btn.disabled = true; btn.classList.add('loading'); btn.textContent = '⏳ Generando…'; }
-
-    const isCot     = State.mode === 'cot';
-    const prefix    = isCot ? 'COT' : 'EP';
-    const year      = new Date().getFullYear();
+    if (!btn) return;
+    btn.disabled = true; btn.classList.add('loading'); btn.textContent = '⏳ Generando…';
+    const isCot = State.mode === 'cot', prefix = isCot ? 'COT' : 'EP', year = new Date().getFullYear();
     const counterId = 'hauler__' + prefix + '__' + year;
-
-    let num       = null;
-    let fromCloud = false;
-
+    let num = null, fromCloud = false;
     try {
       const seq = await DB.rpc('hauler_next_num', { counter_id: counterId });
-      if (seq !== null && seq !== undefined) {
-        num       = prefix + '-' + year + '-' + String(seq).padStart(4, '0');
-        fromCloud = true;
-      }
-    } catch (e) { /* red no disponible, fallback local */ }
-
-    if (!num) {
-      /* Fallback local: prefijo + año + 'L' + últimos 5 dígitos de timestamp */
-      num = prefix + '-' + year + '-L' + Date.now().toString().slice(-5);
-      if (!silent) Toast.show('⚠️ Sin conexión a Supabase — número local generado');
-    }
-
+      if (seq !== null && seq !== undefined) { num = prefix + '-' + year + '-' + String(seq).padStart(4, '0'); fromCloud = true; }
+    } catch (e) {}
+    if (!num) { num = prefix + '-' + year + '-L' + Date.now().toString().slice(-5); Toast.show('⚠️ Sin conexión a Supabase — número local generado'); }
     setf('numDoc', num);
     saveHist((fromCloud ? '☁ ' : '💾 ') + num);
-
-    if (!silent && fromCloud) Toast.show('⚡ ' + num + ' — número correlativo generado');
-    if (!silent && btn) { btn.disabled = false; btn.classList.remove('loading'); btn.textContent = '⚡ N° Auto'; }
-
-    return num;
-  };
-
-  /* Wrapper para el botón UI — siempre muestra feedback y guarda */
-  const next = async () => {
-    await generate(false);
+    if (fromCloud) Toast.show('⚡ ' + num + ' — número correlativo generado');
+    btn.disabled = false; btn.classList.remove('loading'); btn.textContent = '⚡ N° Auto';
     AutoSave.flush();
   };
-
   const init = () => renderTip(loadHist());
-
-  return { next, generate, init };
+  return { next, init };
 })();
 
 /* ════════════════════════════════════════════════════════════════════════
@@ -1810,16 +1781,9 @@ const App = (() => {
   const init = async () => {
     Sync.setIdle();
     const localState = DB.lsRead('state'), localClients = DB.lsRead('clients', []);
-    if (localState) {
-      restoreSnapshot(localState);
-    } else {
-      /* Primera vez: establecer fecha de hoy y generar número correlativo */
+    if (localState) { restoreSnapshot(localState); } else {
       const hoy = new Date(), v30 = new Date(hoy); v30.setDate(v30.getDate() + 30);
-      setField('fechaEmision', iso(hoy));
-      setField('fechaVence',   iso(v30));
-      Rows.add();
-      /* Generar número en background — no bloquea el render */
-      Counter.generate(true).then(() => AutoSave.flush());
+      setField('fechaEmision', iso(hoy)); setField('fechaVence', iso(v30)); Rows.add();
     }
     Clients.list = localClients; Clients.renderSelector(); initCurrencySelect(); applyMode(State.mode, false);
     AutoSave.init(); Counter.init();
@@ -1901,63 +1865,62 @@ const App = (() => {
   };
 
   const saveDoc = () => {
-    State.docId = State.docId || uid();
+    /* Ensure document has an ID */
+    if (!State.docId) State.docId = uid();
     const snap = { ...AutoSave.capture(), savedAt: new Date().toISOString(), id: State.docId };
     let hist = DB.lsRead('docs', []);
-    const idx = hist.findIndex(d => d.id === snap.id);
-    if (idx >= 0) hist[idx] = snap; else hist.push(snap);
-    if (hist.length > 200) hist = hist.slice(-200);
-    DB.save('docs', hist, 300); DB.save('state', snap, 300);
-    Toast.show('💾 Guardado en Supabase');
+    const idx = hist.findIndex(d => String(d.id) === String(snap.id));
+    if (idx >= 0) {
+      hist[idx] = snap;
+    } else {
+      hist.push(snap);
+    }
+    /* Keep max 500 documents */
+    if (hist.length > 500) hist = hist.slice(-500);
+    DB.save('docs', hist, 300);
+    DB.save('state', snap, 300);
+    Toast.show('💾 Documento guardado · ' + (snap.numDoc || 'sin número'));
   };
 
-  const newDoc = async () => {
-    if (!confirm('¿Crear un nuevo documento en blanco?')) return;
+  const newDoc = () => {
+    if (!confirm('¿Crear un nuevo documento en blanco? El documento actual se guardará automáticamente.')) return;
+    /* Auto-save current document if it has content */
+    if (State.docId && fv('cliNombre').trim()) {
+      saveDoc();
+    }
     State.docId = uid();
-
-    /* 1. Limpiar todos los campos de texto */
-    ['numDoc','cliNombre','cliRut','cliGiro','cliDir','cliCiudad','cliEmail','cliTel','cliContacto',
-     'cliContrato','cliOC','cliProyecto','cliSistema',
-     'prvNombre','prvRut','prvGiro','prvDir','prvCiudad','prvRegion','prvEmail','prvTel','prvContacto',
-     'condPago','condMoneda','condReajuste','resumenServicio'].forEach(id => setField(id, ''));
-
-    /* 2. Fecha de emision = HOY siempre */
-    const hoy = new Date();
-    const v30 = new Date(hoy); v30.setDate(v30.getDate() + 30);
+    const hoy = new Date(), v30 = new Date(hoy); v30.setDate(v30.getDate() + 30);
+    const pre = State.mode === 'cot' ? 'COT-' : 'EP-';
+    ['numDoc','cliNombre','cliRut','cliGiro','cliDir','cliCiudad','cliEmail','cliTel','cliContacto','cliContrato','cliOC','cliProyecto','cliSistema','condPago','condMoneda','condReajuste','resumenServicio'].forEach(id => setField(id, ''));
+    /* Preserve provider data */
+    setField('numDoc', pre + Date.now().toString().slice(-4));
     setField('fechaEmision', iso(hoy));
-    setField('fechaVence',   iso(v30));
-    setField('selValidez',   '30');
-
+    setField('fechaVence', iso(v30));
+    setField('selValidez', '30');
+    setField('resumenServicio', 'HAULER SpA ofrece el servicio de transporte corporativo de pasajeros, que comprende el traslado de personal en vehículos en óptimas condiciones mecánicas y de presentación, operados por conductores profesionales certificados. El servicio incluye combustible, peajes, seguros obligatorios y atención ante contingencias operacionales, garantizando puntualidad, seguridad vial y coordinación permanente con el cliente. La presente oferta tiene una vigencia de 30 días a partir de su fecha de emisión.');
     document.getElementById('chkIva').checked = true;
-    removeLogo();
-    State.rows   = [];
-    State.extras = [];
+    removeLogo(); State.rows = []; State.extras = [];
     Rows.render(); Extras.render(); Calc.run();
-    Modal.close('modalHistory');
-    Rows.add();
-
-    /* 3. Numero correlativo automatico */
-    Toast.show('⏳ Generando número correlativo…');
-    await Counter.generate(true);
-    Toast.show('📄 Nuevo documento — ' + fv('numDoc'));
-
-    AutoSave.flush();
+    Modal.close('modalHistory'); Rows.add(); AutoSave.flush();
+    Toast.show('📄 Nuevo documento en blanco');
   };
 
-  const clearAll = () => { if (!confirm('¿Dejar el documento completamente en blanco?')) return; newDoc(); };
-  const executeConvert = async () => {
+  const clearAll = () => {
+    if (!confirm('¿Dejar el documento completamente en blanco? El documento actual se guardará primero.')) return;
+    if (State.docId && fv('cliNombre').trim()) saveDoc();
+    newDoc();
+  };
+  const executeConvert = () => {
+    /* Save current document before converting */
+    saveDoc();
     const newMode = State.mode === 'cot' ? 'ep' : 'cot';
+    /* Create new document ID for the converted version */
     State.docId = uid();
     setMode(newMode);
-    /* Actualizar fecha de emision al dia actual tras conversión */
-    const hoy = new Date(), v30 = new Date(hoy); v30.setDate(v30.getDate() + 30);
-    setField('fechaEmision', iso(hoy));
-    setField('fechaVence',   iso(v30));
     Modal.close('modalConvert');
-    Toast.show(newMode === 'ep' ? '✅ Convertido a EP — generando número…' : '📋 Convertido a Cotización — generando número…');
-    await Counter.generate(true);
-    Toast.show(newMode === 'ep' ? '✅ EP ' + fv('numDoc') : '📋 Cotización ' + fv('numDoc'));
-    AutoSave.flush();
+    /* Auto-save the converted document */
+    saveDoc();
+    Toast.show(newMode === 'ep' ? '✅ Convertido y guardado como Estado de Pago' : '📋 Convertido y guardado como Cotización');
   };
   const loadLogo = (input) => {
     const file = input.files[0]; if (!file) return;
@@ -2080,10 +2043,14 @@ const Rows = (() => {
       const vu = document.getElementById('vu_' + r.id);
       if (vi) r.viajes    = +vi.value || 0;
       if (vu) r.valorUnit = +vu.value || 0;
-      /* También capturar campos de texto */
-      ['vehiculo','patente','ruta','pasajeros'].forEach(k => {
-        const el = document.querySelector('tr[data-id="' + r.id + '"] td input[oninput*="' + k + '"]');
-        if (el) r[k] = el.value;
+      /* Capturar campos de texto de la fila */
+      const tr = document.querySelector('tr[data-id="' + r.id + '"]');
+      if (!tr) return;
+      const inputs = tr.querySelectorAll('td input');
+      inputs.forEach(inp => {
+        const handler = inp.getAttribute('oninput') || '';
+        const match = handler.match(/setField\('[^']+','(\w+)'/);
+        if (match && match[1]) r[match[1]] = inp.value;
       });
     });
   };
@@ -2333,50 +2300,161 @@ const Routes = (() => {
 })();
 
 /* ════════════════════════════════════════════════════════════════════════
-   MÓDULO: History (original)
+   MÓDULO: History (mejorado — archivo con filtros por cliente y búsqueda)
 ════════════════════════════════════════════════════════════════════════ */
 const History = (() => {
   let _filter = 'all';
+
   const filter = (f) => {
     _filter = f;
-    ['filtAll','filtCot','filtEP'].forEach(id => document.getElementById(id)?.classList.remove('act'));
-    document.getElementById(f === 'all' ? 'filtAll' : f === 'cot' ? 'filtCot' : 'filtEP')?.classList.add('act');
+    ['filtAll','filtCot','filtEP'].forEach(id => {
+      const btn = document.getElementById(id);
+      if (!btn) return;
+      if ((f === 'all' && id === 'filtAll') || (f === 'cot' && id === 'filtCot') || (f === 'ep' && id === 'filtEP')) {
+        btn.style.background = 'var(--blue)'; btn.style.color = '#fff'; btn.style.borderColor = 'var(--blue)';
+      } else {
+        btn.style.background = '#fff'; btn.style.color = 'var(--t3)'; btn.style.borderColor = 'var(--border)';
+      }
+    });
     render();
   };
+
+  /* Poblar el select de clientes únicos */
+  const _populateClientFilter = (docs) => {
+    const sel = document.getElementById('archiveClientFilter');
+    if (!sel) return;
+    const clients = [...new Set(docs.map(d => (d.cliNombre || '').trim()).filter(Boolean))].sort();
+    const current = sel.value;
+    sel.innerHTML = '<option value="">Todos los clientes</option>' +
+      clients.map(c => `<option value="${c}"${c === current ? ' selected' : ''}>${c}</option>`).join('');
+  };
+
   const render = () => {
-    const all = DB.lsRead('docs', []), list = _filter === 'all' ? all : all.filter(d => (d.mode || d.modo || 'ep') === _filter);
-    const el  = document.getElementById('histList');
-    if (!list.length) { el.innerHTML = '<div class="hist-empty">Sin documentos guardados.</div>'; return; }
+    const all = DB.lsRead('docs', []);
+    _populateClientFilter(all);
+
+    /* Aplicar filtro de tipo */
+    let list = _filter === 'all' ? all : all.filter(d => (d.mode || d.modo || 'cot') === _filter);
+
+    /* Aplicar filtro de cliente */
+    const clientFilter = (document.getElementById('archiveClientFilter')?.value || '').trim();
+    if (clientFilter) {
+      list = list.filter(d => (d.cliNombre || '').trim() === clientFilter);
+    }
+
+    /* Aplicar búsqueda de texto */
+    const searchTerm = (document.getElementById('archiveSearch')?.value || '').trim().toLowerCase();
+    if (searchTerm) {
+      list = list.filter(d => {
+        const haystack = [
+          d.numDoc, d.cliNombre, d.cliRut, d.cliProyecto, d.cliCiudad,
+          d.prvNombre, d.fechaEmision,
+          ...(d.rows || []).map(r => r.ruta || ''),
+        ].join(' ').toLowerCase();
+        return haystack.includes(searchTerm);
+      });
+    }
+
+    /* Stats */
+    const statsEl = document.getElementById('archiveStats');
+    if (statsEl) {
+      const totalDocs = list.length;
+      const totalCot = list.filter(d => (d.mode || d.modo || 'cot') === 'cot').length;
+      const totalEP = list.filter(d => (d.mode || d.modo || 'cot') === 'ep').length;
+      let totalMonto = 0;
+      list.forEach(d => {
+        const rows = d.rows || [];
+        const exts = d.extras || [];
+        const bruto = rows.reduce((s, r) => s + ((+r.viajes || 0) * (+r.valorUnit || 0)), 0)
+                    + exts.reduce((s, e) => s + ((+e.cantidad || 0) * (+e.valorUnit || 0)), 0);
+        totalMonto += (d.conIva !== false) ? Math.round(bruto * 1.19) : bruto;
+      });
+      const cur = CURRENCIES.find(c => c.code === 'CLP') || CURRENCIES[0];
+      statsEl.innerHTML =
+        `<span>📄 <span class="stat-val">${totalDocs}</span> doc${totalDocs !== 1 ? 's' : ''}</span>` +
+        `<span>📋 <span class="stat-val">${totalCot}</span> cot</span>` +
+        `<span>✅ <span class="stat-val">${totalEP}</span> EP</span>` +
+        `<span>💰 <span class="stat-val">${cur.sym} ${Math.round(totalMonto).toLocaleString(cur.locale)}</span></span>`;
+    }
+
+    /* Renderizar lista */
+    const el = document.getElementById('histList');
+    if (!list.length) {
+      el.innerHTML = '<div class="hist-empty">Sin documentos' + (searchTerm ? ' que coincidan con la búsqueda' : clientFilter ? ' para este cliente' : ' guardados') + '.</div>';
+      return;
+    }
     el.innerHTML = [...list].reverse().map(d => {
-      const mode = d.mode || d.modo || 'cot', isCot = mode === 'cot', isActive = d.id === State.docId;
+      const mode = d.mode || d.modo || 'cot';
+      const isCot = mode === 'cot';
+      const isActive = d.id === State.docId;
       const fecha = d.savedAt ? new Date(d.savedAt).toLocaleString('es-CL', { day:'2-digit', month:'2-digit', year:'numeric', hour:'2-digit', minute:'2-digit' }) : '—';
-      const rows  = d.rows || d.filas || [], exts = d.extras || [];
+      const rows = d.rows || [];
+      const exts = d.extras || [];
       const bruto = rows.reduce((s, r) => s + ((+r.viajes || 0) * (+r.valorUnit || 0)), 0) + exts.reduce((s, e) => s + ((+e.cantidad || 0) * (+e.valorUnit || 0)), 0);
       const total = (d.conIva !== false) ? Math.round(bruto * 1.19) : bruto;
-      const cur   = CURRENCIES.find(c => c.code === (d.currency || d.moneda || 'CLP')) || CURRENCIES[0];
+      const cur = CURRENCIES.find(c => c.code === (d.currency || 'CLP')) || CURRENCIES[0];
+      const rutas = [...new Set(rows.map(r => r.ruta).filter(Boolean))].join(', ');
+      const totalFmt = cur.sym + ' ' + Math.round(total).toLocaleString(cur.locale);
+
       return `<div class="hist-item" onclick="History.load('${d.id}')">
-        <div class="hist-icon">${isActive ? (isCot ? '📂' : '📁') : isCot ? '📋' : '📄'}</div>
+        <div class="hist-icon">${isActive ? '📂' : isCot ? '📋' : '📄'}</div>
         <div class="hist-info">
-          <div class="hist-title">${d.numDoc || '—'} <span style="background:var(--blue-lt);color:var(--blue);font-size:.55rem;padding:1px 5px;border-radius:99px">${isCot ? 'COT' : 'EP'}</span>${isActive ? '<span style="background:var(--blue);color:#fff;font-size:.55rem;padding:1px 6px;border-radius:99px;margin-left:4px">actual</span>' : ''}</div>
-          <div class="hist-sub"><span>👤 ${d.cliNombre || 'Sin cliente'}</span><span>📅 ${d.fechaEmision || '—'}</span><span>💰 ${cur.sym} ${Math.round(total).toLocaleString(cur.locale)}</span><span>🕓 ${fecha}</span></div>
+          <div class="hist-title">
+            ${esc(d.numDoc || '—')}
+            <span class="hist-mode-badge ${isCot ? 'cot' : 'ep'}">${isCot ? 'COT' : 'EP'}</span>
+            ${isActive ? '<span class="hist-active-badge">actual</span>' : ''}
+          </div>
+          <div class="hist-sub">
+            <span>👤 ${esc(d.cliNombre || 'Sin cliente')}</span>
+            ${rutas ? '<span>🛣 ' + esc(rutas.length > 30 ? rutas.slice(0, 30) + '…' : rutas) + '</span>' : ''}
+            <span>📅 ${d.fechaEmision || '—'}</span>
+            <span class="hist-total">💰 ${totalFmt}</span>
+            <span>🕓 ${fecha}</span>
+          </div>
         </div>
         <div class="hist-item-actions" onclick="event.stopPropagation()">
+          <button onclick="History.duplicate('${d.id}')" title="Duplicar">📑</button>
           <button onclick="History.load('${d.id}')" title="Cargar">✓</button>
           <button class="del" onclick="History.del('${d.id}')" title="Eliminar">✕</button>
         </div>
       </div>`;
     }).join('');
   };
+
   const load = (id) => {
-    const d = DB.lsRead('docs', []).find(x => String(x.id) === String(id)); if (!d) return;
-    State.docId = d.id; App.restoreSnapshot(d); Modal.close('modalHistory'); Toast.show('📂 ' + (d.numDoc || 'Documento cargado'));
+    const d = DB.lsRead('docs', []).find(x => String(x.id) === String(id));
+    if (!d) return;
+    State.docId = d.id;
+    App.restoreSnapshot(d);
+    Modal.close('modalHistory');
+    Toast.show('📂 ' + (d.numDoc || 'Documento cargado'));
   };
+
   const del = (id) => {
     if (!confirm('¿Eliminar este documento del historial?')) return;
     const h = DB.lsRead('docs', []).filter(d => String(d.id) !== String(id));
-    DB.save('docs', h); if (String(State.docId) === String(id)) State.docId = null; render(); Toast.show('🗑 Eliminado del historial');
+    DB.save('docs', h);
+    if (String(State.docId) === String(id)) State.docId = null;
+    render();
+    Toast.show('🗑 Eliminado del historial');
   };
-  return { filter, render, load, del };
+
+  /* Duplicar documento */
+  const duplicate = (id) => {
+    const d = DB.lsRead('docs', []).find(x => String(x.id) === String(id));
+    if (!d) return;
+    const newDoc = JSON.parse(JSON.stringify(d));
+    newDoc.id = uid();
+    newDoc.numDoc = (d.numDoc || '') + '-COPIA';
+    newDoc.savedAt = new Date().toISOString();
+    const hist = DB.lsRead('docs', []);
+    hist.push(newDoc);
+    DB.save('docs', hist);
+    render();
+    Toast.show('📑 Documento duplicado');
+  };
+
+  return { filter, render, load, del, duplicate };
 })();
 
 window._restoreSnapshot = (snap) => App.restoreSnapshot(snap);
@@ -2395,37 +2473,8 @@ const PDF = (() => {
     return '—';
   };
   const print = () => {
-    /* Mostrar modal de confirmación de impresión antes de generar PDF */
-    const num      = fv('numDoc') || '—';
-    const cliente  = fv('cliNombre') || 'Sin cliente';
-    const fecha    = fv('fechaEmision') || iso(new Date());
-    const isCot    = State.mode === 'cot';
-
-    document.getElementById('printConfirmNum').textContent    = num;
-    document.getElementById('printConfirmCliente').textContent = cliente;
-    document.getElementById('printConfirmFecha').textContent  = fecha;
-    document.getElementById('printConfirmTipo').textContent   = isCot ? 'Cotización' : 'Estado de Pago';
-    document.getElementById('modalPrintConfirm').classList.add('open');
-  };
-
-  /* Llamado por el modal: imprime con el número actual sin avanzar */
-  const doPrint = () => {
-    document.getElementById('modalPrintConfirm').classList.remove('open');
-    _executePrint();
-  };
-
-  /* Llamado por el modal: genera nuevo número correlativo y luego imprime */
-  const advanceAndPrint = async () => {
-    document.getElementById('modalPrintConfirm').classList.remove('open');
-    Toast.show('⏳ Avanzando correlativo…');
-    await Counter.generate(true);
-    AutoSave.flush();
-    Toast.show('🖨 Imprimiendo ' + fv('numDoc') + '…');
-    setTimeout(_executePrint, 400);   /* pequeña pausa para que el DOM se actualice */
-  };
-
-  /* Motor de impresión real (el contenido del print original) */
-  const _executePrint = () => {
+    /* Auto-save before printing */
+    App.saveDoc();
     const isCot = State.mode === 'cot', cur = getCur(), conIva = document.getElementById('chkIva')?.checked ?? true;
     const tieneLogo = document.getElementById('logoImg')?.style.display !== 'none', logoSrc = document.getElementById('imgLogo')?.src || '', logoSize = document.getElementById('logoSize')?.value || '56';
     const brutoServ = State.rows.reduce((s, r) => s + ((+r.viajes || 0) * (+r.valorUnit || 0)), 0);
@@ -2444,7 +2493,7 @@ const PDF = (() => {
     if (!w) { alert('Permite las ventanas emergentes para imprimir.'); return; }
     w.document.open(); w.document.write(html); w.document.close();
   };
-  return { print, doPrint, advanceAndPrint };
+  return { print };
 })();
 
 /* ════════════════════════════════════════════════════════════════════════
@@ -2464,7 +2513,7 @@ const Rut = (() => {
 ════════════════════════════════════════════════════════════════════════ */
 const iso    = d => d.toISOString().slice(0, 10);
 const uid    = () => 'r' + Date.now() + Math.floor(Math.random() * 9999);
-const esc    = v => v == null ? '' : String(v).replace(/"/g, '&quot;');
+const esc    = v => v == null ? '' : String(v).replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 const fv     = id => { const el = document.getElementById(id); return el ? el.value : ''; };
 const gf     = id => { const el = document.getElementById(id); return el ? el.value.trim() : ''; };
 const setf   = (id, v) => { const el = document.getElementById(id); if (el) el.value = v || ''; };
@@ -2718,8 +2767,9 @@ document.addEventListener('keydown', e => {
   const ctrl = e.ctrlKey || e.metaKey;
   if (ctrl && e.key === 's') { e.preventDefault(); App.saveDoc(); }
   if (ctrl && e.key === 'p') { e.preventDefault(); PDF.print(); }
+  if (ctrl && e.key === 'h') { e.preventDefault(); Modal.openHistory(); }
   if (e.key === 'Escape') {
-    ['modalConvert','modalClients','modalHistory','modalPrintConfirm'].forEach(id => Modal.close(id));
+    ['modalConvert','modalClients','modalHistory'].forEach(id => Modal.close(id));
     EmailPanel.close();
   }
 });
