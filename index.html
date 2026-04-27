@@ -171,6 +171,7 @@ body {
   transition: all .35s;
   white-space: nowrap;
   user-select: none;
+  cursor: pointer;
 }
 .sync-dot::before {
   content: '';
@@ -186,9 +187,26 @@ body {
 .sync-dot.ok      { color: #1a7a3c;    background: #edfaf3;   border-color: #8fd4a8; }
 .sync-dot.ok::before      { background: #22bb66; }
 .sync-dot.err     { color: #c0392b;    background: #fff0f0;   border-color: #f5b0b0; }
-.sync-dot.err::before     { background: var(--red); }
+.sync-dot.err::before     { background: var(--red); animation: blink .8s infinite alternate; }
+.sync-dot.reconnecting { color: #b07800; background: var(--gold-lt); border-color: #f0d080; }
+.sync-dot.reconnecting::before { background: #f0a000; animation: spin 1s linear infinite; }
 
 @keyframes blink { from { opacity: .4; } to { opacity: 1; } }
+
+.queue-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: .25rem;
+  font: 700 .55rem/1 var(--font-sans);
+  background: var(--gold-lt);
+  color: var(--gold);
+  border: 1px solid #f0d080;
+  border-radius: 99px;
+  padding: .2rem .55rem;
+  margin-left: .25rem;
+  cursor: help;
+}
+.queue-badge.zero { display: none; }
 
 /* ═══════════════════════════════════════════════
    3. BANNER MODO
@@ -397,12 +415,12 @@ body.modo-ep  .doc { border-top: 3px solid var(--blue); }
 .caract-item:has(input:checked) { background: var(--blue-lt); border-color: #c0d0ff; color: var(--t1); }
 
 /* ═══════════════════════════════════════════════
-   8. TABLA DE SERVICIOS — CORREGIDA ✓
+   8. TABLA DE SERVICIOS
 ═══════════════════════════════════════════════ */
-.table-section { 
-  padding: 1.1rem 2rem; 
-  overflow-x: auto; 
-  -webkit-overflow-scrolling: touch; 
+.table-section {
+  padding: 1.1rem 2rem;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
 }
 
 .section-row {
@@ -411,18 +429,18 @@ body.modo-ep  .doc { border-top: 3px solid var(--blue); }
 .section-row .section-title { margin-bottom: 0; }
 
 table {
-  width: 100%; 
+  width: 100%;
   min-width: 100%;
   border-collapse: collapse;
-  font-size: .76rem; 
+  font-size: .76rem;
   table-layout: auto;
   background: #fff;
 }
 
 thead th {
   background: #f2f5ff;
-  font: 600 .56rem/1 var(--font-sans); 
-  letter-spacing: .4px; 
+  font: 600 .56rem/1 var(--font-sans);
+  letter-spacing: .4px;
   text-transform: uppercase;
   color: #0055CC;
   padding: .7rem .6rem;
@@ -446,38 +464,38 @@ table th:nth-child(7) { min-width: 95px; }
 table th:nth-child(8) { min-width: 90px; }
 table th:nth-child(9) { width: 2.2rem; }
 
-tbody tr { 
-  height: auto; 
-  position: relative; 
-  transition: background .12s; 
+tbody tr {
+  height: auto;
+  position: relative;
+  transition: background .12s;
   border-bottom: 1px solid #f0f2f8;
 }
 tbody tr:hover { background: #f8faff; }
 tbody tr + tr::before { display: none; }
 
-tbody td { 
+tbody td {
   padding: .6rem .5rem;
-  text-align: center; 
+  text-align: center;
   vertical-align: middle;
   overflow: visible;
 }
-tbody td:first-child { 
-  text-align: left; 
+tbody td:first-child {
+  text-align: left;
   padding-left: 1rem;
 }
 
 tbody td input[type=text],
 tbody td input[type=number] {
-  width: 100%; 
-  min-width: 0; 
+  width: 100%;
+  min-width: 0;
   background: transparent;
   border: 1px solid transparent;
-  font: 400 .75rem/1 var(--font-sans); 
+  font: 400 .75rem/1 var(--font-sans);
   color: var(--t1);
-  text-align: center; 
-  padding: .35rem .4rem; 
+  text-align: center;
+  padding: .35rem .4rem;
   border-radius: 6px;
-  transition: all .15s; 
+  transition: all .15s;
   box-sizing: border-box;
 }
 tbody td:first-child input { text-align: left; }
@@ -520,7 +538,7 @@ td.num input, td.num { font-family: var(--font-mono); font-size: .73rem; }
 .btn-del:hover { background: rgba(217,48,48,.08); color: var(--red); border-color: #f5b0b0; }
 
 /* ═══════════════════════════════════════════════
-   PERÍODO — Compacto y Funcional
+   PERÍODO
 ═══════════════════════════════════════════════ */
 .periodo-wrap {
   width: 100%;
@@ -562,8 +580,8 @@ td.num input, td.num { font-family: var(--font-mono); font-size: .73rem; }
   overflow: hidden;
   text-overflow: ellipsis;
 }
-.tipo-pill.act { 
-  background: var(--blue); 
+.tipo-pill.act {
+  background: var(--blue);
   color: #fff;
   border-color: var(--blue);
   font-weight: 600;
@@ -587,9 +605,9 @@ td.num input, td.num { font-family: var(--font-mono); font-size: .73rem; }
   box-sizing: border-box;
 }
 .periodo-inputs input:focus,
-.periodo-rango-row input:focus { 
-  outline: none; 
-  border-color: var(--blue); 
+.periodo-rango-row input:focus {
+  outline: none;
+  border-color: var(--blue);
   background: #fff;
   box-shadow: 0 0 0 2px rgba(0,85,255,.1);
 }
@@ -701,7 +719,7 @@ table.extras-table tbody td input:focus { border-color: #e0a030; }
 .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
 
 /* ═══════════════════════════════════════════════
-   13. MODALES (base original)
+   13. MODALES
 ═══════════════════════════════════════════════ */
 .modal {
   display: none; position: fixed; inset: 0;
@@ -764,7 +782,7 @@ table.extras-table tbody td input:focus { border-color: #e0a030; }
 .btn-new-doc:hover { background: #003ecc; }
 
 /* ═══════════════════════════════════════════════
-   ARCHIVE PANEL — filtrado por cliente
+   ARCHIVE PANEL
 ═══════════════════════════════════════════════ */
 .archive-toolbar {
   display: flex; gap: .4rem; padding: .5rem 1.3rem 0; flex-shrink: 0;
@@ -886,10 +904,33 @@ table.extras-table tbody td input:focus { border-color: #e0a030; }
 .rut-modal-wrap .rut-ok-badge { right: .6rem; }
 
 /* ═══════════════════════════════════════════════
-   ★ EMAIL READER — widget flotante minimizable
+   PRINT-CORRELATIVO TOGGLE
 ═══════════════════════════════════════════════ */
+.print-opts {
+  display: flex;
+  align-items: center;
+  gap: .35rem;
+  background: rgba(255,255,255,.8);
+  border: 1px solid var(--border);
+  border-radius: 99px;
+  padding: .3rem .6rem;
+  cursor: pointer;
+  user-select: none;
+  transition: all .15s;
+}
+.print-opts:hover { background: #fff; border-color: var(--blue); }
+.print-opts input[type=checkbox] { accent-color: var(--blue); cursor: pointer; }
+.print-opts label {
+  font: 600 .58rem/1 var(--font-sans);
+  letter-spacing: .3px;
+  color: var(--t2);
+  cursor: pointer;
+  white-space: nowrap;
+}
 
-/* Botón flotante */
+/* ═══════════════════════════════════════════════
+   ★ EMAIL READER
+═══════════════════════════════════════════════ */
 .email-fab {
   position: fixed;
   bottom: 1.6rem;
@@ -918,7 +959,6 @@ table.extras-table tbody td input:focus { border-color: #e0a030; }
 .email-fab.ollama-on .fab-dot  { background: #7fffb8; }
 .email-fab.ollama-off .fab-dot { background: #ffb0b0; }
 
-/* Panel flotante */
 .email-panel {
   position: fixed;
   bottom: 4.8rem;
@@ -1043,7 +1083,6 @@ table.extras-table tbody td input:focus { border-color: #e0a030; }
   background: linear-gradient(135deg, #fff 60%, #f6f8ff);
 }
 
-/* Spinner inline */
 .spinner {
   display: inline-block; width: 11px; height: 11px;
   border: 1.8px solid rgba(0,85,255,.2); border-top-color: var(--blue);
@@ -1051,14 +1090,12 @@ table.extras-table tbody td input:focus { border-color: #e0a030; }
 }
 @keyframes spin { to { transform: rotate(360deg); } }
 
-/* Flash azul en campos que se rellenaron con IA */
 @keyframes aiFlash {
   0%   { border-bottom-color: var(--blue); box-shadow: 0 2px 0 0 rgba(0,85,255,.2); }
   100% { border-bottom-color: var(--border); box-shadow: none; }
 }
 .ai-filled { animation: aiFlash 1s ease-out forwards; }
 
-/* Ollama config inline dentro del panel */
 .ep-config {
   display: none; flex-direction: column; gap: .45rem;
   padding: .7rem .85rem; background: #f8f9ff;
@@ -1113,8 +1150,13 @@ table.extras-table tbody td input:focus { border-color: #e0a030; }
   <button class="btn"         onclick="Modal.openHistory()">📁 Archivo</button>
   <button class="btn primary" onclick="App.saveDoc()">💾 Guardar</button>
   <button class="btn primary" onclick="Modal.openClients()">👥 Clientes y Rutas</button>
+  <div class="print-opts" title="Si está activo, cada vez que imprimas se asignará un nuevo número correlativo desde Supabase">
+    <input type="checkbox" id="chkAutoNumPrint" checked>
+    <label for="chkAutoNumPrint">N° auto al imprimir</label>
+  </div>
   <button class="btn primary" onclick="PDF.print()">🖨 Imprimir PDF</button>
-  <span class="sync-dot idle" id="syncDot" title="Estado Supabase">☁ Iniciando…</span>
+  <span class="sync-dot idle" id="syncDot" title="Click para reconectar a Supabase" onclick="SyncQueue.forceReconnect()">☁ Iniciando…</span>
+  <span class="queue-badge zero" id="queueBadge" title="Operaciones pendientes en cola"></span>
 </div>
 
 <!-- ══════════ DOCUMENTO ══════════ -->
@@ -1377,7 +1419,7 @@ table.extras-table tbody td input:focus { border-color: #e0a030; }
 <div class="toast" id="toast"></div>
 
 <!-- ══════════════════════════════════════════════
-   MODAL: CONVERTIR (original intacto)
+   MODAL: CONVERTIR
 ══════════════════════════════════════════════ -->
 <div id="modalConvert" class="modal">
   <div class="modal-box tiny">
@@ -1391,7 +1433,7 @@ table.extras-table tbody td input:focus { border-color: #e0a030; }
   </div>
 </div>
 
-<!-- MODAL: CLIENTES Y RUTAS (original intacto) -->
+<!-- MODAL: CLIENTES Y RUTAS -->
 <div id="modalClients" class="modal">
   <div class="modal-box">
     <div class="modal-head">
@@ -1447,7 +1489,7 @@ table.extras-table tbody td input:focus { border-color: #e0a030; }
   </div>
 </div>
 
-<!-- MODAL: ARCHIVO DE DOCUMENTOS (mejorado con filtros) -->
+<!-- MODAL: ARCHIVO DE DOCUMENTOS -->
 <div id="modalHistory" class="modal">
   <div class="modal-box" style="max-width:900px">
     <div class="modal-head">
@@ -1470,16 +1512,13 @@ table.extras-table tbody td input:focus { border-color: #e0a030; }
 </div>
 
 <!-- ══════════════════════════════════════════════
-   ★ EMAIL READER — panel flotante minimizable
+   ★ EMAIL READER
 ══════════════════════════════════════════════ -->
-
-<!-- Botón flotante -->
 <button class="email-fab idle" id="emailFab" onclick="EmailPanel.toggle()">
   <span class="fab-dot"></span>
   📧 Leer Email · Ollama AI
 </button>
 
-<!-- Panel flotante -->
 <div class="email-panel" id="emailPanel">
 
   <div class="ep-head" id="epHead">
@@ -1491,7 +1530,6 @@ table.extras-table tbody td input:focus { border-color: #e0a030; }
 
   <div class="ep-body">
 
-    <!-- Config Ollama inline (colapsable) -->
     <div class="ep-config" id="epConfig">
       <div class="ep-config-row">
         <label>URL</label>
@@ -1535,7 +1573,6 @@ Asunto: Cotización transporte Faena Norte
       </button>
     </div>
 
-    <!-- Resultado -->
     <div class="ep-result" id="epResult">
       <div class="ep-result-title">✓ Datos extraídos</div>
       <div class="ep-result-grid" id="epResultGrid"></div>
@@ -1560,6 +1597,138 @@ const SB_URL = 'https://yethnzmpiouffmeaqkhy.supabase.co';
 const SB_KEY = 'sb_publishable_tXCnGYE_OjoH0yrFVM-vpA_rqBPXPaU';
 
 /* ════════════════════════════════════════════════════════════════════════
+   UTILIDADES GLOBALES
+════════════════════════════════════════════════════════════════════════ */
+const iso    = d => d.toISOString().slice(0, 10);
+const uid    = () => (typeof crypto !== 'undefined' && crypto.randomUUID) ? 'r' + crypto.randomUUID().slice(0, 16) : 'r' + Date.now() + Math.floor(Math.random() * 9999);
+const esc    = v => v == null ? '' : String(v).replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/'/g, '&#39;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+const fv     = id => { const el = document.getElementById(id); return el ? el.value : ''; };
+const gf     = id => { const el = document.getElementById(id); return el ? el.value.trim() : ''; };
+const setf   = (id, v) => { const el = document.getElementById(id); if (el) el.value = v || ''; };
+const setField = setf;
+const sleep  = ms => new Promise(r => setTimeout(r, ms));
+
+/* ════════════════════════════════════════════════════════════════════════
+   ★ MÓDULO: SyncQueue — Cola de escrituras pendientes con reconexión
+════════════════════════════════════════════════════════════════════════ */
+const SyncQueue = (() => {
+  const QKEY = 'hauler_sync_queue';
+  let _online = true;
+  let _checking = false;
+  let _pingTimer = null;
+  let _flushing = false;
+
+  /* Cargar/guardar cola desde localStorage para sobrevivir reload */
+  const _load = () => { try { return JSON.parse(localStorage.getItem(QKEY) || '[]'); } catch { return []; } };
+  const _save = (q) => { try { localStorage.setItem(QKEY, JSON.stringify(q)); } catch {} _updateBadge(q.length); };
+
+  const _updateBadge = (n) => {
+    const b = document.getElementById('queueBadge');
+    if (!b) return;
+    if (n > 0) { b.textContent = '⏳ ' + n + ' pendiente' + (n !== 1 ? 's' : ''); b.classList.remove('zero'); }
+    else { b.classList.add('zero'); }
+  };
+
+  /* Encolar una operación. Si la misma clave ya está, la sobreescribe (last-write-wins) */
+  const enqueue = (operation) => {
+    const q = _load();
+    const idx = q.findIndex(op => op.type === operation.type && op.key === operation.key);
+    if (idx >= 0) q[idx] = operation; else q.push(operation);
+    _save(q);
+  };
+
+  /* Drenar la cola — cuando Supabase está OK */
+  const flush = async () => {
+    if (_flushing) return;
+    const q = _load();
+    if (!q.length) return;
+    _flushing = true;
+    Sync.setSaving();
+    let ok = 0, fail = 0;
+    const remaining = [];
+    for (const op of q) {
+      const success = await DB._execOp(op);
+      if (success) ok++; else { fail++; remaining.push(op); }
+    }
+    _save(remaining);
+    _flushing = false;
+    if (remaining.length === 0) {
+      Sync.setOk();
+      if (ok > 0) Toast.show('✓ ' + ok + ' operación' + (ok !== 1 ? 'es' : '') + ' sincronizada' + (ok !== 1 ? 's' : ''));
+    } else {
+      _setOffline();
+    }
+  };
+
+  /* Marcar offline e iniciar ping periódico */
+  const _setOffline = () => {
+    _online = false;
+    Sync.setError();
+    _startPing();
+  };
+
+  /* Marcar online y drenar cola */
+  const _setOnline = () => {
+    if (_online) return;
+    _online = true;
+    _stopPing();
+    Sync.setReconnecting();
+    Toast.show('☁ Reconectado a Supabase — sincronizando…');
+    flush();
+  };
+
+  /* Ping periódico */
+  const _startPing = () => {
+    _stopPing();
+    _pingTimer = setInterval(() => check(), 15000);  // cada 15s
+  };
+  const _stopPing = () => { if (_pingTimer) { clearInterval(_pingTimer); _pingTimer = null; } };
+
+  /* Verifica conectividad con un select trivial */
+  const check = async () => {
+    if (_checking) return _online;
+    _checking = true;
+    try {
+      const sb = DB._sb();
+      const ctrl = new AbortController();
+      const t = setTimeout(() => ctrl.abort(), 5000);
+      const { error } = await sb.from('hauler_store').select('clave').limit(1).abortSignal(ctrl.signal);
+      clearTimeout(t);
+      if (!error) {
+        if (!_online) _setOnline();
+        else _online = true;
+      } else {
+        _setOffline();
+      }
+    } catch (e) {
+      _setOffline();
+    }
+    _checking = false;
+    return _online;
+  };
+
+  /* Forzar reconexión manual (al hacer click en el dot) */
+  const forceReconnect = async () => {
+    Toast.show('☁ Verificando conexión…');
+    Sync.setReconnecting();
+    const ok = await check();
+    if (ok) {
+      Toast.show('✓ Conexión OK');
+      App.syncFromSupabase();
+    } else {
+      Toast.show('✗ Sin conexión — se reintentará automáticamente');
+    }
+  };
+
+  const isOnline = () => _online;
+  const markOnline = () => { if (!_online) _setOnline(); };
+  const markOffline = () => _setOffline();
+  const queueSize = () => _load().length;
+
+  return { enqueue, flush, check, forceReconnect, isOnline, markOnline, markOffline, queueSize };
+})();
+
+/* ════════════════════════════════════════════════════════════════════════
    MÓDULO: DB
 ════════════════════════════════════════════════════════════════════════ */
 const DB = (() => {
@@ -1581,50 +1750,155 @@ const DB = (() => {
   const sbKey = name => DEVICE + '__' + name;
   const lsKey = name => DEVICE + '_' + name;
 
-  const lsRead  = (name, fallback = null) => { try { const raw = localStorage.getItem(lsKey(name)); return raw !== null ? JSON.parse(raw) : fallback; } catch { return fallback; } };
-  const lsWrite = (name, value) => { try { localStorage.setItem(lsKey(name), JSON.stringify(value)); } catch {} };
+  const lsRead  = (name, fallback = null) => {
+    try { const raw = localStorage.getItem(lsKey(name)); return raw !== null ? JSON.parse(raw) : fallback; }
+    catch { return fallback; }
+  };
+  const lsWrite = (name, value) => {
+    try { localStorage.setItem(lsKey(name), JSON.stringify(value)); }
+    catch (e) {
+      console.warn('[DB.lsWrite] localStorage cap reached:', e);
+      Toast.show('⚠️ localStorage casi lleno — limpiando docs antiguos');
+      // Cleanup oldest docs if quota exceeded
+      try {
+        const docs = lsRead('docs', []);
+        if (docs.length > 100) {
+          lsWrite('docs', docs.slice(-100));
+          localStorage.setItem(lsKey(name), JSON.stringify(value));
+        }
+      } catch {}
+    }
+  };
 
-  const sbRead  = async (name) => { try { const { data, error } = await sb().from('hauler_store').select('valor').eq('clave', sbKey(name)).limit(1); if (error) { console.warn('[DB.sbRead]', error.message); return null; } return data?.length ? data[0].valor : null; } catch (e) { return null; } };
+  /* Lectura desde Supabase con timeout */
+  const sbRead = async (name) => {
+    try {
+      const ctrl = new AbortController();
+      const t = setTimeout(() => ctrl.abort(), 8000);
+      const { data, error } = await sb()
+        .from('hauler_store')
+        .select('valor')
+        .eq('clave', sbKey(name))
+        .limit(1)
+        .abortSignal(ctrl.signal);
+      clearTimeout(t);
+      if (error) {
+        console.warn('[DB.sbRead]', error.message);
+        SyncQueue.markOffline();
+        return null;
+      }
+      SyncQueue.markOnline();
+      return data?.length ? data[0].valor : null;
+    } catch (e) {
+      SyncQueue.markOffline();
+      return null;
+    }
+  };
 
+  /* Ejecutar una operación encolada — usado por SyncQueue.flush */
+  const _execOp = async (op) => {
+    try {
+      if (op.type === 'upsert') {
+        const ctrl = new AbortController();
+        const t = setTimeout(() => ctrl.abort(), 8000);
+        const { error } = await sb()
+          .from('hauler_store')
+          .upsert({ clave: op.key, valor: op.value, updated_at: new Date().toISOString() }, { onConflict: 'clave' })
+          .abortSignal(ctrl.signal);
+        clearTimeout(t);
+        if (error) { console.warn('[DB._execOp upsert]', error.message); return false; }
+        return true;
+      }
+      return false;
+    } catch (e) {
+      console.warn('[DB._execOp]', e);
+      return false;
+    }
+  };
+
+  /* Escribir a Supabase con debounce. Si falla, encola. */
   const sbWrite = (name, value, delay = 600) => {
     clearTimeout(_timers[name]);
     _timers[name] = setTimeout(async () => {
       Sync.setSaving();
-      try {
-        const { error } = await sb().from('hauler_store').upsert({ clave: sbKey(name), valor: value, updated_at: new Date().toISOString() }, { onConflict: 'clave' });
-        error ? Sync.setError() : Sync.setOk();
-      } catch (e) { Sync.setError(); }
+      const op = { type: 'upsert', key: sbKey(name), value, name };
+      const success = await _execOp(op);
+      if (success) {
+        SyncQueue.markOnline();
+        Sync.setOk();
+        // After successful direct write, also try to flush any pending queue
+        if (SyncQueue.queueSize() > 0) SyncQueue.flush();
+      } else {
+        SyncQueue.enqueue(op);
+        SyncQueue.markOffline();
+      }
     }, delay);
   };
 
-  const save     = (name, value, delay) => { lsWrite(name, value); sbWrite(name, value, delay); };
+  /* Save: localStorage primero (sincrónico, garantizado), luego Supabase */
+  const save = (name, value, delay) => {
+    lsWrite(name, value);
+    sbWrite(name, value, delay);
+  };
+
   const loadMany = async (names) => {
     const keys = names.map(n => sbKey(n));
     try {
-      const { data, error } = await sb().from('hauler_store').select('clave, valor').in('clave', keys);
-      if (error) { return {}; }
+      const ctrl = new AbortController();
+      const t = setTimeout(() => ctrl.abort(), 10000);
+      const { data, error } = await sb()
+        .from('hauler_store')
+        .select('clave, valor')
+        .in('clave', keys)
+        .abortSignal(ctrl.signal);
+      clearTimeout(t);
+      if (error) { SyncQueue.markOffline(); return {}; }
+      SyncQueue.markOnline();
       const result = {};
       for (const row of (data || [])) { result[row.clave.replace(DEVICE + '__', '')] = row.valor; }
       return result;
-    } catch (e) { return {}; }
+    } catch (e) {
+      SyncQueue.markOffline();
+      return {};
+    }
   };
-  const rpc = async (fn, params) => { try { const { data, error } = await sb().rpc(fn, params); if (error) { return null; } return data; } catch (e) { return null; } };
 
-  return { save, lsRead, lsWrite, sbRead, loadMany, rpc, DEVICE };
+  const rpc = async (fn, params) => {
+    try {
+      const ctrl = new AbortController();
+      const t = setTimeout(() => ctrl.abort(), 8000);
+      const { data, error } = await sb().rpc(fn, params).abortSignal(ctrl.signal);
+      clearTimeout(t);
+      if (error) { SyncQueue.markOffline(); return null; }
+      SyncQueue.markOnline();
+      return data;
+    } catch (e) {
+      SyncQueue.markOffline();
+      return null;
+    }
+  };
+
+  return { save, lsRead, lsWrite, sbRead, sbWrite, loadMany, rpc, DEVICE, _sb: sb, _execOp };
 })();
 
 /* ════════════════════════════════════════════════════════════════════════
-   MÓDULO: Sync
+   MÓDULO: Sync — Indicador visual
 ════════════════════════════════════════════════════════════════════════ */
 const Sync = (() => {
   const el = () => document.getElementById('syncDot');
   let _resetTimer = null;
-  const set = (status, label) => { const dot = el(); if (!dot) return; dot.className = 'sync-dot ' + status; dot.textContent = label; };
+  const set = (status, label, title) => {
+    const dot = el(); if (!dot) return;
+    dot.className = 'sync-dot ' + status;
+    dot.textContent = label;
+    if (title) dot.title = title;
+  };
   return {
-    setIdle:   () => set('idle',   '☁ Sin cambios'),
-    setSaving: () => { clearTimeout(_resetTimer); set('saving', '☁ Guardando…'); },
-    setOk:     () => { set('ok', '☁ Guardado'); clearTimeout(_resetTimer); _resetTimer = setTimeout(() => set('idle', '☁ Sin cambios'), 3000); },
-    setError:  () => set('err', '☁ Error de red'),
+    setIdle:         () => set('idle', '☁ Sin cambios', 'Click para reconectar'),
+    setSaving:       () => { clearTimeout(_resetTimer); set('saving', '☁ Guardando…', ''); },
+    setOk:           () => { set('ok', '☁ Guardado', 'Sincronizado'); clearTimeout(_resetTimer); _resetTimer = setTimeout(() => set('idle', '☁ Sin cambios', 'Click para reconectar'), 3000); },
+    setError:        () => set('err', '☁ Sin conexión', 'Click para reintentar conexión'),
+    setReconnecting: () => set('reconnecting', '☁ Reconectando…', 'Verificando Supabase'),
   };
 })();
 
@@ -1633,11 +1907,11 @@ const Sync = (() => {
 ════════════════════════════════════════════════════════════════════════ */
 const Toast = (() => {
   let _timer = null;
-  return { show(msg) { const el = document.getElementById('toast'); el.textContent = msg; el.classList.add('show'); clearTimeout(_timer); _timer = setTimeout(() => el.classList.remove('show'), 2600); } };
+  return { show(msg) { const el = document.getElementById('toast'); if (!el) return; el.textContent = msg; el.classList.add('show'); clearTimeout(_timer); _timer = setTimeout(() => el.classList.remove('show'), 2600); } };
 })();
 
 /* ════════════════════════════════════════════════════════════════════════
-   MÓDULO: Modal (original)
+   MÓDULO: Modal
 ════════════════════════════════════════════════════════════════════════ */
 const Modal = (() => {
   const close  = id => document.getElementById(id)?.classList.remove('open');
@@ -1676,7 +1950,7 @@ const Modal = (() => {
 })();
 
 /* ════════════════════════════════════════════════════════════════════════
-   ESTADO GLOBAL (original)
+   ESTADO GLOBAL
 ════════════════════════════════════════════════════════════════════════ */
 const State = { mode: 'cot', currency: 'CLP', rows: [], extras: [], docId: null };
 
@@ -1697,50 +1971,102 @@ const CURRENCIES = [
   { code:'UYU', sym:'$',    name:'Peso uruguayo',          dec:2, locale:'es-UY' },
 ];
 
-const CARACT_LABELS = [
-  'Vehículo en óptimas condiciones operativas',
-  'Conductor profesional certificado',
-  'Traslado seguro origen → destino',
-  'Coordinación de horarios de traslado',
-  'Cumplimiento de planificación operativa',
-  'Atención ante contingencias operacionales',
-];
-
 const getCur = () => CURRENCIES.find(c => c.code === State.currency) || CURRENCIES[0];
 const fmt = n => { const c = getCur(); const v = Math.round(n * (10 ** c.dec)) / (10 ** c.dec); return v.toLocaleString(c.locale, { minimumFractionDigits: c.dec, maximumFractionDigits: c.dec }); };
 
 /* ════════════════════════════════════════════════════════════════════════
-   MÓDULO: Counter (original)
+   ★ MÓDULO: Counter — Correlativos con fallback local que mantiene secuencia
 ════════════════════════════════════════════════════════════════════════ */
 const Counter = (() => {
   const LS_HIST = 'hauler_num_history';
+  const LS_LAST = 'hauler_num_last';   // {prefix-year: lastNum}
+
   const loadHist = () => { try { return JSON.parse(localStorage.getItem(LS_HIST) || '[]'); } catch { return []; } };
-  const saveHist = (num) => { const h = [num, ...loadHist().filter(n => n !== num)].slice(0, 10); try { localStorage.setItem(LS_HIST, JSON.stringify(h)); } catch {} renderTip(h); };
+  const saveHist = (num) => {
+    const h = [num, ...loadHist().filter(n => n !== num)].slice(0, 10);
+    try { localStorage.setItem(LS_HIST, JSON.stringify(h)); } catch {}
+    renderTip(h);
+  };
   const renderTip = (hist) => { const el = document.getElementById('numHistoryList'); if (!el) return; el.textContent = hist.length ? hist.join('\n') : '— sin historial —'; };
-  const next = async () => {
+
+  const _loadLastMap = () => { try { return JSON.parse(localStorage.getItem(LS_LAST) || '{}'); } catch { return {}; } };
+  const _saveLastMap = (m) => { try { localStorage.setItem(LS_LAST, JSON.stringify(m)); } catch {} };
+  const _getLastLocal = (prefix, year) => {
+    const m = _loadLastMap();
+    return m[prefix + '-' + year] || 0;
+  };
+  const _setLastLocal = (prefix, year, n) => {
+    const m = _loadLastMap();
+    const key = prefix + '-' + year;
+    if (!m[key] || n > m[key]) { m[key] = n; _saveLastMap(m); }
+  };
+
+  /**
+   * Genera el siguiente correlativo.
+   * @param {boolean} silent - si true, no muestra toasts ni cambia el botón visualmente
+   * @returns {Promise<string|null>} el número generado (o null si falla)
+   */
+  const next = async (silent = false) => {
     const btn = document.getElementById('btnAutoNum');
-    if (!btn) return;
-    btn.disabled = true; btn.classList.add('loading'); btn.textContent = '⏳ Generando…';
-    const isCot = State.mode === 'cot', prefix = isCot ? 'COT' : 'EP', year = new Date().getFullYear();
+    if (btn && !silent) {
+      btn.disabled = true;
+      btn.classList.add('loading');
+      btn.textContent = '⏳ Generando…';
+    }
+    const isCot = State.mode === 'cot';
+    const prefix = isCot ? 'COT' : 'EP';
+    const year = new Date().getFullYear();
     const counterId = 'hauler__' + prefix + '__' + year;
-    let num = null, fromCloud = false;
+
+    let num = null, fromCloud = false, seq = null;
+
+    /* Intento 1: RPC en Supabase */
     try {
-      const seq = await DB.rpc('hauler_next_num', { counter_id: counterId });
-      if (seq !== null && seq !== undefined) { num = prefix + '-' + year + '-' + String(seq).padStart(4, '0'); fromCloud = true; }
-    } catch (e) {}
-    if (!num) { num = prefix + '-' + year + '-L' + Date.now().toString().slice(-5); Toast.show('⚠️ Sin conexión a Supabase — número local generado'); }
+      seq = await DB.rpc('hauler_next_num', { counter_id: counterId });
+      if (seq !== null && seq !== undefined) {
+        num = prefix + '-' + year + '-' + String(seq).padStart(4, '0');
+        fromCloud = true;
+        _setLastLocal(prefix, year, parseInt(seq));
+      }
+    } catch (e) { console.warn('[Counter] RPC failed:', e); }
+
+    /* Intento 2: incremento local manteniendo secuencia */
+    if (!num) {
+      const lastLocal = _getLastLocal(prefix, year);
+      const nextLocal = lastLocal + 1;
+      num = prefix + '-' + year + '-' + String(nextLocal).padStart(4, '0') + 'L';  // sufijo L = local
+      _setLastLocal(prefix, year, nextLocal);
+      if (!silent) Toast.show('⚠️ Sin conexión — número local: ' + num);
+    }
+
     setf('numDoc', num);
     saveHist((fromCloud ? '☁ ' : '💾 ') + num);
-    if (fromCloud) Toast.show('⚡ ' + num + ' — número correlativo generado');
-    btn.disabled = false; btn.classList.remove('loading'); btn.textContent = '⚡ N° Auto';
+
+    if (!silent && fromCloud) Toast.show('⚡ ' + num + ' — correlativo asignado');
+
+    if (btn && !silent) {
+      btn.disabled = false;
+      btn.classList.remove('loading');
+      btn.textContent = '⚡ N° Auto';
+    }
     AutoSave.flush();
+    return num;
   };
+
+  /* Sincroniza el último correlativo conocido al volver online */
+  const syncFromCloud = async () => {
+    const isCot = State.mode === 'cot';
+    const prefix = isCot ? 'COT' : 'EP';
+    const year = new Date().getFullYear();
+    /* No tenemos forma directa de leer "el último" sin consumir uno; lo dejamos en el next() */
+  };
+
   const init = () => renderTip(loadHist());
-  return { next, init };
+  return { next, init, syncFromCloud };
 })();
 
 /* ════════════════════════════════════════════════════════════════════════
-   MÓDULO: AutoSave (original)
+   MÓDULO: AutoSave
 ════════════════════════════════════════════════════════════════════════ */
 const AutoSave = (() => {
   let _timer = null;
@@ -1762,8 +2088,8 @@ const AutoSave = (() => {
       resumenServicio: fv('resumenServicio'),
       conIva: document.getElementById('chkIva')?.checked ?? true,
       tieneLogo: document.getElementById('logoImg')?.style.display !== 'none',
-      logoSrc: document.getElementById('imgLogo')?.src || '',
       logoSize: document.getElementById('logoSize')?.value || '56',
+      // logoSrc removido del state para no inflar payload (se guarda aparte en lsWrite('logo'))
       rows: JSON.parse(JSON.stringify(State.rows)),
       extras: JSON.parse(JSON.stringify(State.extras)),
     };
@@ -1775,31 +2101,58 @@ const AutoSave = (() => {
 })();
 
 /* ════════════════════════════════════════════════════════════════════════
-   MÓDULO: App (original)
+   MÓDULO: App
 ════════════════════════════════════════════════════════════════════════ */
 const App = (() => {
   const init = async () => {
     Sync.setIdle();
     const localState = DB.lsRead('state'), localClients = DB.lsRead('clients', []);
-    if (localState) { restoreSnapshot(localState); } else {
+    const localLogo  = DB.lsRead('logo');
+    if (localState) { restoreSnapshot(localState, localLogo); } else {
       const hoy = new Date(), v30 = new Date(hoy); v30.setDate(v30.getDate() + 30);
       setField('fechaEmision', iso(hoy)); setField('fechaVence', iso(v30)); Rows.add();
     }
     Clients.list = localClients; Clients.renderSelector(); initCurrencySelect(); applyMode(State.mode, false);
     AutoSave.init(); Counter.init();
     setTimeout(() => { Clients.updateInlineStatus(); Rut.initAll(); }, 150);
+
+    /* Drenar cola pendiente y luego sincronizar desde Supabase */
+    if (SyncQueue.queueSize() > 0) {
+      const ok = await SyncQueue.check();
+      if (ok) await SyncQueue.flush();
+    }
     syncFromSupabase();
   };
 
   const syncFromSupabase = async () => {
-    Sync.setSaving();
-    const sb = await DB.loadMany(['state', 'clients']);
-    if (sb.state) { const lTs = DB.lsRead('state')?.savedAt || 0, sTs = sb.state.savedAt || 0; if (!lTs || (sTs && sTs > lTs)) { restoreSnapshot(sb.state); DB.lsWrite('state', sb.state); Toast.show('☁ Datos restaurados desde Supabase'); } }
-    if (sb.clients && Array.isArray(sb.clients)) { const lc = DB.lsRead('clients', []); if (sb.clients.length >= lc.length) { Clients.list = sb.clients; DB.lsWrite('clients', sb.clients); Clients.renderSelector(); Clients.updateInlineStatus(); } }
+    Sync.setReconnecting();
+    const sb = await DB.loadMany(['state', 'clients', 'logo']);
+    const sbState = sb.state;
+    const sbClients = sb.clients;
+    const sbLogo = sb.logo;
+    if (sbState) {
+      const lTs = (DB.lsRead('state')?.savedAt || 0);
+      const sTs = (sbState.savedAt || 0);
+      if (!lTs || (sTs && sTs > lTs)) {
+        restoreSnapshot(sbState, sbLogo);
+        DB.lsWrite('state', sbState);
+        if (sbLogo) DB.lsWrite('logo', sbLogo);
+        Toast.show('☁ Datos restaurados desde Supabase');
+      }
+    }
+    if (sbClients && Array.isArray(sbClients)) {
+      const lc = DB.lsRead('clients', []);
+      if (sbClients.length >= lc.length) {
+        Clients.list = sbClients;
+        DB.lsWrite('clients', sbClients);
+        Clients.renderSelector();
+        Clients.updateInlineStatus();
+      }
+    }
     Sync.setOk();
   };
 
-  const restoreSnapshot = (snap) => {
+  const restoreSnapshot = (snap, logoData) => {
     if (!snap) return;
     if (snap.currency) { State.currency = snap.currency; }
     if (snap.docId)    { State.docId    = snap.docId; }
@@ -1807,9 +2160,22 @@ const App = (() => {
     const modo = snap.mode || 'cot'; State.mode = modo; applyMode(modo, false);
     const textFields = ['numDoc','fechaEmision','fechaVence','selValidez','cliNombre','cliRut','cliGiro','cliDir','cliCiudad','cliEmail','cliTel','cliContacto','cliContrato','cliOC','cliProyecto','cliSistema','prvNombre','prvRut','prvGiro','prvDir','prvCiudad','prvRegion','prvEmail','prvTel','prvContacto','condPago','condMoneda','condReajuste','resumenServicio'];
     textFields.forEach(id => { if (snap[id] !== undefined) setField(id, snap[id]); });
-    /* caracts removed */
     const chkIva = document.getElementById('chkIva'); if (chkIva && snap.conIva !== undefined) chkIva.checked = !!snap.conIva;
-    if (snap.tieneLogo && snap.logoSrc) { document.getElementById('imgLogo').src = snap.logoSrc; document.getElementById('logoText').style.display = 'none'; document.getElementById('logoImg').style.display = 'flex'; document.getElementById('logoSizeWrap').style.display = 'flex'; document.getElementById('btnRemoveLogo').style.display = 'inline-flex'; resizeLogo(snap.logoSize || 56); document.getElementById('logoSize').value = snap.logoSize || 56; } else { removeLogo(); }
+
+    /* Logo: viene como objeto separado o embedded en el snapshot */
+    const logoSrc = (logoData && logoData.src) || snap.logoSrc || '';
+    if (snap.tieneLogo && logoSrc) {
+      document.getElementById('imgLogo').src = logoSrc;
+      document.getElementById('logoText').style.display = 'none';
+      document.getElementById('logoImg').style.display = 'flex';
+      document.getElementById('logoSizeWrap').style.display = 'flex';
+      document.getElementById('btnRemoveLogo').style.display = 'inline-flex';
+      resizeLogo(snap.logoSize || 56);
+      document.getElementById('logoSize').value = snap.logoSize || 56;
+    } else {
+      removeLogo();
+    }
+
     const normId = id => id ? 'r' + String(id).replace(/^r/, '') : uid();
     State.rows   = (snap.rows   || []).map(r => ({ periodoTipo:'dia', periodoDesde:'', periodoHasta:'', periodoMes:'', periodoAnio:'', vehiculo:'', patente:'', ruta:'', pasajeros:'', viajes:0, valorUnit:0, ...r, id: normId(r.id) }));
     State.extras = (snap.extras || []).map(e => ({ tipo:'unit', cantidad:1, valorUnit:0, desc:'', ...e, id: normId(e.id) }));
@@ -1820,7 +2186,7 @@ const App = (() => {
 
   const initCurrencySelect = () => {
     const sel = document.getElementById('currencySelect');
-    sel.innerHTML = CURRENCIES.map(c => `<option value="${c.code}"${c.code === State.currency ? ' selected' : ''}>${c.sym} ${c.code} — ${c.name}</option>`).join('');
+    sel.innerHTML = CURRENCIES.map(c => '<option value="' + c.code + '"' + (c.code === State.currency ? ' selected' : '') + '>' + c.sym + ' ' + c.code + ' — ' + c.name + '</option>').join('');
   };
 
   const setCurrency = (code) => { State.currency = code; Calc.run(); Toast.show('💱 ' + getCur().sym + ' ' + getCur().code + ' — ' + getCur().name); AutoSave.flush(); };
@@ -1865,17 +2231,11 @@ const App = (() => {
   };
 
   const saveDoc = () => {
-    /* Ensure document has an ID */
     if (!State.docId) State.docId = uid();
     const snap = { ...AutoSave.capture(), savedAt: new Date().toISOString(), id: State.docId };
     let hist = DB.lsRead('docs', []);
     const idx = hist.findIndex(d => String(d.id) === String(snap.id));
-    if (idx >= 0) {
-      hist[idx] = snap;
-    } else {
-      hist.push(snap);
-    }
-    /* Keep max 500 documents */
+    if (idx >= 0) { hist[idx] = snap; } else { hist.push(snap); }
     if (hist.length > 500) hist = hist.slice(-500);
     DB.save('docs', hist, 300);
     DB.save('state', snap, 300);
@@ -1884,15 +2244,11 @@ const App = (() => {
 
   const newDoc = () => {
     if (!confirm('¿Crear un nuevo documento en blanco? El documento actual se guardará automáticamente.')) return;
-    /* Auto-save current document if it has content */
-    if (State.docId && fv('cliNombre').trim()) {
-      saveDoc();
-    }
+    if (State.docId && fv('cliNombre').trim()) { saveDoc(); }
     State.docId = uid();
     const hoy = new Date(), v30 = new Date(hoy); v30.setDate(v30.getDate() + 30);
     const pre = State.mode === 'cot' ? 'COT-' : 'EP-';
     ['numDoc','cliNombre','cliRut','cliGiro','cliDir','cliCiudad','cliEmail','cliTel','cliContacto','cliContrato','cliOC','cliProyecto','cliSistema','condPago','condMoneda','condReajuste','resumenServicio'].forEach(id => setField(id, ''));
-    /* Preserve provider data */
     setField('numDoc', pre + Date.now().toString().slice(-4));
     setField('fechaEmision', iso(hoy));
     setField('fechaVence', iso(v30));
@@ -1911,36 +2267,51 @@ const App = (() => {
     newDoc();
   };
   const executeConvert = () => {
-    /* Save current document before converting */
     saveDoc();
     const newMode = State.mode === 'cot' ? 'ep' : 'cot';
-    /* Create new document ID for the converted version */
     State.docId = uid();
     setMode(newMode);
     Modal.close('modalConvert');
-    /* Auto-save the converted document */
     saveDoc();
     Toast.show(newMode === 'ep' ? '✅ Convertido y guardado como Estado de Pago' : '📋 Convertido y guardado como Cotización');
   };
   const loadLogo = (input) => {
     const file = input.files[0]; if (!file) return;
+    if (file.size > 1024 * 1024) {
+      Toast.show('⚠️ Logo demasiado grande (>1MB) — usa una versión más liviana');
+      return;
+    }
     const reader = new FileReader();
     reader.onload = e => {
-      document.getElementById('imgLogo').src = e.target.result;
-      document.getElementById('logoText').style.display = 'none'; document.getElementById('logoImg').style.display = 'flex';
-      document.getElementById('logoSizeWrap').style.display = 'flex'; document.getElementById('btnRemoveLogo').style.display = 'inline-flex';
-      resizeLogo(document.getElementById('logoSize').value); AutoSave.flush();
+      const src = e.target.result;
+      document.getElementById('imgLogo').src = src;
+      document.getElementById('logoText').style.display = 'none';
+      document.getElementById('logoImg').style.display = 'flex';
+      document.getElementById('logoSizeWrap').style.display = 'flex';
+      document.getElementById('btnRemoveLogo').style.display = 'inline-flex';
+      resizeLogo(document.getElementById('logoSize').value);
+      /* Logo guardado APARTE para no inflar el state en cada autosave */
+      DB.save('logo', { src, savedAt: new Date().toISOString() }, 1500);
+      AutoSave.flush();
     };
     reader.readAsDataURL(file);
   };
   const resizeLogo = (v) => { document.getElementById('imgLogo').style.maxHeight = v + 'px'; document.getElementById('logoSizePx').textContent = v + 'px'; };
-  const removeLogo = () => { document.getElementById('logoText').style.display = 'block'; document.getElementById('logoImg').style.display = 'none'; document.getElementById('logoSizeWrap').style.display = 'none'; document.getElementById('btnRemoveLogo').style.display = 'none'; document.getElementById('imgLogo').src = ''; };
+  const removeLogo = () => {
+    document.getElementById('logoText').style.display = 'block';
+    document.getElementById('logoImg').style.display = 'none';
+    document.getElementById('logoSizeWrap').style.display = 'none';
+    document.getElementById('btnRemoveLogo').style.display = 'none';
+    document.getElementById('imgLogo').src = '';
+    /* Limpiamos el logo guardado también */
+    DB.save('logo', null, 800);
+  };
 
   return { init, setCurrency, setMode, applyMode, updateValidez, saveDoc, newDoc, clearAll, executeConvert, loadLogo, resizeLogo, removeLogo, syncFromSupabase, restoreSnapshot };
 })();
 
 /* ════════════════════════════════════════════════════════════════════════
-   MÓDULO: Período (original)
+   MÓDULO: Período
 ════════════════════════════════════════════════════════════════════════ */
 const Periodo = (() => {
   const calcDias = (r) => {
@@ -1952,40 +2323,38 @@ const Periodo = (() => {
     return 1;
   };
 
-  /* Widget inline — ocupa exactamente el ancho de .periodo-wrap (220px fijo) */
   const html = (r) => {
     const t = r.periodoTipo || 'dia', dias = calcDias(r), id = r.id;
     const pills = ['dia','rango','mes','anio'].map(pt => {
       const lbl = { dia:'Día', rango:'Rango', mes:'Mes', anio:'Año' };
-      return `<button class="tipo-pill${t===pt?' act':''}" onclick="Periodo.setType('${id}','${pt}')">${lbl[pt]}</button>`;
+      return '<button class="tipo-pill' + (t===pt?' act':'') + '" onclick="Periodo.setType(\'' + id + '\',\'' + pt + '\')">' + lbl[pt] + '</button>';
     }).join('');
     let inp = '';
     if (t === 'dia') {
-      inp = `<input type="date" value="${esc(r.periodoDesde)}" onchange="Periodo.set('${id}','periodoDesde',this.value)">`;
+      inp = '<input type="date" value="' + esc(r.periodoDesde) + '" onchange="Periodo.set(\'' + id + '\',\'periodoDesde\',this.value)">';
     } else if (t === 'rango') {
       const badge = dias > 0
-        ? `<span class="dias-badge">📅 ${dias} día${dias!==1?'s':''}</span><button class="btn-usar" onclick="Periodo.useDays('${id}')">→ usar</button>`
-        : `<span class="dias-badge warn">Elige fechas</span>`;
-      inp = `<div class="periodo-rango-row">
-               <input type="date" value="${esc(r.periodoDesde)}" onchange="Periodo.set('${id}','periodoDesde',this.value)">
-               <span class="periodo-sep">→</span>
-               <input type="date" value="${esc(r.periodoHasta)}" onchange="Periodo.set('${id}','periodoHasta',this.value)">
-             </div>
-             <div style="display:flex;align-items:center;gap:.3rem;flex-wrap:wrap;margin-top:.2rem">${badge}</div>`;
+        ? '<span class="dias-badge">📅 ' + dias + ' día' + (dias!==1?'s':'') + '</span><button class="btn-usar" onclick="Periodo.useDays(\'' + id + '\')">→ usar</button>'
+        : '<span class="dias-badge warn">Elige fechas</span>';
+      inp = '<div class="periodo-rango-row">' +
+            '<input type="date" value="' + esc(r.periodoDesde) + '" onchange="Periodo.set(\'' + id + '\',\'periodoDesde\',this.value)">' +
+            '<span class="periodo-sep">→</span>' +
+            '<input type="date" value="' + esc(r.periodoHasta) + '" onchange="Periodo.set(\'' + id + '\',\'periodoHasta\',this.value)">' +
+            '</div>' +
+            '<div style="display:flex;align-items:center;gap:.3rem;flex-wrap:wrap;margin-top:.2rem">' + badge + '</div>';
     } else if (t === 'mes') {
-      inp = `<input type="month" value="${esc(r.periodoMes)}" onchange="Periodo.set('${id}','periodoMes',this.value)">`;
-      if (r.periodoMes) inp += `<span class="dias-badge">📅 ${dias} días</span>`;
+      inp = '<input type="month" value="' + esc(r.periodoMes) + '" onchange="Periodo.set(\'' + id + '\',\'periodoMes\',this.value)">';
+      if (r.periodoMes) inp += '<span class="dias-badge">📅 ' + dias + ' días</span>';
     } else if (t === 'anio') {
       const yr = esc(r.periodoAnio) || new Date().getFullYear();
-      inp = `<input type="number" min="2000" max="2099" value="${yr}" style="width:72px" onchange="Periodo.set('${id}','periodoAnio',this.value)">`;
-      if (r.periodoAnio) inp += `<span class="dias-badge">📅 ${dias} días</span>`;
+      inp = '<input type="number" min="2000" max="2099" value="' + yr + '" style="width:72px" onchange="Periodo.set(\'' + id + '\',\'periodoAnio\',this.value)">';
+      if (r.periodoAnio) inp += '<span class="dias-badge">📅 ' + dias + ' días</span>';
     }
-    return `<div class="periodo-wrap"><div class="tipo-pills">${pills}</div><div class="periodo-inputs">${inp}</div></div>`;
+    return '<div class="periodo-wrap"><div class="tipo-pills">' + pills + '</div><div class="periodo-inputs">' + inp + '</div></div>';
   };
 
   const setType = (id, tipo) => {
     const r = State.rows.find(r => String(r.id) === String(id)); if (!r) return;
-    /* FIX: sync DOM → State antes de cambiar */
     const viEl = document.getElementById('vi_' + id);
     const vuEl = document.getElementById('vu_' + id);
     if (viEl) r.viajes    = +viEl.value || 0;
@@ -1997,7 +2366,6 @@ const Periodo = (() => {
 
   const set = (id, key, val) => {
     const r = State.rows.find(r => String(r.id) === String(id)); if (!r) return;
-    /* FIX: sync DOM → State antes de actualizar */
     const viEl = document.getElementById('vi_' + id);
     const vuEl = document.getElementById('vu_' + id);
     if (viEl) r.viajes    = +viEl.value || 0;
@@ -2010,18 +2378,16 @@ const Periodo = (() => {
     const r = State.rows.find(r => String(r.id) === String(id)); if (!r) return;
     const d = calcDias(r);
     r.viajes = d;
-    const inp = document.getElementById('vi_' + id);
-    if (inp) inp.value = d;
-    /* FIX: también sync valorUnit */
+    const input = document.getElementById('vi_' + id);
+    if (input) input.value = d;
     const vuEl = document.getElementById('vu_' + id);
     if (vuEl) r.valorUnit = +vuEl.value || 0;
     Calc.run(); AutoSave.schedule();
     Toast.show('📅 ' + d + ' días → Viajes/Días');
   };
 
-  /* Redibuja solo la celda del período sin tocar el resto de la fila */
   const updateCell = (id) => {
-    const tr = document.querySelector(`tr[data-id="${id}"]`);
+    const tr = document.querySelector('tr[data-id="' + id + '"]');
     if (!tr) return;
     const r = State.rows.find(r => String(r.id) === String(id));
     if (!r) return;
@@ -2032,18 +2398,16 @@ const Periodo = (() => {
 })();
 
 /* ════════════════════════════════════════════════════════════════════════
-   MÓDULO: Rows (original)
+   MÓDULO: Rows
 ════════════════════════════════════════════════════════════════════════ */
 const Rows = (() => {
   let _routeTarget = null;
-  /* Copia TODOS los inputs del DOM al State antes de cualquier re-render */
   const _syncDOMToState = () => {
     State.rows.forEach(r => {
       const vi = document.getElementById('vi_' + r.id);
       const vu = document.getElementById('vu_' + r.id);
       if (vi) r.viajes    = +vi.value || 0;
       if (vu) r.valorUnit = +vu.value || 0;
-      /* Capturar campos de texto de la fila */
       const tr = document.querySelector('tr[data-id="' + r.id + '"]');
       if (!tr) return;
       const inputs = tr.querySelectorAll('td input');
@@ -2067,24 +2431,23 @@ const Rows = (() => {
     if (!State.rows.length) { tbody.innerHTML = '<tr class="empty-row"><td colspan="9">Sin servicios — haz clic en ➕ Servicio</td></tr>'; return; }
     tbody.innerHTML = State.rows.map(r => {
       const id = r.id;
-      return `<tr data-id="${id}">
-        <td><input type="text"   value="${esc(r.vehiculo)}"  placeholder="Bus · Van…"  oninput="Rows.setField('${id}','vehiculo',this.value)"></td>
-        <td><input type="text"   value="${esc(r.patente)}"   placeholder="AB-CD-12"    style="max-width:80px" oninput="Rows.setField('${id}','patente',this.value)"></td>
-        <td><div class="ruta-cell"><input type="text" value="${esc(r.ruta)}" placeholder="Ruta…" oninput="Rows.setField('${id}','ruta',this.value)"><button class="btn-ruta" onclick="Rows.pickRoute('${id}')" title="Elegir ruta">📍</button></div></td>
-        <td style="padding:.3rem .3rem; vertical-align:middle;">${Periodo.html(r)}</td>
-        <td class="num"><input type="number" min="0" value="${esc(r.pasajeros)}" placeholder="0" style="max-width:55px" oninput="Rows.setField('${id}','pasajeros',this.value)"></td>
-        <td class="num"><input type="number" min="0" id="vi_${id}" value="${esc(r.viajes)}"    placeholder="0" style="max-width:60px"  oninput="Rows.setNum('${id}','viajes',this.value)"></td>
-        <td class="num"><input type="number" min="0" id="vu_${id}" value="${esc(r.valorUnit)}" placeholder="0" style="max-width:95px"  oninput="Rows.setNum('${id}','valorUnit',this.value)"></td>
-        <td class="num total-cell" id="rtot_${id}">${rowTotal(r)}</td>
-        <td><button class="btn-del" onclick="Rows.remove('${id}')">✕</button></td>
-      </tr>`;
+      return '<tr data-id="' + id + '">' +
+        '<td><input type="text" value="' + esc(r.vehiculo) + '" placeholder="Bus · Van…" oninput="Rows.setField(\'' + id + '\',\'vehiculo\',this.value)"></td>' +
+        '<td><input type="text" value="' + esc(r.patente) + '" placeholder="AB-CD-12" style="max-width:80px" oninput="Rows.setField(\'' + id + '\',\'patente\',this.value)"></td>' +
+        '<td><div class="ruta-cell"><input type="text" value="' + esc(r.ruta) + '" placeholder="Ruta…" oninput="Rows.setField(\'' + id + '\',\'ruta\',this.value)"><button class="btn-ruta" onclick="Rows.pickRoute(\'' + id + '\')" title="Elegir ruta">📍</button></div></td>' +
+        '<td style="padding:.3rem .3rem; vertical-align:middle;">' + Periodo.html(r) + '</td>' +
+        '<td class="num"><input type="number" min="0" value="' + esc(r.pasajeros) + '" placeholder="0" style="max-width:55px" oninput="Rows.setField(\'' + id + '\',\'pasajeros\',this.value)"></td>' +
+        '<td class="num"><input type="number" min="0" id="vi_' + id + '" value="' + esc(r.viajes) + '" placeholder="0" style="max-width:60px" oninput="Rows.setNum(\'' + id + '\',\'viajes\',this.value)"></td>' +
+        '<td class="num"><input type="number" min="0" id="vu_' + id + '" value="' + esc(r.valorUnit) + '" placeholder="0" style="max-width:95px" oninput="Rows.setNum(\'' + id + '\',\'valorUnit\',this.value)"></td>' +
+        '<td class="num total-cell" id="rtot_' + id + '">' + rowTotal(r) + '</td>' +
+        '<td><button class="btn-del" onclick="Rows.remove(\'' + id + '\')">✕</button></td>' +
+      '</tr>';
     }).join('');
   };
   const setField  = (id, key, val) => { const r = State.rows.find(r => String(r.id) === String(id)); if (!r) return; r[key] = val; };
   const setNum = (id, key, val) => {
     const r = State.rows.find(r => String(r.id) === String(id)); if (!r) return;
     r[key] = +val || 0;
-    /* Siempre leer ambos inputs del DOM — nunca del State que puede estar stale */
     const viEl = document.getElementById('vi_' + id);
     const vuEl = document.getElementById('vu_' + id);
     r.viajes    = viEl ? (+viEl.value || 0) : r.viajes;
@@ -2102,7 +2465,7 @@ const Rows = (() => {
 })();
 
 /* ════════════════════════════════════════════════════════════════════════
-   MÓDULO: Extras (original)
+   MÓDULO: Extras
 ════════════════════════════════════════════════════════════════════════ */
 const Extras = (() => {
   const add = (data = {}) => { State.extras.push({ id: uid(), desc:'', tipo:'unit', cantidad:1, valorUnit:0, ...data }); render(); };
@@ -2116,14 +2479,14 @@ const Extras = (() => {
     if (!State.extras.length) { tbody.innerHTML = '<tr class="empty-row"><td colspan="6" style="background:transparent;padding:1rem;color:#c8a060;font-size:.74rem">Sin ítems adicionales</td></tr>'; Calc.run(); return; }
     tbody.innerHTML = State.extras.map(e => {
       const id = e.id;
-      return `<tr data-eid="${id}">
-        <td><input type="text" value="${esc(e.desc)}" placeholder="Descripción…" oninput="Extras.setField('${id}','desc',this.value)"></td>
-        <td><div class="tipo-extra-wrap"><button class="tipo-extra-pill${e.tipo === 'unit' ? ' act' : ''}" onclick="Extras.setTipo('${id}','unit')">Por unidad</button><button class="tipo-extra-pill${e.tipo === 'dia' ? ' act' : ''}" onclick="Extras.setTipo('${id}','dia')">Por día</button></div></td>
-        <td class="num"><input type="number" min="0" value="${esc(e.cantidad)}" placeholder="${e.tipo === 'dia' ? 'Días' : 'Cant.'}" style="max-width:65px" oninput="Extras.setNum('${id}','cantidad',this.value)"></td>
-        <td class="num"><input type="number" min="0" value="${esc(e.valorUnit)}" placeholder="0" style="max-width:100px" oninput="Extras.setNum('${id}','valorUnit',this.value)"></td>
-        <td class="num total-cell" id="etot_${id}">${extraTotal(e)}</td>
-        <td><button class="btn-del" onclick="Extras.remove('${id}')">✕</button></td>
-      </tr>`;
+      return '<tr data-eid="' + id + '">' +
+        '<td><input type="text" value="' + esc(e.desc) + '" placeholder="Descripción…" oninput="Extras.setField(\'' + id + '\',\'desc\',this.value)"></td>' +
+        '<td><div class="tipo-extra-wrap"><button class="tipo-extra-pill' + (e.tipo === 'unit' ? ' act' : '') + '" onclick="Extras.setTipo(\'' + id + '\',\'unit\')">Por unidad</button><button class="tipo-extra-pill' + (e.tipo === 'dia' ? ' act' : '') + '" onclick="Extras.setTipo(\'' + id + '\',\'dia\')">Por día</button></div></td>' +
+        '<td class="num"><input type="number" min="0" value="' + esc(e.cantidad) + '" placeholder="' + (e.tipo === 'dia' ? 'Días' : 'Cant.') + '" style="max-width:65px" oninput="Extras.setNum(\'' + id + '\',\'cantidad\',this.value)"></td>' +
+        '<td class="num"><input type="number" min="0" value="' + esc(e.valorUnit) + '" placeholder="0" style="max-width:100px" oninput="Extras.setNum(\'' + id + '\',\'valorUnit\',this.value)"></td>' +
+        '<td class="num total-cell" id="etot_' + id + '">' + extraTotal(e) + '</td>' +
+        '<td><button class="btn-del" onclick="Extras.remove(\'' + id + '\')">✕</button></td>' +
+      '</tr>';
     }).join('');
     Calc.run();
   };
@@ -2131,14 +2494,13 @@ const Extras = (() => {
 })();
 
 /* ════════════════════════════════════════════════════════════════════════
-   MÓDULO: Calc (original)
+   MÓDULO: Calc
 ════════════════════════════════════════════════════════════════════════ */
 const Calc = (() => {
   const run = () => {
     const sym = getCur().sym;
     let brutoServ = 0;
     State.rows.forEach(r => {
-      /* Leer siempre del DOM — es la fuente de verdad */
       const viEl = document.getElementById('vi_' + r.id);
       const vuEl = document.getElementById('vu_' + r.id);
       const vi   = viEl ? (+viEl.value || 0) : (+r.viajes    || 0);
@@ -2147,7 +2509,6 @@ const Calc = (() => {
       r.valorUnit = vu;
       const tot   = vi * vu;
       brutoServ  += tot;
-      /* Actualizar total de la fila */
       const cel = document.getElementById('rtot_' + r.id);
       if (cel) cel.textContent = (vi > 0 && vu > 0) ? sym + ' ' + fmt(tot) : '—';
     });
@@ -2169,7 +2530,7 @@ const Calc = (() => {
 })();
 
 /* ════════════════════════════════════════════════════════════════════════
-   MÓDULO: Clients (original)
+   MÓDULO: Clients
 ════════════════════════════════════════════════════════════════════════ */
 const Clients = (() => {
   let list = DB.lsRead('clients', []), activeIdx = null;
@@ -2183,15 +2544,24 @@ const Clients = (() => {
   const edit = (i) => {
     const c = list[i]; if (!c) return;
     setf('nc_nombre', c.nombre); setf('nc_rut', c.rut); setf('nc_giro', c.giro); setf('nc_dir', c.dir); setf('nc_ciudad', c.ciudad);
-    document.getElementById('nc_editIdx').value = i; document.getElementById('clientFormLabel').textContent = '✏️ Editando cliente'; document.getElementById('clientFormLabel').style.color = '#b07800'; document.getElementById('btnSaveClient').textContent = '💾 Guardar cambios'; document.getElementById('btnCancelClient').style.display = 'inline-flex'; document.getElementById('nc_nombre').focus();
+    document.getElementById('nc_editIdx').value = i;
+    document.getElementById('clientFormLabel').textContent = '✏️ Editando cliente';
+    document.getElementById('clientFormLabel').style.color = '#b07800';
+    document.getElementById('btnSaveClient').textContent = '💾 Guardar cambios';
+    document.getElementById('btnCancelClient').style.display = 'inline-flex';
+    document.getElementById('nc_nombre').focus();
   };
   const cancelEdit = () => clearForm();
   const clearForm  = () => {
     ['nc_nombre','nc_rut','nc_giro','nc_dir','nc_ciudad'].forEach(id => setf(id, ''));
-    document.getElementById('nc_editIdx').value = ''; document.getElementById('clientFormLabel').textContent = '+ Nuevo cliente'; document.getElementById('clientFormLabel').style.color = 'var(--blue)'; document.getElementById('btnSaveClient').textContent = '+ Agregar cliente'; document.getElementById('btnCancelClient').style.display = 'none';
+    document.getElementById('nc_editIdx').value = '';
+    document.getElementById('clientFormLabel').textContent = '+ Nuevo cliente';
+    document.getElementById('clientFormLabel').style.color = 'var(--blue)';
+    document.getElementById('btnSaveClient').textContent = '+ Agregar cliente';
+    document.getElementById('btnCancelClient').style.display = 'none';
   };
   const del = (i) => {
-    if (!confirm(`¿Eliminar cliente "${list[i].nombre}"?`)) return;
+    if (!confirm('¿Eliminar cliente "' + list[i].nombre + '"?')) return;
     list.splice(i, 1); DB.save('clients', list);
     if (activeIdx === i) { activeIdx = null; Routes.hidePanel(); } else if (activeIdx !== null && activeIdx > i) activeIdx--;
     if (document.getElementById('nc_editIdx').value !== '' && parseInt(document.getElementById('nc_editIdx').value) === i) clearForm();
@@ -2205,8 +2575,11 @@ const Clients = (() => {
   const selectForRoutes = (i) => {
     if (i < 0 || i >= list.length) return;
     activeIdx = i; render();
-    const badge = document.getElementById('routesClientBadge'); badge.textContent = list[i].nombre || ''; badge.style.display = 'inline-flex';
-    document.getElementById('noClientSelected').style.display = 'none'; document.getElementById('routesPanel').style.display = 'block';
+    const badge = document.getElementById('routesClientBadge');
+    badge.textContent = list[i].nombre || '';
+    badge.style.display = 'inline-flex';
+    document.getElementById('noClientSelected').style.display = 'none';
+    document.getElementById('routesPanel').style.display = 'block';
     Routes.cancelEdit(); Routes.render();
   };
   const loadFromSelector = () => {
@@ -2216,41 +2589,85 @@ const Clients = (() => {
   };
   const renderSelector = () => {
     const sel = document.getElementById('clienteSelector'); if (!sel) return;
-    sel.innerHTML = '<option value="">— Seleccionar —</option>' + list.map((c, i) => `<option value="${i}">${c.nombre || ''}</option>`).join('');
+    sel.innerHTML = '<option value="">— Seleccionar —</option>' + list.map((c, i) => '<option value="' + i + '">' + esc(c.nombre || '') + '</option>').join('');
   };
   const render = () => {
     const el = document.getElementById('clientsList'); if (!el) return;
     if (!list.length) { el.innerHTML = '<p style="font-size:.7rem;color:var(--t3);text-align:center;padding:.8rem">Sin clientes guardados</p>'; return; }
     el.innerHTML = list.map((c, i) => {
-      const meta = [c.rut, c.giro, c.ciudad].filter(Boolean).join(' · '), rcnt = c.rutas?.length ? ` · <span style="color:var(--blue)">${c.rutas.length} ruta${c.rutas.length !== 1 ? 's' : ''}</span>` : '', selCls = activeIdx === i ? ' selected' : '';
-      return `<div class="list-item${selCls}" data-ci="${i}" style="cursor:pointer"><div class="item-info">${c.nombre || '—'}<small>${meta}${rcnt}</small></div><div class="item-btns"><button onclick="Clients.useInDoc(${i})" title="Usar">✓</button><button onclick="Clients.edit(${i})" title="Editar">✏️</button><button class="del" onclick="Clients.del(${i})" title="Eliminar">✕</button></div></div>`;
+      const meta = [c.rut, c.giro, c.ciudad].filter(Boolean).map(esc).join(' · ');
+      const rcnt = c.rutas?.length ? ' · <span style="color:var(--blue)">' + c.rutas.length + ' ruta' + (c.rutas.length !== 1 ? 's' : '') + '</span>' : '';
+      const selCls = activeIdx === i ? ' selected' : '';
+      return '<div class="list-item' + selCls + '" data-ci="' + i + '" style="cursor:pointer">' +
+        '<div class="item-info">' + esc(c.nombre || '—') + '<small>' + meta + rcnt + '</small></div>' +
+        '<div class="item-btns">' +
+          '<button onclick="Clients.useInDoc(' + i + ')" title="Usar">✓</button>' +
+          '<button onclick="Clients.edit(' + i + ')" title="Editar">✏️</button>' +
+          '<button class="del" onclick="Clients.del(' + i + ')" title="Eliminar">✕</button>' +
+        '</div></div>';
     }).join('');
-    el.querySelectorAll('.list-item').forEach(div => { div.addEventListener('click', e => { if (e.target.closest('.item-btns')) return; selectForRoutes(+div.dataset.ci); }); });
+    el.querySelectorAll('.list-item').forEach(div => {
+      div.addEventListener('click', e => {
+        if (e.target.closest('.item-btns')) return;
+        selectForRoutes(+div.dataset.ci);
+      });
+    });
   };
   const saveFromDoc = () => {
-    const nombre = fv('cliNombre').trim(); if (!nombre) { Toast.show('⚠️ Escribe la razón social del cliente'); return; }
+    const nombre = fv('cliNombre').trim();
+    if (!nombre) { Toast.show('⚠️ Escribe la razón social del cliente'); return; }
     const data = { nombre, rut: fv('cliRut'), giro: fv('cliGiro'), dir: fv('cliDir'), ciudad: fv('cliCiudad') };
     const idx = list.findIndex(c => c.nombre.trim().toLowerCase() === nombre.toLowerCase());
-    if (idx >= 0) { data.rutas = list[idx].rutas || []; list[idx] = data; _setInlineStatus('clientSaveStatus', 'btnSaveClientInline', '✓ Cliente actualizado en la lista', 'ok', true); Toast.show('✏️ Cliente actualizado: ' + nombre); }
-    else          { data.rutas = []; list.push(data); _setInlineStatus('clientSaveStatus', 'btnSaveClientInline', '✓ Cliente guardado nuevo: ' + nombre, 'ok', true); Toast.show('✅ Cliente guardado: ' + nombre); }
+    if (idx >= 0) {
+      data.rutas = list[idx].rutas || [];
+      list[idx] = data;
+      _setInlineStatus('clientSaveStatus', 'btnSaveClientInline', '✓ Cliente actualizado en la lista', 'ok', true);
+      Toast.show('✏️ Cliente actualizado: ' + nombre);
+    } else {
+      data.rutas = [];
+      list.push(data);
+      _setInlineStatus('clientSaveStatus', 'btnSaveClientInline', '✓ Cliente guardado nuevo: ' + nombre, 'ok', true);
+      Toast.show('✅ Cliente guardado: ' + nombre);
+    }
     DB.save('clients', list); renderSelector(); render(); AutoSave.flush();
   };
   const saveProviderFromDoc = () => {
-    const nombre = fv('prvNombre').trim(); if (!nombre) { Toast.show('⚠️ Escribe la razón social del proveedor'); return; }
+    const nombre = fv('prvNombre').trim();
+    if (!nombre) { Toast.show('⚠️ Escribe la razón social del proveedor'); return; }
     const data = { nombre, rut: fv('prvRut'), giro: fv('prvGiro'), dir: fv('prvDir'), ciudad: fv('prvCiudad'), rutas: [] };
     const idx = list.findIndex(c => c.nombre.trim().toLowerCase() === nombre.toLowerCase());
-    if (idx >= 0) { data.rutas = list[idx].rutas || []; list[idx] = data; Toast.show('✏️ Proveedor actualizado en lista: ' + nombre); }
-    else          { list.push(data); Toast.show('✅ Proveedor guardado como cliente: ' + nombre); }
+    if (idx >= 0) {
+      data.rutas = list[idx].rutas || [];
+      list[idx] = data;
+      Toast.show('✏️ Proveedor actualizado en lista: ' + nombre);
+    } else {
+      list.push(data);
+      Toast.show('✅ Proveedor guardado como cliente: ' + nombre);
+    }
     DB.save('clients', list); renderSelector(); render();
     _setInlineStatus('providerSaveStatus', 'btnSaveProviderInline', '✓ Guardado en lista de clientes', 'ok', true);
   };
   const updateInlineStatus = () => {
-    const nombre = fv('cliNombre').trim(), statusEl = document.getElementById('clientSaveStatus'), btnEl = document.getElementById('btnSaveClientInline');
+    const nombre = fv('cliNombre').trim();
+    const statusEl = document.getElementById('clientSaveStatus');
+    const btnEl = document.getElementById('btnSaveClientInline');
     if (!statusEl || !btnEl) return;
-    if (!nombre) { statusEl.textContent = 'Escribe el nombre del cliente para guardar'; statusEl.className = 'inline-save-status'; btnEl.className = 'btn-inline-save'; return; }
+    if (!nombre) {
+      statusEl.textContent = 'Escribe el nombre del cliente para guardar';
+      statusEl.className = 'inline-save-status';
+      btnEl.className = 'btn-inline-save';
+      return;
+    }
     const exists = list.some(c => c.nombre.trim().toLowerCase() === nombre.toLowerCase());
-    if (exists) { statusEl.textContent = '↻ Ya guardado · click para actualizar'; statusEl.className = 'inline-save-status ok'; btnEl.className = 'btn-inline-save saved'; }
-    else        { statusEl.textContent = '+ Nuevo cliente · click para guardar';    statusEl.className = 'inline-save-status new'; btnEl.className = 'btn-inline-save'; }
+    if (exists) {
+      statusEl.textContent = '↻ Ya guardado · click para actualizar';
+      statusEl.className = 'inline-save-status ok';
+      btnEl.className = 'btn-inline-save saved';
+    } else {
+      statusEl.textContent = '+ Nuevo cliente · click para guardar';
+      statusEl.className = 'inline-save-status new';
+      btnEl.className = 'btn-inline-save';
+    }
   };
   const _setInlineStatus = (statusId, btnId, msg, cls, reset) => {
     const s = document.getElementById(statusId), b = document.getElementById(btnId);
@@ -2258,33 +2675,61 @@ const Clients = (() => {
     if (b) b.className = 'btn-inline-save saved';
     if (reset) setTimeout(() => updateInlineStatus(), 2500);
   };
-  return { get list() { return list; }, set list(v) { list = v; }, save, edit, cancelEdit, clearForm, del, useInDoc, selectForRoutes, loadFromSelector, renderSelector, render, saveFromDoc, saveProviderFromDoc, updateInlineStatus, get activeIdx() { return activeIdx; }, set activeIdx(v) { activeIdx = v; } };
+  return {
+    get list() { return list; },
+    set list(v) { list = v; },
+    save, edit, cancelEdit, clearForm, del, useInDoc, selectForRoutes, loadFromSelector,
+    renderSelector, render, saveFromDoc, saveProviderFromDoc, updateInlineStatus,
+    get activeIdx() { return activeIdx; }, set activeIdx(v) { activeIdx = v; }
+  };
 })();
 
 /* ════════════════════════════════════════════════════════════════════════
-   MÓDULO: Routes (original)
+   MÓDULO: Routes
 ════════════════════════════════════════════════════════════════════════ */
 const Routes = (() => {
-  const getList  = () => { const idx = Clients.activeIdx; return (idx !== null && Clients.list[idx]) ? (Clients.list[idx].rutas || []) : []; };
-  const hidePanel = () => { document.getElementById('noClientSelected').style.display = 'block'; document.getElementById('routesPanel').style.display = 'none'; document.getElementById('routesClientBadge').style.display = 'none'; };
+  const getList = () => { const idx = Clients.activeIdx; return (idx !== null && Clients.list[idx]) ? (Clients.list[idx].rutas || []) : []; };
+  const hidePanel = () => {
+    document.getElementById('noClientSelected').style.display = 'block';
+    document.getElementById('routesPanel').style.display = 'none';
+    document.getElementById('routesClientBadge').style.display = 'none';
+  };
   const save = () => {
     if (Clients.activeIdx === null) { alert('Selecciona un cliente primero.'); return; }
     const name = gf('nr_nombre'); if (!name) { alert('Ingresa el nombre de la ruta.'); return; }
     if (!Clients.list[Clients.activeIdx].rutas) Clients.list[Clients.activeIdx].rutas = [];
-    const rawIdx = document.getElementById('nr_editIdx').value, data = { nombre: name, desc: gf('nr_desc') };
-    if (rawIdx !== '') { Clients.list[Clients.activeIdx].rutas[parseInt(rawIdx)] = data; Toast.show('✏️ Ruta actualizada'); }
-    else               { Clients.list[Clients.activeIdx].rutas.push(data); Toast.show('✓ Ruta guardada'); }
+    const rawIdx = document.getElementById('nr_editIdx').value;
+    const data = { nombre: name, desc: gf('nr_desc') };
+    if (rawIdx !== '') {
+      Clients.list[Clients.activeIdx].rutas[parseInt(rawIdx)] = data;
+      Toast.show('✏️ Ruta actualizada');
+    } else {
+      Clients.list[Clients.activeIdx].rutas.push(data);
+      Toast.show('✓ Ruta guardada');
+    }
     DB.save('clients', Clients.list); cancelEdit(); render(); Clients.render();
   };
   const edit = (i) => {
     const lista = getList(); if (!lista[i]) return;
     setf('nr_nombre', lista[i].nombre); setf('nr_desc', lista[i].desc);
-    document.getElementById('nr_editIdx').value = i; document.getElementById('routeFormLabel').textContent = '✏️ Editando ruta'; document.getElementById('routeFormLabel').style.color = '#b07800'; document.getElementById('btnSaveRoute').textContent = '💾 Guardar cambios'; document.getElementById('btnCancelRoute').style.display = 'inline-flex'; document.getElementById('nr_nombre').focus();
+    document.getElementById('nr_editIdx').value = i;
+    document.getElementById('routeFormLabel').textContent = '✏️ Editando ruta';
+    document.getElementById('routeFormLabel').style.color = '#b07800';
+    document.getElementById('btnSaveRoute').textContent = '💾 Guardar cambios';
+    document.getElementById('btnCancelRoute').style.display = 'inline-flex';
+    document.getElementById('nr_nombre').focus();
   };
-  const cancelEdit = () => { ['nr_nombre','nr_desc'].forEach(id => setf(id, '')); document.getElementById('nr_editIdx').value = ''; document.getElementById('routeFormLabel').textContent = '+ Nueva ruta'; document.getElementById('routeFormLabel').style.color = 'var(--blue)'; document.getElementById('btnSaveRoute').textContent = '+ Agregar ruta'; document.getElementById('btnCancelRoute').style.display = 'none'; };
+  const cancelEdit = () => {
+    ['nr_nombre','nr_desc'].forEach(id => setf(id, ''));
+    document.getElementById('nr_editIdx').value = '';
+    document.getElementById('routeFormLabel').textContent = '+ Nueva ruta';
+    document.getElementById('routeFormLabel').style.color = 'var(--blue)';
+    document.getElementById('btnSaveRoute').textContent = '+ Agregar ruta';
+    document.getElementById('btnCancelRoute').style.display = 'none';
+  };
   const del = (i) => {
     const lista = getList(); if (!lista[i]) return;
-    if (!confirm(`¿Eliminar ruta "${lista[i].nombre}"?`)) return;
+    if (!confirm('¿Eliminar ruta "' + lista[i].nombre + '"?')) return;
     lista.splice(i, 1); DB.save('clients', Clients.list);
     if (document.getElementById('nr_editIdx').value !== '' && parseInt(document.getElementById('nr_editIdx').value) === i) cancelEdit();
     render(); Clients.render();
@@ -2294,480 +2739,782 @@ const Routes = (() => {
     const el = document.getElementById('routesList'); if (!el) return;
     const lista = getList();
     if (!lista.length) { el.innerHTML = '<p style="font-size:.7rem;color:var(--t3);text-align:center;padding:.8rem">Sin rutas — agrega la primera abajo</p>'; return; }
-    el.innerHTML = lista.map((r, i) => `<div class="list-item"><div class="item-info">${r.nombre || ''}<small>${r.desc || ''}</small></div><div class="item-btns"><button onclick="Routes.use(${i})" title="Insertar en fila">✓</button><button onclick="Routes.edit(${i})" title="Editar">✏️</button><button class="del" onclick="Routes.del(${i})" title="Eliminar">✕</button></div></div>`).join('');
+    el.innerHTML = lista.map((r, i) =>
+      '<div class="list-item">' +
+        '<div class="item-info">' + esc(r.nombre || '') + '<small>' + esc(r.desc || '') + '</small></div>' +
+        '<div class="item-btns">' +
+          '<button onclick="Routes.use(' + i + ')" title="Insertar en fila">✓</button>' +
+          '<button onclick="Routes.edit(' + i + ')" title="Editar">✏️</button>' +
+          '<button class="del" onclick="Routes.del(' + i + ')" title="Eliminar">✕</button>' +
+        '</div></div>'
+    ).join('');
   };
   return { hidePanel, save, edit, cancelEdit, del, use, render };
 })();
 
 /* ════════════════════════════════════════════════════════════════════════
-   MÓDULO: History (mejorado — archivo con filtros por cliente y búsqueda)
+   MÓDULO: History (Archivo)
 ════════════════════════════════════════════════════════════════════════ */
 const History = (() => {
   let _filter = 'all';
-
   const filter = (f) => {
     _filter = f;
+    document.getElementById('filtAll').className = f === 'all' ? 'act' : '';
+    document.getElementById('filtCot').className = f === 'cot' ? 'act' : '';
+    document.getElementById('filtEP').className  = f === 'ep'  ? 'act' : '';
     ['filtAll','filtCot','filtEP'].forEach(id => {
       const btn = document.getElementById(id);
-      if (!btn) return;
-      if ((f === 'all' && id === 'filtAll') || (f === 'cot' && id === 'filtCot') || (f === 'ep' && id === 'filtEP')) {
-        btn.style.background = 'var(--blue)'; btn.style.color = '#fff'; btn.style.borderColor = 'var(--blue)';
-      } else {
-        btn.style.background = '#fff'; btn.style.color = 'var(--t3)'; btn.style.borderColor = 'var(--border)';
-      }
+      const on = btn.className === 'act';
+      btn.style.background = on ? 'var(--blue)' : '#fff';
+      btn.style.color      = on ? '#fff' : 'var(--t3)';
+      btn.style.borderColor = on ? 'var(--blue)' : 'var(--border)';
     });
     render();
   };
-
-  /* Poblar el select de clientes únicos */
-  const _populateClientFilter = (docs) => {
+  const _populateClientFilter = () => {
     const sel = document.getElementById('archiveClientFilter');
     if (!sel) return;
-    const clients = [...new Set(docs.map(d => (d.cliNombre || '').trim()).filter(Boolean))].sort();
-    const current = sel.value;
+    const docs = DB.lsRead('docs', []) || [];
+    const names = [...new Set(docs.map(d => d.cliNombre).filter(Boolean))].sort();
+    const cur = sel.value;
     sel.innerHTML = '<option value="">Todos los clientes</option>' +
-      clients.map(c => `<option value="${c}"${c === current ? ' selected' : ''}>${c}</option>`).join('');
+      names.map(n => '<option value="' + esc(n) + '"' + (n === cur ? ' selected' : '') + '>' + esc(n) + '</option>').join('');
   };
-
   const render = () => {
-    const all = DB.lsRead('docs', []);
-    _populateClientFilter(all);
-
-    /* Aplicar filtro de tipo */
-    let list = _filter === 'all' ? all : all.filter(d => (d.mode || d.modo || 'cot') === _filter);
-
-    /* Aplicar filtro de cliente */
-    const clientFilter = (document.getElementById('archiveClientFilter')?.value || '').trim();
-    if (clientFilter) {
-      list = list.filter(d => (d.cliNombre || '').trim() === clientFilter);
-    }
-
-    /* Aplicar búsqueda de texto */
-    const searchTerm = (document.getElementById('archiveSearch')?.value || '').trim().toLowerCase();
-    if (searchTerm) {
-      list = list.filter(d => {
-        const haystack = [
-          d.numDoc, d.cliNombre, d.cliRut, d.cliProyecto, d.cliCiudad,
-          d.prvNombre, d.fechaEmision,
-          ...(d.rows || []).map(r => r.ruta || ''),
-        ].join(' ').toLowerCase();
-        return haystack.includes(searchTerm);
-      });
-    }
+    _populateClientFilter();
+    const list = document.getElementById('histList');
+    const stats = document.getElementById('archiveStats');
+    const search = (document.getElementById('archiveSearch')?.value || '').toLowerCase().trim();
+    const cliFilter = document.getElementById('archiveClientFilter')?.value || '';
+    let docs = DB.lsRead('docs', []) || [];
+    docs = docs.filter(d => {
+      if (_filter !== 'all' && d.mode !== _filter) return false;
+      if (cliFilter && d.cliNombre !== cliFilter) return false;
+      if (search) {
+        const hay = [d.numDoc, d.cliNombre, d.cliRut, d.cliProyecto].filter(Boolean).join(' ').toLowerCase();
+        if (!hay.includes(search)) return false;
+      }
+      return true;
+    });
+    docs.sort((a, b) => (b.savedAt || '').localeCompare(a.savedAt || ''));
 
     /* Stats */
-    const statsEl = document.getElementById('archiveStats');
-    if (statsEl) {
-      const totalDocs = list.length;
-      const totalCot = list.filter(d => (d.mode || d.modo || 'cot') === 'cot').length;
-      const totalEP = list.filter(d => (d.mode || d.modo || 'cot') === 'ep').length;
-      let totalMonto = 0;
-      list.forEach(d => {
-        const rows = d.rows || [];
-        const exts = d.extras || [];
-        const bruto = rows.reduce((s, r) => s + ((+r.viajes || 0) * (+r.valorUnit || 0)), 0)
-                    + exts.reduce((s, e) => s + ((+e.cantidad || 0) * (+e.valorUnit || 0)), 0);
-        totalMonto += (d.conIva !== false) ? Math.round(bruto * 1.19) : bruto;
-      });
-      const cur = CURRENCIES.find(c => c.code === 'CLP') || CURRENCIES[0];
-      statsEl.innerHTML =
-        `<span>📄 <span class="stat-val">${totalDocs}</span> doc${totalDocs !== 1 ? 's' : ''}</span>` +
-        `<span>📋 <span class="stat-val">${totalCot}</span> cot</span>` +
-        `<span>✅ <span class="stat-val">${totalEP}</span> EP</span>` +
-        `<span>💰 <span class="stat-val">${cur.sym} ${Math.round(totalMonto).toLocaleString(cur.locale)}</span></span>`;
-    }
+    const total = docs.length;
+    const sumCot = docs.filter(d => d.mode === 'cot').length;
+    const sumEP  = docs.filter(d => d.mode === 'ep').length;
+    if (stats) stats.innerHTML = total > 0
+      ? '<span>📋 <span class="stat-val">' + sumCot + '</span> Cot.</span>' +
+        '<span>✅ <span class="stat-val">' + sumEP + '</span> EP</span>' +
+        '<span>📁 <span class="stat-val">' + total + '</span> total</span>'
+      : '';
 
-    /* Renderizar lista */
-    const el = document.getElementById('histList');
-    if (!list.length) {
-      el.innerHTML = '<div class="hist-empty">Sin documentos' + (searchTerm ? ' que coincidan con la búsqueda' : clientFilter ? ' para este cliente' : ' guardados') + '.</div>';
+    if (!docs.length) {
+      list.innerHTML = '<div class="hist-empty">' + (search || cliFilter ? '🔍 Sin resultados con esos filtros' : '📂 Sin documentos guardados aún') + '</div>';
       return;
     }
-    el.innerHTML = [...list].reverse().map(d => {
-      const mode = d.mode || d.modo || 'cot';
-      const isCot = mode === 'cot';
-      const isActive = d.id === State.docId;
-      const fecha = d.savedAt ? new Date(d.savedAt).toLocaleString('es-CL', { day:'2-digit', month:'2-digit', year:'numeric', hour:'2-digit', minute:'2-digit' }) : '—';
-      const rows = d.rows || [];
-      const exts = d.extras || [];
-      const bruto = rows.reduce((s, r) => s + ((+r.viajes || 0) * (+r.valorUnit || 0)), 0) + exts.reduce((s, e) => s + ((+e.cantidad || 0) * (+e.valorUnit || 0)), 0);
-      const total = (d.conIva !== false) ? Math.round(bruto * 1.19) : bruto;
-      const cur = CURRENCIES.find(c => c.code === (d.currency || 'CLP')) || CURRENCIES[0];
-      const rutas = [...new Set(rows.map(r => r.ruta).filter(Boolean))].join(', ');
-      const totalFmt = cur.sym + ' ' + Math.round(total).toLocaleString(cur.locale);
-
-      return `<div class="hist-item" onclick="History.load('${d.id}')">
-        <div class="hist-icon">${isActive ? '📂' : isCot ? '📋' : '📄'}</div>
-        <div class="hist-info">
-          <div class="hist-title">
-            ${esc(d.numDoc || '—')}
-            <span class="hist-mode-badge ${isCot ? 'cot' : 'ep'}">${isCot ? 'COT' : 'EP'}</span>
-            ${isActive ? '<span class="hist-active-badge">actual</span>' : ''}
-          </div>
-          <div class="hist-sub">
-            <span>👤 ${esc(d.cliNombre || 'Sin cliente')}</span>
-            ${rutas ? '<span>🛣 ' + esc(rutas.length > 30 ? rutas.slice(0, 30) + '…' : rutas) + '</span>' : ''}
-            <span>📅 ${d.fechaEmision || '—'}</span>
-            <span class="hist-total">💰 ${totalFmt}</span>
-            <span>🕓 ${fecha}</span>
-          </div>
-        </div>
-        <div class="hist-item-actions" onclick="event.stopPropagation()">
-          <button onclick="History.duplicate('${d.id}')" title="Duplicar">📑</button>
-          <button onclick="History.load('${d.id}')" title="Cargar">✓</button>
-          <button class="del" onclick="History.del('${d.id}')" title="Eliminar">✕</button>
-        </div>
-      </div>`;
+    list.innerHTML = docs.map(d => {
+      const isCot = d.mode === 'cot';
+      const icon = isCot ? '📋' : '✅';
+      const badgeCls = isCot ? 'cot' : 'ep';
+      const badgeTxt = isCot ? 'COT' : 'EP';
+      const bruto = (d.rows || []).reduce((s, r) => s + ((+r.viajes || 0) * (+r.valorUnit || 0)), 0)
+                  + (d.extras || []).reduce((s, e) => s + ((+e.cantidad || 0) * (+e.valorUnit || 0)), 0);
+      const total = bruto + ((d.conIva ?? true) ? Math.round(bruto * 0.19) : 0);
+      const cur   = CURRENCIES.find(c => c.code === d.currency) || CURRENCIES[0];
+      const totalStr = cur.sym + ' ' + Math.round(total).toLocaleString(cur.locale, { minimumFractionDigits: 0, maximumFractionDigits: 0 });
+      const fecha = (d.savedAt || '').slice(0, 10);
+      const isActive = String(d.id) === String(State.docId) ? '<span class="hist-active-badge">EN USO</span>' : '';
+      return '<div class="hist-item" data-did="' + esc(d.id) + '">' +
+        '<div class="hist-icon">' + icon + '</div>' +
+        '<div class="hist-info">' +
+          '<div class="hist-title">' +
+            '<span class="hist-mode-badge ' + badgeCls + '">' + badgeTxt + '</span> ' +
+            esc(d.numDoc || '—') + ' · ' + esc(d.cliNombre || '—') +
+            isActive +
+          '</div>' +
+          '<div class="hist-sub">' +
+            '<span>📅 ' + esc(fecha) + '</span>' +
+            (d.cliProyecto ? '<span>🏗 ' + esc(d.cliProyecto) + '</span>' : '') +
+            '<span class="hist-total">' + totalStr + '</span>' +
+          '</div>' +
+        '</div>' +
+        '<div class="hist-item-actions">' +
+          '<button onclick="History.load(\'' + esc(d.id) + '\')" title="Cargar">📂</button>' +
+          '<button onclick="History.duplicate(\'' + esc(d.id) + '\')" title="Duplicar como nuevo">📋</button>' +
+          '<button class="del" onclick="History.del(\'' + esc(d.id) + '\')" title="Eliminar">✕</button>' +
+        '</div></div>';
     }).join('');
   };
-
   const load = (id) => {
-    const d = DB.lsRead('docs', []).find(x => String(x.id) === String(id));
-    if (!d) return;
+    const docs = DB.lsRead('docs', []) || [];
+    const d = docs.find(x => String(x.id) === String(id));
+    if (!d) { Toast.show('⚠️ Documento no encontrado'); return; }
     State.docId = d.id;
-    App.restoreSnapshot(d);
+    App.restoreSnapshot(d, DB.lsRead('logo'));
     Modal.close('modalHistory');
-    Toast.show('📂 ' + (d.numDoc || 'Documento cargado'));
+    AutoSave.flush();
+    Toast.show('📂 Cargado: ' + (d.numDoc || ''));
   };
-
-  const del = (id) => {
-    if (!confirm('¿Eliminar este documento del historial?')) return;
-    const h = DB.lsRead('docs', []).filter(d => String(d.id) !== String(id));
-    DB.save('docs', h);
-    if (String(State.docId) === String(id)) State.docId = null;
-    render();
-    Toast.show('🗑 Eliminado del historial');
-  };
-
-  /* Duplicar documento */
   const duplicate = (id) => {
-    const d = DB.lsRead('docs', []).find(x => String(x.id) === String(id));
+    const docs = DB.lsRead('docs', []) || [];
+    const d = docs.find(x => String(x.id) === String(id));
     if (!d) return;
-    const newDoc = JSON.parse(JSON.stringify(d));
-    newDoc.id = uid();
-    newDoc.numDoc = (d.numDoc || '') + '-COPIA';
-    newDoc.savedAt = new Date().toISOString();
-    const hist = DB.lsRead('docs', []);
-    hist.push(newDoc);
-    DB.save('docs', hist);
-    render();
-    Toast.show('📑 Documento duplicado');
+    const copy = JSON.parse(JSON.stringify(d));
+    copy.id = uid();
+    copy.savedAt = new Date().toISOString();
+    const num = copy.numDoc || '';
+    copy.numDoc = num + ' (copia)';
+    State.docId = copy.id;
+    App.restoreSnapshot(copy, DB.lsRead('logo'));
+    Modal.close('modalHistory');
+    App.saveDoc();
+    Toast.show('📋 Documento duplicado');
   };
-
-  return { filter, render, load, del, duplicate };
+  const del = (id) => {
+    if (!confirm('¿Eliminar este documento del archivo?')) return;
+    let docs = DB.lsRead('docs', []) || [];
+    docs = docs.filter(x => String(x.id) !== String(id));
+    DB.save('docs', docs, 200);
+    render();
+    Toast.show('🗑 Documento eliminado');
+  };
+  return { filter, render, load, duplicate, del };
 })();
 
-window._restoreSnapshot = (snap) => App.restoreSnapshot(snap);
-
 /* ════════════════════════════════════════════════════════════════════════
-   MÓDULO: PDF (original)
+   ★ MÓDULO: PDF — con esc() en TODAS las interpolaciones (XSS-safe)
 ════════════════════════════════════════════════════════════════════════ */
 const PDF = (() => {
-  const MESES = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
-  const periodoStr = (r) => {
-    const t = r.periodoTipo || 'dia';
-    if (t === 'dia')   return r.periodoDesde || '—';
-    if (t === 'rango') return `${r.periodoDesde || '?'} → ${r.periodoHasta || '?'} (${Periodo.calcDias(r)}d)`;
-    if (t === 'mes' && r.periodoMes) { const [y, m] = r.periodoMes.split('-').map(Number); return MESES[m-1] + ' ' + y; }
-    if (t === 'anio')  return r.periodoAnio || '—';
-    return '—';
-  };
-  const print = () => {
-    /* Auto-save before printing */
+  const print = async () => {
+    /* ★ AUTO-CORRELATIVO al imprimir si checkbox activo */
+    const auto = document.getElementById('chkAutoNumPrint')?.checked;
+    if (auto) {
+      Toast.show('⚡ Generando nuevo correlativo…');
+      const num = await Counter.next(true);
+      if (num) {
+        Toast.show('✓ ' + num + ' — listo para imprimir');
+        await sleep(400);  // que se vea el toast antes de la ventana de impresión
+      }
+    }
+    /* Persistir antes de imprimir */
     App.saveDoc();
-    const isCot = State.mode === 'cot', cur = getCur(), conIva = document.getElementById('chkIva')?.checked ?? true;
-    const tieneLogo = document.getElementById('logoImg')?.style.display !== 'none', logoSrc = document.getElementById('imgLogo')?.src || '', logoSize = document.getElementById('logoSize')?.value || '56';
-    const brutoServ = State.rows.reduce((s, r) => s + ((+r.viajes || 0) * (+r.valorUnit || 0)), 0);
-    const brutoExtra = State.extras.reduce((s, e) => s + ((+e.cantidad || 0) * (+e.valorUnit || 0)), 0);
-    const bruto = brutoServ + brutoExtra, iva = conIva ? Math.round(bruto * 0.19) : 0;
-    const logoHTML = tieneLogo ? `<img src="${logoSrc}" style="max-height:${logoSize}px;object-fit:contain;max-width:200px">` : `<div style="font-size:22pt;font-weight:700;letter-spacing:-.5px">HAULER</div><div style="font-size:6.5pt;font-weight:500;letter-spacing:2.5px;text-transform:uppercase;color:#999;margin-top:2px">Transporte Corporativo de Pasajeros</div>`;
-    const filasHTML = State.rows.length ? State.rows.map(r => `<tr><td>${r.vehiculo||''}</td><td class="n">${r.patente||''}</td><td>${r.ruta||''}</td><td>${periodoStr(r)}</td><td class="n">${r.pasajeros||''}</td><td class="n">${r.viajes||''}</td><td class="n">${r.valorUnit ? fmt(r.valorUnit) : ''}</td><td>${Rows.rowTotal(r)}</td></tr>`).join('') : '<tr><td colspan="8" style="text-align:center;color:#aaa;padding:4mm;font-style:italic">Sin servicios registrados</td></tr>';
-    const extrasHTML = State.extras.length ? `<div class="hdiv"></div><div class="tbl-section no-break"><div class="sec-title" style="color:var(--gold)">Ítems Adicionales</div><table><thead class="ext-head"><tr><th style="text-align:left;padding-left:2.5mm">Descripción</th><th>Tipo</th><th>Cant.</th><th>Valor unit.</th><th style="text-align:right;padding-right:2.5mm">Total</th></tr></thead><tbody>${State.extras.map(e => `<tr class="ext-row"><td style="text-align:left;padding-left:2.5mm">${e.desc||''}</td><td>${e.tipo==='dia'?'Por día':'Por unidad'}</td><td class="n">${e.cantidad||''}</td><td class="n">${e.valorUnit ? fmt(e.valorUnit) : ''}</td><td class="n ext-total">${Extras.extraTotal(e)}</td></tr>`).join('')}</tbody></table></div>` : '';
-    const condHTML = isCot ? `<div class="hdiv"></div><div class="cond-section"><div class="sec-title">Condiciones de la Oferta</div><div class="cond-grid"><div class="cond-cell"><span class="cl">Forma de pago</span><span>${fv('condPago')||'—'}</span></div><div class="cond-cell"><span class="cl">Moneda</span><span>${fv('condMoneda')||'—'}</span></div><div class="cond-cell"><span class="cl">Reajuste</span><span>${fv('condReajuste')||'Sin reajuste'}</span></div></div></div>` : '';
-    const resumenHTML = isCot && fv('resumenServicio') ? `<div class="hdiv"></div><div class="resumen-section no-break"><div class="sec-title">Resumen del Servicio y Condiciones</div><p class="resumen-p">${fv('resumenServicio').replace(/\n/g,'<br>')}</p></div>` : '';
-    const _firstRuta = (State.rows.length && State.rows[0].ruta) ? State.rows[0].ruta.trim() : '';
-    const pdfTitle = [isCot ? 'Cotización' : 'Estado de Pago', fv('numDoc') || '', fv('cliNombre') || 'Sin Cliente', _firstRuta, fv('fechaEmision') || iso(new Date())].filter(Boolean).join(' · ');
-    const html = `<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8"><title>${pdfTitle}</title><link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet"><style>*{margin:0;padding:0;box-sizing:border-box}:root{--blue:#0055FF;--blt:#dce8ff;--t1:#0d0d12;--t2:#4a4a58;--t3:#8a8a9a;--bdr:#d8dce8;--gold:#b07800;--m:'JetBrains Mono',monospace;--s:'Inter',sans-serif}@page{size:Letter portrait;margin:12mm 14mm 16mm 14mm}@media print{.no-break{page-break-inside:avoid}}*{-webkit-print-color-adjust:exact;print-color-adjust:exact}html,body{font-family:var(--s);font-size:9pt;color:var(--t1);background:#fff;line-height:1.4}.doc{width:100%;border:1.2pt solid #b8c8f0;border-radius:3pt}.hdiv{height:.6pt;background:linear-gradient(90deg,transparent,#a0b8e8 40%,#a0b8e8 60%,transparent)}.hdr{display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:6mm;padding:5mm 7mm 4mm;border-bottom:1pt solid var(--bdr);background:linear-gradient(135deg,#fff 50%,#f2f6ff)}.hdr-c{text-align:center}.eyebrow{font-size:5.5pt;font-weight:600;letter-spacing:2.5px;text-transform:uppercase;color:var(--t3);margin-bottom:1.5mm}.doc-tipo{font-size:16pt;font-weight:300;color:var(--t1)}.doc-badge{display:inline-block;margin-top:1.5mm;padding:1.5pt 7pt;border-radius:99pt;font-size:6pt;font-weight:700;background:var(--blt);color:var(--blue);border:1pt solid #b0c8ff}.hdr-meta{display:flex;flex-direction:column;gap:1.8mm;align-items:flex-end}.mr{display:flex;align-items:baseline;gap:3mm}.ml{font-size:5pt;font-weight:700;letter-spacing:.8px;text-transform:uppercase;color:var(--t3);white-space:nowrap}.mv{font:600 9pt/1 var(--m);color:var(--t1)}.mvn{font-size:11pt;font-weight:700;color:var(--blue)}.parties{display:grid;grid-template-columns:1fr 1.5pt 1fr}.party{padding:4mm 7mm}.pt{font-size:5.5pt;font-weight:700;letter-spacing:1.8px;text-transform:uppercase;color:var(--blue);padding-bottom:1.5mm;margin-bottom:2.5mm;border-bottom:1.2pt solid var(--blt);display:flex;align-items:center}.pd{background:linear-gradient(180deg,transparent,#b0c8f0 20%,#b0c8f0 80%,transparent)}.ft{width:100%;border-collapse:collapse}.ft td{padding:.7mm 0;vertical-align:top;line-height:1.35;border-bottom:.3pt solid #eff1f8}.ft tr:last-child td{border-bottom:none}.ft td:first-child{font-size:5pt;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--t3);white-space:nowrap;padding-right:3mm;width:22mm}.ft td:last-child{font-size:8.5pt;color:var(--t1)}.vs{font-weight:600}.sec-title{font-size:5.5pt;font-weight:700;letter-spacing:1.8px;text-transform:uppercase;color:var(--blue);margin-bottom:2mm;display:flex;align-items:center;gap:2mm}.sec-title::after{content:'';flex:1;height:.5pt;background:linear-gradient(90deg,var(--blt),transparent)}.cond-section{padding:3mm 7mm}.cond-grid{display:grid;grid-template-columns:1fr 1fr 1fr;border:1pt solid var(--bdr);border-radius:2pt;overflow:hidden}.cond-cell{padding:2mm 3mm;border-right:1pt solid var(--bdr)}.cond-cell:last-child{border-right:none}.cl{font-size:5pt;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--t3);display:block;margin-bottom:.7mm}.resumen-section{padding:3mm 7mm}.resumen-p{font-size:8.5pt;line-height:1.75;color:var(--t2);border-left:2.5pt solid var(--blt);padding:2.5mm 4mm;background:#f8faff;border-radius:0 4pt 4pt 0}.tbl-section{padding:3mm 7mm 2.5mm}table{width:100%;border-collapse:collapse}thead th{background:#e8eeff;font-size:5.5pt;font-weight:700;letter-spacing:.4px;text-transform:uppercase;color:var(--blue);padding:2mm 1.5mm;text-align:center;border-top:1pt solid #b0c8ff;border-bottom:1.2pt solid #b0c8ff;white-space:nowrap}thead th:first-child{text-align:left;padding-left:2.5mm}thead th:last-child{text-align:right;padding-right:2.5mm}tbody tr:nth-child(even) td{background:#f7f9ff}tbody td{padding:1.5mm 1.5mm;border-bottom:.4pt solid #e8edf8;font-size:8.5pt;text-align:center;vertical-align:middle}tbody td:first-child{text-align:left;padding-left:2.5mm}tbody td:last-child{text-align:right;padding-right:2.5mm;font-family:var(--m);font-weight:600}.n{font-family:var(--m);font-size:8pt}.ext-head th{background:#fdf6e8;color:var(--gold);border-top:1pt solid #f0d8a0;border-bottom:1.2pt solid #f0d8a0}.ext-row td{border-bottom:.4pt solid #f5edda}.ext-row:nth-child(even) td{background:#fffdf5}.ext-total{font-family:var(--m);font-weight:600;color:var(--gold)!important}.footer-g{display:grid;grid-template-columns:1fr auto;gap:6mm;align-items:end;padding:3mm 7mm 5mm}.glosa{border-left:2.5pt solid var(--blue);padding:2mm 3mm;background:#f6f9ff;font-size:7pt;line-height:1.6;color:var(--t2)}.glosa strong{color:var(--t1);font-weight:600}.tot-box{min-width:62mm;border:1pt solid var(--bdr);overflow:hidden;border-radius:2pt}.tr{display:flex;justify-content:space-between;align-items:center;padding:1.8mm 3mm;font-size:8pt;color:var(--t2);border-bottom:.4pt solid var(--bdr)}.tr:last-child{border-bottom:none}.tr .a{font:500 8pt/1 var(--m);color:var(--t1)}.tr.ext{color:var(--gold)}.tr.ext .a{color:var(--gold)}.tr.neto{border-top:1pt solid var(--bdr);font-weight:600;color:var(--t1)}.tr.neto .a{font-weight:700}.tr.grand{background:var(--blue);color:#fff;padding:2.5mm 3mm;font-size:10pt;font-weight:700}.tr.grand .a{font-size:11pt;font-weight:700;color:#fff;font-family:var(--m)}.firma-g{padding:3mm 7mm 4mm;display:grid;grid-template-columns:1fr 1fr;gap:12mm}.fbox{border-top:1pt solid var(--bdr);padding-top:1.5mm;margin-top:6mm}.fl{font-size:5pt;font-weight:700;text-transform:uppercase;letter-spacing:.7px;color:var(--t3)}.fn{font-size:8pt;color:var(--t2);margin-top:.5mm}.pie{display:flex;align-items:center;justify-content:space-between;gap:4mm;padding:2mm 7mm;background:linear-gradient(135deg,#edf2ff,#f2f6ff);border-top:1pt solid var(--blt)}.pie-b{font-size:6pt;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:var(--blue)}.pie-f{font-size:6pt;font-family:var(--m);color:var(--t2)}.pie-d{font-size:6pt;color:var(--t3)}</style></head><body><div class="doc"><div class="hdr"><div>${logoHTML}</div><div class="hdr-c"><div class="eyebrow">${isCot ? 'Cotización de Servicio de Transporte · Propuesta Comercial' : 'Documento de Cobro · Servicios de Transporte'}</div><div class="doc-tipo">${isCot ? 'Cotización' : 'Estado de Pago'}</div><div class="doc-badge">${isCot ? '📋 COT' : '✅ EP'}</div></div><div class="hdr-meta"><div class="mr"><span class="ml">${isCot ? 'N° Cotización' : 'N° Documento'}</span><span class="mv mvn">${fv('numDoc')}</span></div><div class="mr"><span class="ml">Emisión</span><span class="mv">${fv('fechaEmision')}</span></div><div class="mr"><span class="ml">${isCot ? 'Válida hasta' : 'Vencimiento'}</span><span class="mv">${fv('fechaVence')}</span></div></div></div><div class="hdiv"></div><div class="parties"><div class="party"><div class="pt">▸ ${isCot ? 'Cliente / Destinatario' : 'Mandante / Cliente'}</div><table class="ft">${fv('cliNombre') ? `<tr><td>Razón social</td><td class="vs">${fv('cliNombre')}</td></tr>` : ''}${fv('cliRut') ? `<tr><td>RUT</td><td>${fv('cliRut')}</td></tr>` : ''}${fv('cliGiro') ? `<tr><td>Giro</td><td>${fv('cliGiro')}</td></tr>` : ''}${fv('cliDir')||fv('cliCiudad') ? `<tr><td>Dirección</td><td>${[fv('cliDir'),fv('cliCiudad')].filter(Boolean).join(', ')}</td></tr>` : ''}${fv('cliEmail') ? `<tr><td>Email</td><td>${fv('cliEmail')}</td></tr>` : ''}${fv('cliTel') ? `<tr><td>Teléfono</td><td>${fv('cliTel')}</td></tr>` : ''}${fv('cliContacto') ? `<tr><td>Contacto</td><td>${fv('cliContacto')}</td></tr>` : ''}${fv('cliProyecto') ? `<tr><td>Proyecto</td><td class="vs">${fv('cliProyecto')}</td></tr>` : ''}${fv('cliSistema') ? `<tr><td>Sistema op.</td><td>${fv('cliSistema')}</td></tr>` : ''}${!isCot&&fv('cliContrato') ? `<tr><td>Contrato</td><td><strong>${fv('cliContrato')}</strong></td></tr>` : ''}${!isCot&&fv('cliOC') ? `<tr><td>OC</td><td><strong>${fv('cliOC')}</strong></td></tr>` : ''}</table></div><div class="pd"></div><div class="party"><div class="pt">▸ Proveedor / Oferente</div><table class="ft">${fv('prvNombre') ? `<tr><td>Razón social</td><td class="vs">${fv('prvNombre')}</td></tr>` : ''}${fv('prvRut') ? `<tr><td>RUT</td><td>${fv('prvRut')}</td></tr>` : ''}${fv('prvGiro') ? `<tr><td>Giro</td><td>${fv('prvGiro')}</td></tr>` : ''}${fv('prvDir')||fv('prvCiudad') ? `<tr><td>Dirección</td><td>${[fv('prvDir'),fv('prvCiudad'),fv('prvRegion')].filter(Boolean).join(', ')}</td></tr>` : ''}${fv('prvEmail') ? `<tr><td>Email</td><td>${fv('prvEmail')}</td></tr>` : ''}${fv('prvTel') ? `<tr><td>Teléfono</td><td>${fv('prvTel')}</td></tr>` : ''}${fv('prvContacto') ? `<tr><td>Contacto</td><td>${fv('prvContacto')}</td></tr>` : ''}</table></div></div>
-    ${condHTML}${resumenHTML}<div class="hdiv"></div><div class="tbl-section no-break"><div class="sec-title">Detalle de Servicios</div><table><thead><tr><th style="text-align:left;padding-left:2.5mm;width:20%">Vehículo</th><th style="width:9%">Patente</th><th style="width:18%">Ruta / Recorrido</th><th style="width:16%">Período</th><th style="width:7%">Pasaj.</th><th style="width:9%">Viajes/Días</th><th style="width:11%">Valor unit.</th><th style="text-align:right;padding-right:2.5mm;width:10%">Total</th></tr></thead><tbody>${filasHTML}</tbody></table></div>${extrasHTML}<div class="hdiv"></div><div class="footer-g no-break"><div class="glosa">${isCot ? '<strong>Nota:</strong> Oferta comercial referencial, no constituye factura ni documento tributario. Válida según el plazo indicado.' : '<strong>Importante:</strong> Respaldo administrativo de servicios prestados. Observaciones dentro de 5 días hábiles. Ley N° 19.983.'}</div><div class="tot-box"><div class="tr"><span>Subtotal servicios</span><span class="a">${cur.sym} ${fmt(brutoServ)}</span></div>${brutoExtra > 0 ? `<div class="tr ext"><span>Ítems adicionales</span><span class="a">${cur.sym} ${fmt(brutoExtra)}</span></div>` : ''}<div class="tr neto"><span>Subtotal neto</span><span class="a">${cur.sym} ${fmt(bruto)}</span></div>${conIva ? `<div class="tr"><span>IVA 19%</span><span class="a">${cur.sym} ${fmt(iva)}</span></div>` : ''}<div class="tr grand"><span>${isCot ? 'TOTAL COTIZACIÓN' : 'TOTAL A PAGAR'}</span><span class="a">${cur.sym} ${fmt(bruto + iva)}</span></div></div></div><div class="hdiv"></div><div class="firma-g"><div><div class="fbox"><div class="fl">Firma y timbre — Proveedor / Oferente</div><div class="fn">${fv('prvNombre')}${fv('prvRut') ? ' · ' + fv('prvRut') : ''}</div></div></div><div><div class="fbox"><div class="fl">Firma y timbre — ${isCot ? 'Cliente' : 'Mandante'}</div><div class="fn">${fv('cliNombre')}${fv('cliRut') ? ' · ' + fv('cliRut') : ''}</div></div></div></div><div class="pie"><span class="pie-b">HAULER · Transporte Corporativo de Pasajeros</span><span class="pie-f" id="_fn"></span><span class="pie-d" id="_gd"></span></div></div><script>(function(){var fn=document.getElementById('_fn');if(fn)fn.textContent=document.title+'.pdf';var gd=document.getElementById('_gd');if(gd){var n=new Date(),p=function(x){return x<10?'0'+x:x};gd.textContent='Generado: '+n.getFullYear()+'-'+p(n.getMonth()+1)+'-'+p(n.getDate())+' '+p(n.getHours())+':'+p(n.getMinutes());}})();document.fonts.ready.then(function(){setTimeout(function(){window.print();},500);});<\/script></body></html>`;
-    const w = window.open('', '_blank', 'width=900,height=700');
-    if (!w) { alert('Permite las ventanas emergentes para imprimir.'); return; }
-    w.document.open(); w.document.write(html); w.document.close();
+
+    const isCot = State.mode === 'cot';
+    const sym = getCur().sym;
+    let brutoServ = 0, brutoExtra = 0;
+
+    /* Filas de servicios */
+    const rowsHtml = State.rows.map(r => {
+      const tot = (+r.viajes || 0) * (+r.valorUnit || 0);
+      brutoServ += tot;
+      const periodo = _periodoLabel(r);
+      return '<tr>' +
+        '<td>' + esc(r.vehiculo || '') + '</td>' +
+        '<td style="font-family:var(--font-mono);font-size:.72rem">' + esc(r.patente || '') + '</td>' +
+        '<td>' + esc(r.ruta || '') + '</td>' +
+        '<td>' + esc(periodo) + '</td>' +
+        '<td style="text-align:center">' + esc(r.pasajeros || '') + '</td>' +
+        '<td style="text-align:center">' + esc(r.viajes || 0) + '</td>' +
+        '<td style="text-align:right;font-family:var(--font-mono)">' + sym + ' ' + fmt(+r.valorUnit || 0) + '</td>' +
+        '<td style="text-align:right;font-family:var(--font-mono);font-weight:600;color:#0055CC">' + (tot ? sym + ' ' + fmt(tot) : '—') + '</td>' +
+      '</tr>';
+    }).join('') || '<tr><td colspan="8" style="text-align:center;padding:.8rem;color:#999">— sin servicios —</td></tr>';
+
+    /* Filas de extras */
+    const extrasHtml = State.extras.map(e => {
+      const q = +e.cantidad || 0, vu = +e.valorUnit || 0, tot = q * vu;
+      brutoExtra += tot;
+      const tipoLbl = e.tipo === 'dia' ? 'Por día' : 'Por unidad';
+      return '<tr>' +
+        '<td>' + esc(e.desc || '') + '</td>' +
+        '<td style="text-align:center;font-size:.7rem;color:#966320">' + esc(tipoLbl) + '</td>' +
+        '<td style="text-align:center">' + esc(q) + '</td>' +
+        '<td style="text-align:right;font-family:var(--font-mono)">' + sym + ' ' + fmt(vu) + '</td>' +
+        '<td style="text-align:right;font-family:var(--font-mono);font-weight:600;color:#966320">' + (tot ? sym + ' ' + fmt(tot) : '—') + '</td>' +
+      '</tr>';
+    }).join('');
+
+    const bruto  = brutoServ + brutoExtra;
+    const conIva = document.getElementById('chkIva')?.checked ?? true;
+    const iva    = conIva ? Math.round(bruto * 0.19) : 0;
+    const total  = bruto + iva;
+
+    /* Logo */
+    const logoVisible = document.getElementById('logoImg').style.display !== 'none';
+    const logoSrc = logoVisible ? document.getElementById('imgLogo').src : '';
+    const logoSize = document.getElementById('logoSize')?.value || '56';
+    const logoBlock = logoVisible
+      ? '<img src="' + esc(logoSrc) + '" style="max-height:' + esc(logoSize) + 'px;max-width:200px;object-fit:contain">'
+      : '<div><div style="font-size:1.6rem;font-weight:700;letter-spacing:-.5px">HAULER</div><div style="font-size:.45rem;letter-spacing:2.5px;text-transform:uppercase;color:#888;margin-top:3px">Transporte Corporativo de Pasajeros</div></div>';
+
+    /* Header */
+    const titleDoc = isCot ? 'Cotización' : 'Estado de Pago';
+    const eyebrow  = isCot ? 'Cotización de Servicio de Transporte' : 'Documento de Cobro · Servicios de Transporte';
+    const numLbl   = isCot ? 'N° Cot.' : 'N° Doc.';
+    const totalLbl = isCot ? 'TOTAL COTIZACIÓN' : 'TOTAL A PAGAR';
+
+    /* Bloques de meta */
+    const metaRows = [
+      { lbl: numLbl,         val: fv('numDoc') },
+      { lbl: 'Emisión',      val: _formatDate(fv('fechaEmision')) },
+    ];
+    if (isCot) {
+      metaRows.push({ lbl: 'Validez', val: fv('selValidez') + ' días' });
+    } else {
+      metaRows.push({ lbl: 'Vencimiento', val: _formatDate(fv('fechaVence')) });
+    }
+    const metaHtml = metaRows.map(m =>
+      '<div style="display:flex;justify-content:flex-end;gap:.6rem;margin-bottom:.3rem">' +
+        '<span style="font-size:.5rem;font-weight:700;letter-spacing:.8px;text-transform:uppercase;color:#888">' + esc(m.lbl) + '</span>' +
+        '<span style="font-family:var(--font-mono);font-size:.7rem">' + esc(m.val || '—') + '</span>' +
+      '</div>'
+    ).join('');
+
+    /* Cliente / Proveedor blocks */
+    const cliBlock = _partyBlock(isCot ? 'Cliente / Destinatario' : 'Mandante / Cliente', [
+      { lbl: 'Razón social', val: fv('cliNombre') },
+      { lbl: 'RUT',          val: fv('cliRut') },
+      { lbl: 'Giro',         val: fv('cliGiro') },
+      { lbl: 'Dirección',    val: fv('cliDir') },
+      { lbl: 'Ciudad',       val: fv('cliCiudad') },
+      { lbl: 'Email',        val: fv('cliEmail') },
+      { lbl: 'Teléfono',     val: fv('cliTel') },
+      { lbl: 'Contacto',     val: fv('cliContacto') },
+      { lbl: 'Proyecto',     val: fv('cliProyecto') },
+      { lbl: 'Sistema',      val: fv('cliSistema') },
+    ].concat(!isCot ? [
+      { lbl: 'Contrato', val: fv('cliContrato') },
+      { lbl: 'OC',       val: fv('cliOC') },
+    ] : []));
+
+    const prvBlock = _partyBlock('Proveedor / Oferente', [
+      { lbl: 'Razón social', val: fv('prvNombre') },
+      { lbl: 'RUT',          val: fv('prvRut') },
+      { lbl: 'Giro',         val: fv('prvGiro') },
+      { lbl: 'Dirección',    val: fv('prvDir') },
+      { lbl: 'Ciudad',       val: fv('prvCiudad') },
+      { lbl: 'Región',       val: fv('prvRegion') },
+      { lbl: 'Email',        val: fv('prvEmail') },
+      { lbl: 'Teléfono',     val: fv('prvTel') },
+      { lbl: 'Contacto',     val: fv('prvContacto') },
+    ]);
+
+    /* Condiciones (solo cotización) */
+    const condBlock = isCot
+      ? '<div style="border-bottom:1px solid #e0e0e8;padding:.7rem 1.5rem">' +
+          '<div style="font-size:.45rem;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:#888;margin-bottom:.6rem">Condiciones de la oferta</div>' +
+          '<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:.4rem 1rem;font-size:.72rem">' +
+            '<div><strong style="font-size:.55rem;color:#666;display:block">Forma de pago</strong>' + esc(fv('condPago') || '—') + '</div>' +
+            '<div><strong style="font-size:.55rem;color:#666;display:block">Moneda</strong>' + esc(fv('condMoneda') || '—') + '</div>' +
+            '<div><strong style="font-size:.55rem;color:#666;display:block">Reajuste</strong>' + esc(fv('condReajuste') || '—') + '</div>' +
+          '</div>' +
+        '</div>'
+      : '';
+
+    /* Resumen del servicio (solo cotización) */
+    const resumenBlock = isCot && fv('resumenServicio').trim()
+      ? '<div style="border-bottom:1px solid #e0e0e8;padding:.7rem 1.5rem">' +
+          '<div style="font-size:.45rem;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:#888;margin-bottom:.6rem">Resumen del Servicio</div>' +
+          '<p style="font-size:.7rem;line-height:1.65;color:#333;text-align:justify">' + esc(fv('resumenServicio')) + '</p>' +
+        '</div>'
+      : '';
+
+    /* Glosa */
+    const glosaText = isCot
+      ? 'Esta cotización tiene carácter de oferta comercial y no constituye factura ni documento tributario. Los precios son referenciales y están sujetos a variaciones en combustible, peajes u otros costos operativos. Válida según el plazo indicado.'
+      : 'Documento administrativo emitido en virtud de la Ley N° 19.983. Respaldo de servicios prestados — no constituye factura ni documento tributario.';
+
+    /* Tabla extras (solo si hay) */
+    const extrasTableBlock = State.extras.length > 0
+      ? '<div style="border-bottom:1px solid #e0e0e8;padding:.7rem 1.5rem">' +
+          '<div style="font-size:.45rem;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:#966320;margin-bottom:.5rem">Ítems adicionales</div>' +
+          '<table style="width:100%;border-collapse:collapse;font-size:.72rem">' +
+            '<thead><tr style="background:#fdf8f0;color:#966320">' +
+              '<th style="text-align:left;padding:.4rem .5rem;font-size:.55rem;letter-spacing:.4px">Descripción</th>' +
+              '<th style="text-align:center;padding:.4rem .5rem;font-size:.55rem;letter-spacing:.4px">Tipo</th>' +
+              '<th style="text-align:center;padding:.4rem .5rem;font-size:.55rem;letter-spacing:.4px">Cant./Días</th>' +
+              '<th style="text-align:right;padding:.4rem .5rem;font-size:.55rem;letter-spacing:.4px">V. unit.</th>' +
+              '<th style="text-align:right;padding:.4rem .5rem;font-size:.55rem;letter-spacing:.4px">Total</th>' +
+            '</tr></thead>' +
+            '<tbody>' + extrasHtml + '</tbody>' +
+          '</table>' +
+        '</div>'
+      : '';
+
+    /* Totales */
+    const totalsBlock =
+      '<div style="display:flex;justify-content:flex-end;padding:1rem 1.5rem">' +
+        '<table style="font-size:.78rem;border-collapse:collapse;min-width:280px">' +
+          '<tr><td style="padding:.3rem .8rem;color:#555">Subtotal servicios</td><td style="padding:.3rem 0;text-align:right;font-family:var(--font-mono)">' + sym + ' ' + fmt(brutoServ) + '</td></tr>' +
+          (brutoExtra > 0
+            ? '<tr><td style="padding:.3rem .8rem;color:#966320">Ítems adicionales</td><td style="padding:.3rem 0;text-align:right;font-family:var(--font-mono);color:#966320">' + sym + ' ' + fmt(brutoExtra) + '</td></tr>'
+            : '') +
+          '<tr><td style="padding:.3rem .8rem;color:#555;border-top:1px solid #e0e0e8">Subtotal neto</td><td style="padding:.3rem 0;text-align:right;font-family:var(--font-mono);border-top:1px solid #e0e0e8">' + sym + ' ' + fmt(bruto) + '</td></tr>' +
+          (conIva
+            ? '<tr><td style="padding:.3rem .8rem;color:#555">IVA 19%</td><td style="padding:.3rem 0;text-align:right;font-family:var(--font-mono)">' + sym + ' ' + fmt(iva) + '</td></tr>'
+            : '') +
+          '<tr style="background:#f5f6f9"><td style="padding:.55rem .8rem;font-weight:700;font-size:.85rem">' + esc(totalLbl) + '</td><td style="padding:.55rem 0;text-align:right;font-family:var(--font-mono);font-weight:700;font-size:1rem;color:#0055FF">' + sym + ' ' + fmt(total) + '</td></tr>' +
+        '</table>' +
+      '</div>';
+
+    /* HTML final del documento */
+    const html = '<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8"><title>' + esc(titleDoc) + ' ' + esc(fv('numDoc')) + '</title>' +
+      '<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">' +
+      '<style>' +
+        '@page { size: letter; margin: 1.4cm 1.2cm; }' +
+        '* { box-sizing: border-box; }' +
+        ':root { --font-sans: "Inter", sans-serif; --font-mono: "JetBrains Mono", monospace; }' +
+        'body { font-family: var(--font-sans); color: #111; font-size: .8rem; margin: 0; -webkit-print-color-adjust: exact; print-color-adjust: exact; }' +
+        '.doc-print { background: #fff; }' +
+        'table { page-break-inside: auto; }' +
+        'tr    { page-break-inside: avoid; page-break-after: auto; }' +
+        'thead { display: table-header-group; }' +
+        'tfoot { display: table-footer-group; }' +
+        'h1, h2, h3, h4 { page-break-after: avoid; page-break-inside: avoid; }' +
+      '</style></head>' +
+    '<body><div class="doc-print">' +
+      /* Header */
+      '<div style="display:grid;grid-template-columns:auto 1fr auto;gap:1.5rem;padding:1.2rem 1.5rem;border-bottom:2px solid #0055FF;align-items:center;background:linear-gradient(150deg,#fff 60%,#f6f8ff)">' +
+        '<div>' + logoBlock + '</div>' +
+        '<div style="text-align:center">' +
+          '<div style="font-size:.5rem;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:#888;margin-bottom:4px">' + esc(eyebrow) + '</div>' +
+          '<h1 style="font-size:1.4rem;font-weight:300;letter-spacing:-.2px;margin:0">' + esc(titleDoc) + '</h1>' +
+          '<span style="display:inline-block;margin-top:.4rem;padding:.18rem .7rem;border-radius:99px;font-size:.55rem;font-weight:600;letter-spacing:.5px;background:#e6eeff;color:#0055FF">' + (isCot ? '📋 Propuesta Comercial' : '✅ Estado de Pago') + '</span>' +
+        '</div>' +
+        '<div>' + metaHtml + '</div>' +
+      '</div>' +
+      /* Parties */
+      '<div style="display:grid;grid-template-columns:1fr 1fr;border-bottom:1px solid #e0e0e8">' +
+        cliBlock +
+        '<div style="border-left:1px solid #e0e0e8">' + prvBlock + '</div>' +
+      '</div>' +
+      condBlock +
+      resumenBlock +
+      /* Tabla servicios */
+      '<div style="padding:.7rem 1.5rem;border-bottom:1px solid #e0e0e8">' +
+        '<div style="font-size:.45rem;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:#0055CC;margin-bottom:.5rem">Detalle de servicios</div>' +
+        '<table style="width:100%;border-collapse:collapse;font-size:.72rem">' +
+          '<thead><tr style="background:#f2f5ff;color:#0055CC">' +
+            '<th style="text-align:left;padding:.4rem .5rem;font-size:.55rem;letter-spacing:.4px">Vehículo</th>' +
+            '<th style="text-align:left;padding:.4rem .5rem;font-size:.55rem;letter-spacing:.4px">Patente</th>' +
+            '<th style="text-align:left;padding:.4rem .5rem;font-size:.55rem;letter-spacing:.4px">Ruta</th>' +
+            '<th style="text-align:left;padding:.4rem .5rem;font-size:.55rem;letter-spacing:.4px">Período</th>' +
+            '<th style="text-align:center;padding:.4rem .5rem;font-size:.55rem;letter-spacing:.4px">Pasaj.</th>' +
+            '<th style="text-align:center;padding:.4rem .5rem;font-size:.55rem;letter-spacing:.4px">V/D</th>' +
+            '<th style="text-align:right;padding:.4rem .5rem;font-size:.55rem;letter-spacing:.4px">V. unit.</th>' +
+            '<th style="text-align:right;padding:.4rem .5rem;font-size:.55rem;letter-spacing:.4px">Total</th>' +
+          '</tr></thead>' +
+          '<tbody>' + rowsHtml + '</tbody>' +
+        '</table>' +
+      '</div>' +
+      extrasTableBlock +
+      /* Totales + glosa */
+      '<div style="display:grid;grid-template-columns:1fr auto;align-items:end;gap:.8rem">' +
+        '<div style="padding:1rem 1.5rem">' +
+          '<div style="font-size:.6rem;line-height:1.65;color:#555;background:#f5f6f9;padding:.7rem .9rem;border-radius:10px;border-left:3px solid #0055FF">' +
+            '<strong style="color:#111">' + (isCot ? 'Nota:' : 'Importante:') + '</strong> ' + esc(glosaText) +
+          '</div>' +
+        '</div>' +
+        totalsBlock +
+      '</div>' +
+      /* Firmas + footer */
+      '<div style="padding:1.5rem 1.5rem .8rem;display:grid;grid-template-columns:1fr 1fr;gap:2rem">' +
+        '<div style="text-align:center"><div style="border-top:1px solid #888;padding-top:.4rem;font-size:.65rem;color:#666"><strong>' + esc(fv('prvNombre') || 'Proveedor') + '</strong><br>' + esc(fv('prvContacto') || '') + '</div></div>' +
+        '<div style="text-align:center"><div style="border-top:1px solid #888;padding-top:.4rem;font-size:.65rem;color:#666"><strong>' + esc(fv('cliNombre') || 'Cliente') + '</strong><br>' + esc(fv('cliContacto') || '') + '</div></div>' +
+      '</div>' +
+      '<div style="text-align:center;font-size:.55rem;color:#aaa;padding:.6rem 1rem .3rem;border-top:1px solid #f0f0f0">Documento generado el ' + esc(_formatDate(new Date().toISOString().slice(0, 10))) + ' · HAULER SpA · ' + esc(fv('prvEmail')) + '</div>' +
+    '</div></body></html>';
+
+    /* Abrir ventana */
+    const w = window.open('', '_blank', 'width=900,height=900');
+    if (!w) { Toast.show('⚠️ El navegador bloqueó la ventana de impresión'); return; }
+    w.document.write(html);
+    w.document.close();
+    w.onload = () => { setTimeout(() => { w.print(); }, 600); };
+  };
+  const _periodoLabel = (r) => {
+    const t = r.periodoTipo || 'dia';
+    if (t === 'dia')   return _formatDate(r.periodoDesde) || 'Día';
+    if (t === 'rango') return r.periodoDesde && r.periodoHasta ? _formatDate(r.periodoDesde) + ' → ' + _formatDate(r.periodoHasta) : 'Rango';
+    if (t === 'mes')   return r.periodoMes || 'Mes';
+    if (t === 'anio')  return r.periodoAnio || 'Año';
+    return '';
+  };
+  const _formatDate = (iso) => {
+    if (!iso || !/^\d{4}-\d{2}-\d{2}$/.test(iso)) return '';
+    const [y, m, d] = iso.split('-');
+    return d + '/' + m + '/' + y;
+  };
+  const _partyBlock = (title, fields) => {
+    const rows = fields.filter(f => f.val).map(f =>
+      '<div style="display:grid;grid-template-columns:auto 1fr;gap:.3rem .55rem;font-size:.7rem">' +
+        '<span style="font-size:.52rem;font-weight:700;letter-spacing:.6px;text-transform:uppercase;color:#888">' + esc(f.lbl) + '</span>' +
+        '<span>' + esc(f.val) + '</span>' +
+      '</div>'
+    ).join('');
+    return '<div style="padding:.8rem 1.2rem">' +
+      '<div style="font-size:.45rem;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:#888;margin-bottom:.5rem">' + esc(title) + '</div>' +
+      '<div style="display:grid;gap:.25rem">' + rows + '</div>' +
+    '</div>';
   };
   return { print };
 })();
 
 /* ════════════════════════════════════════════════════════════════════════
-   MÓDULO: Rut (original)
+   MÓDULO: Rut — validador y formateador chileno
 ════════════════════════════════════════════════════════════════════════ */
 const Rut = (() => {
-  const calcularDV = (cuerpo) => { let suma = 0, mult = 2; for (let i = cuerpo.length - 1; i >= 0; i--) { suma += parseInt(cuerpo[i], 10) * mult; mult = mult === 7 ? 2 : mult + 1; } const resto = 11 - (suma % 11); if (resto === 11) return '0'; if (resto === 10) return 'K'; return String(resto); };
-  const formatear  = (raw) => { const limpio = raw.toUpperCase().replace(/[^0-9K]/g, ''); if (limpio.length < 2) return limpio; const dv = limpio.slice(-1), cuerpo = limpio.slice(0, -1), conPuntos = cuerpo.replace(/\B(?=(\d{3})+(?!\d))/g, '.'); return conPuntos + '-' + dv; };
-  const onInput    = (inputEl, badgeId) => { const raw = inputEl.value, badge = document.getElementById(badgeId); const formateado = formatear(raw); inputEl.value = formateado; if (!badge) return; const limpio = formateado.toUpperCase().replace(/[^0-9K]/g, ''); if (limpio.length < 2) { badge.className = 'rut-ok-badge'; badge.textContent = ''; return; } const dv = limpio.slice(-1), cuerpo = limpio.slice(0, -1); if (cuerpo.length < 7) { badge.className = 'rut-ok-badge'; badge.textContent = ''; return; } const valido = dv === calcularDV(cuerpo); badge.textContent = valido ? '✓' : '✗'; badge.className = 'rut-ok-badge show ' + (valido ? 'ok' : 'err'); };
-  const validar    = (rutFormateado) => { const limpio = rutFormateado.toUpperCase().replace(/[^0-9K]/g, ''); if (limpio.length < 8) return false; const dv = limpio.slice(-1), cuerpo = limpio.slice(0, -1); return calcularDV(cuerpo) === dv; };
-  const initAll    = () => { [['cliRut','cliRutBadge'],['prvRut','prvRutBadge']].forEach(([id, bid]) => { const el = document.getElementById(id); if (el && el.value) onInput(el, bid); }); };
-  return { calcularDV, formatear, onInput, validar, initAll };
+  const calcularDV = (rut) => {
+    const r = String(rut).replace(/[^\dkK]/g, '').slice(0, -1);
+    if (!r) return '';
+    let suma = 0, mul = 2;
+    for (let i = r.length - 1; i >= 0; i--) {
+      suma += parseInt(r[i]) * mul;
+      mul = mul === 7 ? 2 : mul + 1;
+    }
+    const res = 11 - (suma % 11);
+    if (res === 11) return '0';
+    if (res === 10) return 'K';
+    return String(res);
+  };
+  const formatear = (rut) => {
+    const r = String(rut).replace(/[^\dkK]/g, '').toUpperCase();
+    if (r.length < 2) return r;
+    const cuerpo = r.slice(0, -1);
+    const dv = r.slice(-1);
+    /* Insert dots every 3 from right */
+    let cuerpoFmt = '';
+    for (let i = cuerpo.length - 1, j = 0; i >= 0; i--, j++) {
+      if (j > 0 && j % 3 === 0) cuerpoFmt = '.' + cuerpoFmt;
+      cuerpoFmt = cuerpo[i] + cuerpoFmt;
+    }
+    return cuerpoFmt + '-' + dv;
+  };
+  const validar = (rut) => {
+    const r = String(rut).replace(/[^\dkK]/g, '').toUpperCase();
+    if (r.length < 2) return false;
+    const cuerpo = r.slice(0, -1);
+    const dv = r.slice(-1);
+    return calcularDV(r) === dv;
+  };
+  const onInput = (input, badgeId) => {
+    let v = input.value.replace(/[^\dkK\.\-]/g, '');
+    /* Auto-format on the fly: keep raw + format on each input */
+    const raw = v.replace(/[^\dkK]/g, '').toUpperCase();
+    if (raw.length >= 2) {
+      input.value = formatear(raw);
+    } else {
+      input.value = raw;
+    }
+    const badge = document.getElementById(badgeId);
+    if (!badge) return;
+    if (raw.length < 2) { badge.classList.remove('show'); return; }
+    badge.classList.add('show');
+    if (validar(raw)) { badge.textContent = '✓'; badge.className = 'rut-ok-badge show ok'; }
+    else              { badge.textContent = '✕'; badge.className = 'rut-ok-badge show err'; }
+  };
+  const initAll = () => {
+    [['cliRut', 'cliRutBadge'], ['prvRut', 'prvRutBadge'], ['nc_rut', 'nc_rutBadge']].forEach(([id, bid]) => {
+      const el = document.getElementById(id);
+      if (el && el.value) onInput(el, bid);
+    });
+  };
+  return { calcularDV, formatear, validar, onInput, initAll };
 })();
 
 /* ════════════════════════════════════════════════════════════════════════
-   UTILIDADES GLOBALES (original)
+   ★ MÓDULO: EmailPanel — Parser local con regex literales (BUGFIX)
 ════════════════════════════════════════════════════════════════════════ */
-const iso    = d => d.toISOString().slice(0, 10);
-const uid    = () => 'r' + Date.now() + Math.floor(Math.random() * 9999);
-const esc    = v => v == null ? '' : String(v).replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-const fv     = id => { const el = document.getElementById(id); return el ? el.value : ''; };
-const gf     = id => { const el = document.getElementById(id); return el ? el.value.trim() : ''; };
-const setf   = (id, v) => { const el = document.getElementById(id); if (el) el.value = v || ''; };
-const setField = setf;
-
-/* ══════════════════════════════════════════════════════
-   MÓDULO: EmailPanel — Ollama AI (local)
-══════════════════════════════════════════════════════ */
 const EmailPanel = (() => {
-  let _open       = false;
-  let _configOpen = false;
-  let _data       = null;
-  let _aiOk       = false;
+  let _ollamaUrl = localStorage.getItem('hauler_ollama_url') || 'http://localhost:11434';
+  let _ollamaModel = localStorage.getItem('hauler_ollama_model') || 'llama3.2';
+  let _lastResult = null;
+  let _open = false;
 
-  const _getUrl   = () => localStorage.getItem('ep_ollama_url')   || 'http://localhost:11434';
-  const _getModel = () => localStorage.getItem('ep_ollama_model') || 'llama3.2';
-
-  /* Abrir / cerrar */
-  const toggle = () => _open ? close() : open();
-  const open   = () => { _open = true;  document.getElementById('emailPanel').classList.add('open');    checkAI(); };
-  const close  = () => { _open = false; document.getElementById('emailPanel').classList.remove('open'); };
-
-  /* Config inline */
-  const toggleConfig = () => {
-    _configOpen = !_configOpen;
-    document.getElementById('epConfig').classList.toggle('show', _configOpen);
-    if (_configOpen) { setf('epOllamaUrl', _getUrl()); setf('epOllamaModel', _getModel()); }
-  };
-  const saveConfig = () => {
-    const u = fv('epOllamaUrl').trim(), m = fv('epOllamaModel').trim();
-    if (u) localStorage.setItem('ep_ollama_url',   u);
-    if (m) localStorage.setItem('ep_ollama_model', m);
-    _configOpen = false;
-    document.getElementById('epConfig').classList.remove('show');
-    checkAI();
-    Toast.show('✓ Configuración Ollama guardada');
+  const init = () => {
+    document.getElementById('epOllamaUrl').value = _ollamaUrl;
+    const sel = document.getElementById('epOllamaModel');
+    [...sel.options].forEach(opt => { if (opt.value === _ollamaModel) opt.selected = true; });
+    /* Verificar Ollama en background */
+    setTimeout(checkOllama, 600);
   };
 
-  /* Verificar conexión */
-  const checkAI = async () => {
-    const st = document.getElementById('epStatus'), fab = document.getElementById('emailFab');
-    st.className = 'ep-head-status chk'; st.textContent = '🤖 Conectando…';
+  const checkOllama = async () => {
+    const status = document.getElementById('epStatus');
+    const fab = document.getElementById('emailFab');
+    status.className = 'ep-head-status chk';
+    status.textContent = '🤖 verificando…';
     try {
-      const r = await fetch(_getUrl() + '/api/tags', { signal: AbortSignal.timeout(3000) });
-      _aiOk = r.ok;
-    } catch(e) { _aiOk = false; }
-    if (_aiOk) {
-      st.className = 'ep-head-status ok';  st.textContent = '🤖 Ollama ON';
-      fab.className = 'email-fab ollama-on';
-    } else {
-      st.className = 'ep-head-status err'; st.textContent = '🤖 Sin conexión → parser local';
+      const ctrl = new AbortController();
+      const t = setTimeout(() => ctrl.abort(), 2500);
+      const r = await fetch(_ollamaUrl + '/api/tags', { signal: ctrl.signal });
+      clearTimeout(t);
+      if (r.ok) {
+        status.className = 'ep-head-status ok';
+        status.textContent = '🤖 Ollama OK';
+        fab.className = 'email-fab ollama-on';
+      } else {
+        status.className = 'ep-head-status err';
+        status.textContent = '🤖 sin Ollama';
+        fab.className = 'email-fab ollama-off';
+      }
+    } catch (e) {
+      status.className = 'ep-head-status err';
+      status.textContent = '🤖 sin Ollama';
       fab.className = 'email-fab ollama-off';
     }
   };
 
-  /* Extraer con Ollama */
-  const extract = async () => {
-    const text = fv('epEmailText').trim();
-    if (!text) { Toast.show('⚠️ Pega el contenido del correo primero'); return; }
-    const btn = document.getElementById('epBtnExtract');
-    btn.innerHTML = '<span class="spinner"></span> Procesando…'; btn.disabled = true;
-    let data = null;
-    if (_aiOk) data = await _callOllama(text);
-    if (!data) {
-      data = _parseLocal(text);
-      Toast.show(_aiOk ? '⚠️ Ollama sin respuesta — parser local aplicado' : '⚙️ Parser local aplicado');
-    } else {
-      Toast.show('🤖 Ollama procesó el correo correctamente');
+  const toggle = () => { _open ? close() : open(); };
+  const open = () => {
+    _open = true;
+    document.getElementById('emailPanel').classList.add('open');
+    setTimeout(() => document.getElementById('epEmailText').focus(), 200);
+  };
+  const close = () => {
+    _open = false;
+    document.getElementById('emailPanel').classList.remove('open');
+  };
+  const toggleConfig = () => {
+    document.getElementById('epConfig').classList.toggle('show');
+  };
+  const saveConfig = () => {
+    _ollamaUrl = document.getElementById('epOllamaUrl').value.trim() || 'http://localhost:11434';
+    _ollamaModel = document.getElementById('epOllamaModel').value;
+    localStorage.setItem('hauler_ollama_url', _ollamaUrl);
+    localStorage.setItem('hauler_ollama_model', _ollamaModel);
+    Toast.show('✓ Configuración Ollama guardada');
+    document.getElementById('epConfig').classList.remove('show');
+    checkOllama();
+  };
+
+  /* ★ FIXED: regexes literales en lugar de strings con escape simple */
+  const _parseLocal = (text) => {
+    const result = {};
+    const T = text.replace(/\r/g, '');
+
+    /* Email */
+    const mEmail = T.match(/[\w.+-]+@[\w.-]+\.[a-z]{2,}/i);
+    if (mEmail) result.email = mEmail[0];
+
+    /* Teléfono chileno */
+    const mTel = T.match(/(?:\+?56\s*)?9\s*\d{4}\s*\d{4}/);
+    if (mTel) result.tel = mTel[0].replace(/\s+/g, ' ').trim();
+
+    /* RUT */
+    const mRut = T.match(/(\d{1,2}\.\d{3}\.\d{3}-[\dkK])|(\d{7,8}-[\dkK])/i);
+    if (mRut) result.rut = mRut[0];
+
+    /* Empresa: "De: ... <email>" o línea con "Empresa:" */
+    const mFrom = T.match(/De:\s*([^<\n]+?)(?:\s*<|\n|$)/i);
+    if (mFrom) {
+      const candidate = mFrom[1].trim();
+      if (candidate && !candidate.includes('@')) result.contacto = candidate;
     }
-    btn.innerHTML = '🤖 Extraer con Ollama'; btn.disabled = false;
-    _data = data; _showResult(data);
+    const mEmp = T.match(/(?:Empresa|Compa[ñn][ií]a|Razón social)\s*[:\-]\s*([^\n]+)/i);
+    if (mEmp) result.empresa = mEmp[1].trim();
+
+    /* Asunto: línea con "Asunto:" o "Subject:" */
+    const mSubj = T.match(/(?:Asunto|Subject)\s*[:\-]\s*([^\n]+)/i);
+    if (mSubj) result.asunto = mSubj[1].trim();
+
+    /* Proyecto */
+    const mProy = T.match(/(?:Proyecto|Servicio|Faena|Obra)\s*[:\-]?\s*([^\n,]+)/i);
+    if (mProy) result.proyecto = mProy[1].trim();
+
+    /* Ruta */
+    const mRuta = T.match(/(?:Ruta|Trayecto|Tramo|Recorrido)\s*[:\-]?\s*([^\n,]+)/i);
+    if (mRuta) result.ruta = mRuta[1].trim();
+
+    /* Pasajeros */
+    const mPax = T.match(/(\d+)\s*(?:personas?|pasajeros?|pax|trabajadores?)/i);
+    if (mPax) result.pax = mPax[1];
+
+    /* Sistema operacional */
+    const mSis = T.match(/(?:Sistema|Turno|Jornada)\s*[:\-]?\s*([^\n,]+)/i);
+    if (mSis) result.sistema = mSis[1].trim();
+
+    /* Ciudad */
+    const mCdd = T.match(/(?:Ciudad|Localidad|Comuna)\s*[:\-]\s*([^\n,]+)/i);
+    if (mCdd) result.ciudad = mCdd[1].trim();
+
+    /* Dirección */
+    const mDir = T.match(/(?:Dirección|Ubicación)\s*[:\-]\s*([^\n]+)/i);
+    if (mDir) result.dir = mDir[1].trim();
+
+    /* Resumen — auto-construido */
+    const partes = [];
+    if (result.empresa) partes.push('Cotización solicitada por ' + result.empresa);
+    if (result.proyecto) partes.push('para el proyecto ' + result.proyecto);
+    if (result.ruta) partes.push('en la ruta ' + result.ruta);
+    if (result.pax) partes.push('para ' + result.pax + ' pasajeros');
+    if (result.sistema) partes.push('bajo sistema ' + result.sistema);
+    result.resumen = partes.length
+      ? partes.join(', ') + '. El servicio incluye vehículo, conductor, combustible, peajes y seguros. Vigencia 30 días.'
+      : 'HAULER SpA ofrece servicio de transporte corporativo. Vigencia 30 días.';
+
+    return result;
   };
 
-  /* Extraer solo con parser local */
   const extractLocal = () => {
-    const text = fv('epEmailText').trim();
-    if (!text) { Toast.show('⚠️ Pega el contenido del correo primero'); return; }
-    _data = _parseLocal(text); _showResult(_data);
-    Toast.show('⚙️ Parser local aplicado');
+    const text = document.getElementById('epEmailText').value.trim();
+    if (!text) { Toast.show('⚠️ Pega primero el email'); return; }
+    _lastResult = _parseLocal(text);
+    _renderResult(_lastResult, 'parser local');
   };
 
-  /* Llamada a Ollama */
-  const _callOllama = async (text) => {
-    const prompt =
-      'Eres un ejecutivo comercial senior de HAULER SpA, empresa chilena de transporte corporativo de pasajeros.\n' +
-      'Analiza el siguiente correo y completa el JSON.\n\n' +
-      'REGLAS:\n' +
-      '- cliNombre, cliRut, cliGiro, cliEmail, cliTel, cliContacto, cliDir, cliCiudad, cliProyecto, cliSistema, ruta, pasajeros:\n' +
-      '  Extrae SOLO lo que aparece literalmente en el correo. Si no está, deja "".\n' +
-      '- resumenServicio: Redacta UN ÚNICO PÁRRAFO continuo, en tono corporativo formal, listo para impresión, personalizado con los datos reales del correo. ' +
-      'El párrafo debe integrar sin redundancias: (1) descripción concreta del servicio solicitado según el correo (ruta, pasajeros, frecuencia, turno si se mencionan), ' +
-      '(2) modalidad operativa y contexto del cliente, ' +
-      '(3) elementos incluidos en el servicio: vehículo en óptimas condiciones, conductor profesional certificado, combustible, peajes y seguros obligatorios, ' +
-      '(4) vigencia de 30 días desde la fecha de emisión. ' +
-      'NO mencionar forma de pago ni moneda (esos datos van en otra sección). ' +
-      'Si no hay datos suficientes en el correo, redacta igual con lo disponible de forma coherente.\n\n' +
-      'Responde SOLO el JSON sin markdown:\n' +
-      '{"cliNombre":"","cliRut":"","cliGiro":"","cliEmail":"","cliTel":"","cliContacto":"","cliDir":"","cliCiudad":"",' +
-      '"cliProyecto":"","cliSistema":"","ruta":"","pasajeros":"","resumenServicio":""}\n\n' +
-      'CORREO:\n' + text.slice(0, 3500);
+  const extract = async () => {
+    const text = document.getElementById('epEmailText').value.trim();
+    if (!text) { Toast.show('⚠️ Pega primero el email'); return; }
+    const btn = document.getElementById('epBtnExtract');
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spinner"></span> Extrayendo…';
     try {
-      const res = await fetch(_getUrl() + '/api/generate', {
+      const prompt = 'Extrae los datos del siguiente email para llenar una cotización de transporte de pasajeros. ' +
+        'Devuelve SOLO un JSON válido (sin markdown, sin explicación) con estas claves opcionales: ' +
+        'empresa, contacto, email, tel, rut, dir, ciudad, proyecto, sistema, ruta, pax, resumen. ' +
+        'Si un dato no aparece, omite la clave. ' +
+        'El "resumen" debe ser un párrafo profesional de 2-3 frases que describa el servicio solicitado, ' +
+        'incluyendo elementos del transporte (vehículo, conductor, combustible, peajes, seguros) y vigencia (30 días). ' +
+        '\n\nEmail:\n' + text;
+      const ctrl = new AbortController();
+      const t = setTimeout(() => ctrl.abort(), 60000);
+      const r = await fetch(_ollamaUrl + '/api/generate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ model: _getModel(), prompt, stream: false }),
-        signal: AbortSignal.timeout(60000),
+        body: JSON.stringify({ model: _ollamaModel, prompt, stream: false, format: 'json' }),
+        signal: ctrl.signal
       });
-      if (!res.ok) return null;
-      const d   = await res.json();
-      const raw = (d.response || '').trim();
-      const m   = raw.match(/\{[\s\S]*\}/);
-      if (!m) return null;
-      return JSON.parse(m[0]);
-    } catch(e) { console.warn('[Ollama]', e); return null; }
-  };
-
-  /* Parser local (fallback sin Ollama) */
-  const _parseLocal = (text) => {
-    const ex = (pats) => {
-      for (const p of pats) {
-        try { const m = text.match(new RegExp(p, 'i')); if (m) return (m[2]||m[1]||m[0]).trim(); } catch(e) {}
+      clearTimeout(t);
+      if (!r.ok) throw new Error('HTTP ' + r.status);
+      const data = await r.json();
+      let parsed;
+      try { parsed = JSON.parse(data.response); }
+      catch (e) {
+        /* Intentar extraer JSON del texto */
+        const m = data.response.match(/\{[\s\S]*\}/);
+        if (m) parsed = JSON.parse(m[0]); else throw new Error('No JSON en respuesta');
       }
-      return '';
-    };
-    const empresa  = ex(['empresa\s*[:\-]\s*([^\n]+)','raz.n social\s*[:\-]\s*([^\n]+)','De:\s*([^<\n]+?)\s*(?:<|$)','From:\s*([^<\n]+?)\s*(?:<|$)']);
-    const proyecto = ex(['asunto\s*[:\-]\s*([^\n]+)','subject\s*[:\-]\s*([^\n]+)','proyecto\s*[:\-]\s*([^\n]+)','solicitud\s+(?:de\s+)?([^\n]+)']);
-    const ruta     = ex(['ruta\s*[:\-]\s*([^\n]+)','recorrido\s*[:\-]\s*([^\n]+)','entre\s+([^\ny]+?)\s+y\s+','traslado\s+(?:desde|de)\s+([^\n]+)']);
-    const pax      = ex(['(\d+)\s+persona[s]?','(\d+)\s+trabajador[es]?','(\d+)\s+empleado[s]?','(\d+)\s+pasajero[s]?']);
-    const sistema  = ex(['(turno\s+\d+[x]\d+)','(servicio diario)','(lunes a viernes)','sistema\s*[:\-]\s*([^\n]+)','turno\s*[:\-]\s*([^\n]+)']);
-    const ciudad   = ex(['ciudad\s*[:\-]\s*([^\n]+)','(Antofagasta|Santiago|Calama|Iquique|Copiap.|La Serena|Valpara.so|Concepci.n|Temuco|Valdivia|Puerto Montt|Punta Arenas)']);
-    const cli = empresa || 'su organización';
-    return {
-      cliNombre:   empresa,
-      cliRut:      ex(['rut\s*[:\-]?\s*([0-9.]{7,12}[-][0-9kK])','([0-9]{1,2}\.[0-9]{3}\.[0-9]{3}[-][0-9kK])']),
-      cliGiro:     ex(['giro\s*[:\-]\s*([^\n]+)','actividad\s*[:\-]\s*([^\n]+)']),
-      cliEmail:    ex(['De:\s*[^<]*<([^>]+)>','From:\s*[^<]*<([^>]+)>','([\w.+\-]+@[\w\-]+\.[\w.]{2,})']),
-      cliTel:      ex(['tel.fono\s*[:\-]\s*([+\d\s\-.]{7,20})','fono\s*[:\-]\s*([+\d\s\-]{7,20})','(\+56\s*9\s*[\d\s]{8})']),
-      cliContacto: ex(['contacto\s*[:\-]\s*([^\n]+)','atenci.n\s*[:\-]\s*([^\n]+)']),
-      cliDir:      ex(['direcci.n\s*[:\-]\s*([^\n]+)','domicilio\s*[:\-]\s*([^\n]+)']),
-      cliCiudad:   ciudad,
-      cliProyecto: proyecto,
-      cliSistema:  sistema,
-      ruta,
-      pasajeros:   pax,
-      resumenServicio: (() => {
-        const partes = [];
-        /* Parte 1 — descripción específica del correo */
-        if (ruta || pax || sistema) {
-          let p1 = 'El servicio comprende el traslado';
-          if (pax)     p1 += ' de ' + pax + ' personas';
-          if (ruta)    p1 += ' en la ruta ' + ruta;
-          if (sistema) p1 += ', bajo el r\u00e9gimen de ' + sistema;
-          if (ciudad)  p1 += ', en ' + ciudad;
-          p1 += '.';
-          partes.push(p1);
-        }
-        /* Parte 2 — empresa cliente si está disponible */
-        if (empresa) partes.push('El servicio se presta a ' + empresa + ', en respuesta a los requerimientos operacionales indicados.');
-        /* Parte 3 — proyecto/asunto si está disponible */
-        if (proyecto) partes.push('El alcance de la propuesta cubre: ' + proyecto + '.');
-        /* Parte 4 — elementos incluidos (siempre) */
-        partes.push('El servicio incluye veh\u00edculo en \u00f3ptimas condiciones mec\u00e1nicas y de presentaci\u00f3n, conductor profesional certificado, combustible, peajes y seguros obligatorios, garantizando puntualidad, seguridad vial y coordinaci\u00f3n operativa permanente.');
-        /* Parte 5 — vigencia (siempre, sin mencionar pago) */
-        partes.push('La presente oferta tiene una vigencia de 30 d\u00edas a partir de su fecha de emisi\u00f3n.');
-        return partes.join(' ');
-      })(),
-    };
+      _lastResult = parsed;
+      _renderResult(parsed, 'Ollama · ' + _ollamaModel);
+    } catch (e) {
+      console.warn('[EmailPanel] Ollama failed, falling back to local:', e);
+      Toast.show('⚠️ Ollama no respondió — usando parser local');
+      _lastResult = _parseLocal(text);
+      _renderResult(_lastResult, 'parser local (fallback)');
+    }
+    btn.disabled = false;
+    btn.innerHTML = '🤖 Extraer con Ollama';
   };
 
-  /* Mostrar resultado */
-  const _showResult = (data) => {
-    const labels = {
-      cliNombre:'Empresa', cliRut:'RUT', cliGiro:'Giro',
-      cliEmail:'Email', cliTel:'Teléfono', cliContacto:'Contacto',
-      cliDir:'Dirección', cliCiudad:'Ciudad',
-      cliProyecto:'Proyecto / Asunto', cliSistema:'Sistema / Turno',
-      ruta:'Ruta', pasajeros:'Pasajeros',
-      resumenServicio:'Resumen del Servicio y Condiciones',
+  const _renderResult = (r, fuente) => {
+    const grid = document.getElementById('epResultGrid');
+    if (!grid) return;
+    const titles = {
+      empresa: 'Empresa', contacto: 'Contacto', email: 'Email', tel: 'Teléfono',
+      rut: 'RUT', dir: 'Dirección', ciudad: 'Ciudad',
+      proyecto: 'Proyecto', sistema: 'Sistema', ruta: 'Ruta', pax: 'Pasajeros',
+      resumen: 'Resumen del servicio',
     };
-    const items = Object.entries(labels)
-      .filter(([k]) => data[k] && data[k].trim())
-      .map(([k, lbl]) => {
-        const long    = ['resumenServicio'].includes(k);
-        const preview = long ? data[k].slice(0,88) + (data[k].length>88?'…':'') : data[k];
-        return '<div class="ep-result-item' + (long?' full':'') + '">' +
-               '<label>' + lbl + '</label>' +
-               '<span title="' + esc(data[k]) + '">' + esc(preview) + '</span></div>';
-      }).join('');
-    document.getElementById('epResultGrid').innerHTML = items ||
-      '<div style="color:var(--t3);font-size:.68rem;grid-column:1/-1;padding:.3rem">No se encontraron datos en el correo.</div>';
+    const items = [];
+    Object.entries(titles).forEach(([k, label]) => {
+      if (!r[k]) return;
+      const isFull = (k === 'resumen');
+      items.push(
+        '<div class="ep-result-item' + (isFull ? ' full' : '') + '">' +
+          '<label>' + esc(label) + '</label>' +
+          '<span title="' + esc(r[k]) + '">' + esc(r[k]) + '</span>' +
+        '</div>'
+      );
+    });
+    if (!items.length) {
+      grid.innerHTML = '<div class="ep-result-item full"><label>Sin datos</label><span>No se extrajo nada útil del texto</span></div>';
+    } else {
+      grid.innerHTML = items.join('');
+    }
     document.getElementById('epResult').classList.add('show');
-    document.getElementById('epBtnApply').style.display = items ? 'inline-flex' : 'none';
+    document.getElementById('epBtnApply').style.display = 'inline-flex';
+    Toast.show('✓ Extraído (' + fuente + ')');
   };
 
-  /* Aplicar al formulario */
   const apply = () => {
-    const data = _data; if (!data) return;
+    if (!_lastResult) return;
+    const r = _lastResult;
     const map = {
-      cliNombre:'cliNombre', cliRut:'cliRut', cliGiro:'cliGiro',
-      cliEmail:'cliEmail', cliTel:'cliTel', cliContacto:'cliContacto',
-      cliDir:'cliDir', cliCiudad:'cliCiudad',
-      cliProyecto:'cliProyecto', cliSistema:'cliSistema',
-      resumenServicio:'resumenServicio',
+      empresa: 'cliNombre', rut: 'cliRut', contacto: 'cliContacto',
+      email: 'cliEmail', tel: 'cliTel', dir: 'cliDir', ciudad: 'cliCiudad',
+      proyecto: 'cliProyecto', sistema: 'cliSistema',
     };
-    let filled = 0;
-    Object.entries(map).forEach(([src, dest]) => {
-      const v = data[src], el = document.getElementById(dest);
-      if (el && v && v.trim()) {
-        el.value = v.trim();
-        el.classList.add('ai-filled');
-        setTimeout(() => el.classList.remove('ai-filled'), 1200);
-        filled++;
+    let count = 0;
+    Object.entries(map).forEach(([k, fid]) => {
+      if (r[k]) {
+        const el = document.getElementById(fid);
+        if (el) {
+          el.value = r[k];
+          el.classList.add('ai-filled');
+          setTimeout(() => el.classList.remove('ai-filled'), 1100);
+          count++;
+        }
       }
     });
-    if (data.ruta && State.rows.length) {
-      const r = State.rows[0];
-      const el = document.querySelector('tr[data-id="' + r.id + '"] td:nth-child(3) input');
-      if (el) { el.value = data.ruta; el.classList.add('ai-filled'); setTimeout(()=>el.classList.remove('ai-filled'),1200); r.ruta=data.ruta; filled++; }
+    if (r.resumen) {
+      const el = document.getElementById('resumenServicio');
+      if (el) {
+        el.value = r.resumen;
+        el.classList.add('ai-filled');
+        setTimeout(() => el.classList.remove('ai-filled'), 1100);
+        count++;
+      }
     }
-    if (data.pasajeros && State.rows.length) {
-      const r = State.rows[0];
-      const el = document.querySelector('tr[data-id="' + r.id + '"] td:nth-child(5) input');
-      if (el) { el.value=data.pasajeros; el.classList.add('ai-filled'); setTimeout(()=>el.classList.remove('ai-filled'),1200); r.pasajeros=data.pasajeros; filled++; }
+    if (r.ruta && State.rows.length > 0) {
+      State.rows[0].ruta = r.ruta;
+      Rows.render();
+    }
+    if (r.pax && State.rows.length > 0) {
+      State.rows[0].pasajeros = r.pax;
+      Rows.render();
     }
     AutoSave.flush();
     Clients.updateInlineStatus();
-    if (data.cliRut) Rut.onInput(document.getElementById('cliRut'), 'cliRutBadge');
-    document.getElementById('cliNombre')?.scrollIntoView({ behavior:'smooth', block:'center' });
+    /* Validar RUT recién aplicado */
+    if (r.rut) Rut.onInput(document.getElementById('cliRut'), 'cliRutBadge');
+    Toast.show('✓ ' + count + ' campo' + (count !== 1 ? 's' : '') + ' aplicado' + (count !== 1 ? 's' : ''));
     close();
-    Toast.show('\u2705 ' + filled + ' campo' + (filled!==1?'s':'') + ' aplicado' + (filled!==1?'s':'') + ' al formulario');
   };
 
-  /* Limpiar */
   const clear = () => {
-    setf('epEmailText','');
+    document.getElementById('epEmailText').value = '';
     document.getElementById('epResult').classList.remove('show');
     document.getElementById('epBtnApply').style.display = 'none';
-    _data = null;
+    _lastResult = null;
   };
 
-  /* Init */
-  const init = () => { setTimeout(() => checkAI(), 800); };
-
-  return { toggle, open, close, toggleConfig, saveConfig, extract, extractLocal, apply, clear, init };
+  return { init, toggle, open, close, toggleConfig, saveConfig, checkOllama, extract, extractLocal, apply, clear };
 })();
 
 /* ════════════════════════════════════════════════════════════════════════
-   ATAJOS DE TECLADO (original + Escape cierra panel)
+   ATAJOS DE TECLADO
 ════════════════════════════════════════════════════════════════════════ */
-document.addEventListener('keydown', e => {
-  const ctrl = e.ctrlKey || e.metaKey;
-  if (ctrl && e.key === 's') { e.preventDefault(); App.saveDoc(); }
-  if (ctrl && e.key === 'p') { e.preventDefault(); PDF.print(); }
-  if (ctrl && e.key === 'h') { e.preventDefault(); Modal.openHistory(); }
+document.addEventListener('keydown', (e) => {
+  /* Ctrl/Cmd + S = Guardar */
+  if ((e.ctrlKey || e.metaKey) && e.key === 's') {
+    e.preventDefault();
+    App.saveDoc();
+    return;
+  }
+  /* Ctrl/Cmd + P = Imprimir PDF (con auto-correlativo si activo) */
+  if ((e.ctrlKey || e.metaKey) && e.key === 'p') {
+    e.preventDefault();
+    PDF.print();
+    return;
+  }
+  /* Ctrl/Cmd + H = Archivo */
+  if ((e.ctrlKey || e.metaKey) && e.key === 'h') {
+    e.preventDefault();
+    Modal.openHistory();
+    return;
+  }
+  /* Esc = cerrar modales y panel email */
   if (e.key === 'Escape') {
     ['modalConvert','modalClients','modalHistory'].forEach(id => Modal.close(id));
     EmailPanel.close();
@@ -2775,33 +3522,34 @@ document.addEventListener('keydown', e => {
 });
 
 /* ════════════════════════════════════════════════════════════════════════
-   ARRANQUE (original + EmailPanel.init)
+   BOOTSTRAP
 ════════════════════════════════════════════════════════════════════════ */
-window.addEventListener('DOMContentLoaded', () => {
-
+document.addEventListener('DOMContentLoaded', () => {
+  /* Sincronizar device-id entre cookie y localStorage */
   try {
-    const m = document.cookie.match('(?:^|; )hauler_device=([^;]+)');
-    const cookieDevice = m ? decodeURIComponent(m[1]) : null;
-    const lsDevice = localStorage.getItem('hauler_device');
-    if (cookieDevice && !lsDevice) localStorage.setItem('hauler_device', cookieDevice);
-  } catch(e) {}
-
-  try {
-    const device = localStorage.getItem('hauler_device') || '';
-    if (device) {
-      const stateKey = device + '_state', raw = localStorage.getItem(stateKey);
-      if (raw) {
-        const snap = JSON.parse(raw); let changed = false;
-        const normId = id => { const s = String(id); if (!s.startsWith('r')) { changed = true; return 'r' + s; } return s; };
-        if (snap.rows)   snap.rows   = snap.rows.map(r => ({ ...r, id: normId(r.id) }));
-        if (snap.extras) snap.extras = snap.extras.map(e => ({ ...e, id: normId(e.id) }));
-        if (changed) localStorage.setItem(stateKey, JSON.stringify(snap));
-      }
+    const cookieMatch = document.cookie.match(/(?:^|; )hauler_device=([^;]+)/);
+    const cookieId = cookieMatch ? decodeURIComponent(cookieMatch[1]) : null;
+    const lsId = localStorage.getItem('hauler_device');
+    if (cookieId && !lsId) localStorage.setItem('hauler_device', cookieId);
+    if (lsId && !cookieId) {
+      const exp = new Date(); exp.setFullYear(exp.getFullYear() + 10);
+      document.cookie = 'hauler_device=' + encodeURIComponent(lsId) + '; expires=' + exp.toUTCString() + '; path=/; SameSite=Lax';
     }
-  } catch(e) {}
+  } catch {}
+
+  /* Normalizar IDs antiguos r-prefijados en el state guardado */
+  try {
+    const s = DB.lsRead('state');
+    if (s && Array.isArray(s.rows)) {
+      let dirty = false;
+      s.rows.forEach(r => { if (r.id && !String(r.id).startsWith('r')) { r.id = 'r' + r.id; dirty = true; } });
+      if (s.extras) s.extras.forEach(e => { if (e.id && !String(e.id).startsWith('r')) { e.id = 'r' + e.id; dirty = true; } });
+      if (dirty) DB.lsWrite('state', s);
+    }
+  } catch {}
 
   App.init();
-  EmailPanel.init();   /* ← única línea nueva en el arranque */
+  EmailPanel.init();
 });
 </script>
 </body>
