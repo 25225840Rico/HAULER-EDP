@@ -1171,6 +1171,36 @@ table.ct-breakdown td:last-child { text-align: right; font-family: var(--font-mo
 .ct-sent-note { font-size: .66rem; color: var(--green); font-weight: 600; display: none; }
 .ct-sent-note.show { display: inline-flex; align-items: center; gap: .3rem; }
 @media (max-width: 640px) { .ct-row3, .ct-row4, .ct-results, .ct-slider-row { grid-template-columns: 1fr; } }
+
+/* ═══════════════════════════════════════════════
+   N+1. ÍCONO INFORMATIVO (i) CON TOOLTIP
+   Se inyecta por JS (módulo FieldHelp) en cada campo/sección del formulario.
+═══════════════════════════════════════════════ */
+.info-i {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 14px; height: 14px; border-radius: 50%;
+  background: var(--blue-lt); color: var(--blue);
+  font: 700 9px/1 var(--font-sans); font-style: normal;
+  margin-left: .35rem; vertical-align: middle;
+  cursor: help; user-select: none; position: relative; flex: none;
+}
+.info-i::after {              /* burbuja del tooltip */
+  content: attr(data-tip);
+  position: absolute; bottom: calc(100% + 8px); left: 50%; transform: translateX(-50%);
+  background: #10212e; color: #fff;
+  font: 500 .62rem/1.45 var(--font-sans); letter-spacing: 0; text-transform: none;
+  padding: .45rem .6rem; border-radius: 7px;
+  width: max-content; max-width: 220px; white-space: normal; text-align: left;
+  opacity: 0; visibility: hidden; transition: opacity .15s; pointer-events: none;
+  z-index: 60; box-shadow: 0 6px 18px rgba(0,0,0,.2);
+}
+.info-i::before {            /* flecha del tooltip */
+  content: ''; position: absolute; bottom: calc(100% + 3px); left: 50%; transform: translateX(-50%);
+  border: 5px solid transparent; border-top-color: #10212e;
+  opacity: 0; visibility: hidden; transition: opacity .15s; pointer-events: none; z-index: 60;
+}
+.info-i:hover::after, .info-i:hover::before,
+.info-i:focus::after, .info-i:focus::before { opacity: 1; visibility: visible; }
 </style>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
@@ -1816,9 +1846,27 @@ Asunto: Cotización transporte Faena Norte
 
 /* ════════════════════════════════════════════════════════════════════════
    CONFIGURACIÓN DE SUPABASE
+   --------------------------------------------------------------------------
+   Las credenciales son CONFIGURABLES en tiempo de ejecución: si existen en
+   localStorage (claves 'hauler_sb_url' / 'hauler_sb_key') se usan ésas; si no,
+   se cae a los valores por defecto de abajo. Esto permite corregir la conexión
+   sin editar el código: el usuario puede pegar la URL/key del proyecto vivo
+   desde el panel de sincronización (click en el indicador ☁) o por consola
+   con  Supabase.configure('https://xxxx.supabase.co', 'anon_o_publishable_key').
+
+   IMPORTANTE: el proyecto por defecto puede estar pausado/eliminado. Si el
+   indicador queda en "Sin conexión", actualiza las credenciales aquí abajo o
+   por el panel. SB_URL/SB_KEY son `let` justamente para poder reasignarlas.
 ════════════════════════════════════════════════════════════════════════ */
-const SB_URL = 'https://yethnzmpiouffmeaqkhy.supabase.co';
-const SB_KEY = 'sb_publishable_tXCnGYE_OjoH0yrFVM-vpA_rqBPXPaU';
+const SB_DEFAULTS = {
+  url: 'https://yethnzmpiouffmeaqkhy.supabase.co',
+  key: 'sb_publishable_tXCnGYE_OjoH0yrFVM-vpA_rqBPXPaU',
+};
+const SB_LS_URL = 'hauler_sb_url';
+const SB_LS_KEY = 'hauler_sb_key';
+/* Resolución: override de localStorage → valor por defecto */
+let SB_URL = (() => { try { return localStorage.getItem(SB_LS_URL) || SB_DEFAULTS.url; } catch { return SB_DEFAULTS.url; } })();
+let SB_KEY = (() => { try { return localStorage.getItem(SB_LS_KEY) || SB_DEFAULTS.key; } catch { return SB_DEFAULTS.key; } })();
 
 /* ════════════════════════════════════════════════════════════════════════
    UTILIDADES GLOBALES
@@ -1831,6 +1879,14 @@ const gf     = id => { const el = document.getElementById(id); return el ? el.va
 const setf   = (id, v) => { const el = document.getElementById(id); if (el) el.value = v || ''; };
 const setField = setf;
 const sleep  = ms => new Promise(r => setTimeout(r, ms));
+/* Cambia el texto de un <label> dinámico SIN borrar el ícono (i) que FieldHelp
+   le pudo haber inyectado (textContent lo eliminaría). */
+const labelText = (id, text) => {
+  const el = document.getElementById(id); if (!el) return;
+  const icon = el.querySelector('.info-i');
+  el.textContent = text;
+  if (icon) el.appendChild(icon);
+};
 
 /* ════════════════════════════════════════════════════════════════════════
    ★ MÓDULO: SyncQueue — Cola de escrituras pendientes con reconexión
@@ -1908,6 +1964,12 @@ const SyncQueue = (() => {
   };
   const _stopPing = () => { if (_pingTimer) { clearInterval(_pingTimer); _pingTimer = null; } };
 
+  /* Diagnóstico del último fallo: 'dns' (proyecto no existe/URL mala), 'auth'
+     (key inválida o RLS), 'red' (sin internet/timeout) o 'ok'. Sirve para dar
+     mensajes claros al usuario en vez de un genérico "sin conexión". */
+  let _lastDiag = 'ok';
+  const lastDiag = () => _lastDiag;
+
   /* Verifica conectividad con un select trivial */
   const check = async () => {
     if (_checking) return _online;
@@ -1919,19 +1981,35 @@ const SyncQueue = (() => {
       const { error } = await sb.from('hauler_store').select('clave').limit(1).abortSignal(ctrl.signal);
       clearTimeout(t);
       if (!error) {
+        _lastDiag = 'ok';
         if (!_online) _setOnline();
         else _online = true;
       } else {
+        /* Error devuelto por Supabase (no de red): suele ser key/RLS/tabla. */
+        _lastDiag = 'auth';
+        console.warn('[SyncQueue.check] Supabase error:', error.message);
         _setOffline();
       }
     } catch (e) {
+      /* TypeError "Failed to fetch" = DNS/proyecto inexistente o sin internet.
+         AbortError = timeout. Lo distinguimos para el mensaje al usuario. */
+      _lastDiag = (e && e.name === 'AbortError') ? 'red' : 'dns';
+      console.warn('[SyncQueue.check] fallo de red (' + _lastDiag + '):', e && e.message);
       _setOffline();
     }
     _checking = false;
     return _online;
   };
 
-  /* Forzar reconexión manual (al hacer click en el dot) */
+  /* Mensaje legible según el diagnóstico. */
+  const _diagMsg = () => ({
+    dns:  'No se encuentra el proyecto Supabase (revisa la URL).',
+    auth: 'Supabase rechazó la conexión (revisa la API key o las políticas RLS).',
+    red:  'Sin respuesta (revisa tu conexión a internet).',
+  }[_lastDiag] || 'Sin conexión.');
+
+  /* Forzar reconexión manual (al hacer click en el dot). Si sigue fallando,
+     ofrece actualizar las credenciales del proyecto. */
   const forceReconnect = async () => {
     Toast.show('☁ Verificando conexión…');
     Sync.setReconnecting();
@@ -1939,8 +2017,14 @@ const SyncQueue = (() => {
     if (ok) {
       Toast.show('✓ Conexión OK');
       App.syncFromSupabase();
-    } else {
-      Toast.show('✗ Sin conexión — se reintentará automáticamente');
+      return;
+    }
+    Toast.show('✗ ' + _diagMsg());
+    /* Ante DNS/auth (config equivocada) ofrecemos pegar URL/key correctas. */
+    if ((_lastDiag === 'dns' || _lastDiag === 'auth') &&
+        confirm('No se pudo conectar a Supabase.\n\n' + _diagMsg() +
+                '\n\n¿Deseas ingresar/actualizar la URL y la API key del proyecto?')) {
+      Supabase.configure();
     }
   };
 
@@ -1949,7 +2033,7 @@ const SyncQueue = (() => {
   const markOffline = () => _setOffline();
   const queueSize = () => _load().length;
 
-  return { enqueue, flush, check, forceReconnect, isOnline, markOnline, markOffline, queueSize };
+  return { enqueue, flush, check, forceReconnect, isOnline, markOnline, markOffline, queueSize, lastDiag };
 })();
 
 /* ════════════════════════════════════════════════════════════════════════
@@ -1969,7 +2053,10 @@ const DB = (() => {
   })();
 
   let _sb = null;
+  /* Crea (y cachea) el cliente Supabase con las credenciales VIGENTES (SB_URL/SB_KEY). */
   const sb = () => { if (!_sb) _sb = window.supabase.createClient(SB_URL, SB_KEY); return _sb; };
+  /* Fuerza recrear el cliente: se llama tras cambiar las credenciales en runtime. */
+  const reset = () => { _sb = null; };
   const _timers = {};
   const sbKey = name => DEVICE + '__' + name;
   const lsKey = name => DEVICE + '_' + name;
@@ -2102,8 +2189,55 @@ const DB = (() => {
     }
   };
 
-  return { save, lsRead, lsWrite, sbRead, sbWrite, loadMany, rpc, DEVICE, _sb: sb, _execOp };
+  return { save, lsRead, lsWrite, sbRead, sbWrite, loadMany, rpc, DEVICE, _sb: sb, _reset: reset, _execOp };
 })();
+
+/* ════════════════════════════════════════════════════════════════════════
+   MÓDULO: Supabase — gestión de credenciales en runtime
+   --------------------------------------------------------------------------
+   Permite corregir la conexión sin tocar el código: guarda URL/key en
+   localStorage, recrea el cliente y reverifica. Expuesto en window.Supabase
+   para poder llamarlo desde la consola del navegador.
+════════════════════════════════════════════════════════════════════════ */
+const Supabase = (() => {
+  /* Valida que la URL tenga forma de proyecto Supabase (https://xxxx.supabase.co|in). */
+  const _validUrl = (u) => /^https:\/\/[a-z0-9-]+\.supabase\.(co|in)\/?$/i.test(u);
+
+  /* Define nuevas credenciales. Si se llama sin argumentos, las pide por prompt(). */
+  const configure = async (urlArg, keyArg) => {
+    let url = (urlArg ?? prompt('URL del proyecto Supabase (https://xxxx.supabase.co):', SB_URL) ?? '').trim();
+    if (!url) return false;
+    url = url.replace(/\/+$/, '');
+    if (!_validUrl(url)) { Toast.show('⚠️ URL de Supabase inválida'); return false; }
+    const key = (keyArg ?? prompt('API key de Supabase (anon o publishable):', SB_KEY) ?? '').trim();
+    if (!key) return false;
+
+    SB_URL = url; SB_KEY = key;
+    try { localStorage.setItem(SB_LS_URL, SB_URL); localStorage.setItem(SB_LS_KEY, SB_KEY); } catch {}
+    DB._reset();                       // recrear cliente con las nuevas credenciales
+    Toast.show('☁ Credenciales actualizadas — verificando…');
+    Sync.setReconnecting();
+    const ok = await SyncQueue.check();
+    if (ok) { Toast.show('✓ Conectado a Supabase'); App.syncFromSupabase(); }
+    else    { Toast.show('✗ Aún sin conexión — revisa URL/key'); }
+    return ok;
+  };
+
+  /* Restaura las credenciales por defecto (borra el override de localStorage). */
+  const reset = async () => {
+    try { localStorage.removeItem(SB_LS_URL); localStorage.removeItem(SB_LS_KEY); } catch {}
+    SB_URL = SB_DEFAULTS.url; SB_KEY = SB_DEFAULTS.key;
+    DB._reset();
+    Toast.show('☁ Credenciales restauradas a las por defecto');
+    return SyncQueue.check();
+  };
+
+  /* Estado actual (útil para depurar desde consola). */
+  const status = () => ({ url: SB_URL, key: SB_KEY, online: SyncQueue.isOnline(), pendientes: SyncQueue.queueSize() });
+
+  return { configure, reset, status };
+})();
+if (typeof window !== 'undefined') window.Supabase = Supabase;
 
 /* ════════════════════════════════════════════════════════════════════════
    MÓDULO: Sync — Indicador visual
@@ -2431,7 +2565,7 @@ const App = (() => {
     document.getElementById('docEyebrow').textContent   = isCot ? 'Cotización de Servicio de Transporte' : 'Documento de Cobro · Servicios de Transporte';
     document.getElementById('docTitle').textContent     = isCot ? 'Cotización' : 'Estado de Pago';
     document.getElementById('docBadge').textContent     = isCot ? '📋 Propuesta Comercial' : '✅ Estado de Pago';
-    document.getElementById('numLabel').textContent     = isCot ? 'N° Cot.' : 'N° Doc.';
+    labelText('numLabel', isCot ? 'N° Cot.' : 'N° Doc.');
     document.getElementById('labelCliente').textContent = isCot ? 'Cliente / Destinatario' : 'Mandante / Cliente';
     document.getElementById('totalLabel').textContent   = isCot ? 'TOTAL COTIZACIÓN' : 'TOTAL A PAGAR';
     document.getElementById('rowVence').style.display   = isCot ? 'none' : 'flex';
@@ -3190,12 +3324,15 @@ const PDF = (() => {
     } else {
       metaRows.push({ lbl: 'Vencimiento', val: _formatDate(fv('fechaVence')) });
     }
-    const metaHtml = metaRows.map(m =>
-      '<div style="display:flex;justify-content:flex-end;gap:.6rem;margin-bottom:.3rem">' +
-        '<span style="font-size:.5rem;font-weight:700;letter-spacing:.8px;text-transform:uppercase;color:#888">' + esc(m.lbl) + '</span>' +
-        '<span style="font-family:var(--font-mono);font-size:.7rem">' + esc(m.val || '—') + '</span>' +
-      '</div>'
-    ).join('');
+    /* Grid de 2 columnas (etiqueta / valor) alineado a la derecha: las etiquetas
+       y los valores quedan en columnas consistentes en lugar de flotar. */
+    const metaHtml =
+      '<div style="display:grid;grid-template-columns:auto auto;justify-content:end;align-items:baseline;gap:.32rem .6rem">' +
+        metaRows.map(m =>
+          '<span style="font-size:.5rem;font-weight:700;letter-spacing:.8px;text-transform:uppercase;color:#888;text-align:right">' + esc(m.lbl) + '</span>' +
+          '<span style="font-family:var(--font-mono);font-size:.7rem;text-align:right">' + esc(m.val || '—') + '</span>'
+        ).join('') +
+      '</div>';
 
     /* Cliente / Proveedor blocks */
     const cliBlock = _partyBlock(isCot ? 'Cliente / Destinatario' : 'Mandante / Cliente', [
@@ -3403,15 +3540,16 @@ const PDF = (() => {
     return d + '/' + m + '/' + y;
   };
   const _partyBlock = (title, fields) => {
+    /* Un ÚNICO grid de 2 columnas (etiqueta / valor) para todo el bloque: así
+       todas las etiquetas comparten ancho y todos los valores quedan alineados
+       verticalmente, en lugar de un grid distinto por fila. */
     const rows = fields.filter(f => f.val).map(f =>
-      '<div style="display:grid;grid-template-columns:auto 1fr;gap:.3rem .55rem;font-size:.7rem">' +
-        '<span style="font-size:.52rem;font-weight:700;letter-spacing:.6px;text-transform:uppercase;color:#888">' + esc(f.lbl) + '</span>' +
-        '<span>' + esc(f.val) + '</span>' +
-      '</div>'
+      '<span style="font-size:.52rem;font-weight:700;letter-spacing:.6px;text-transform:uppercase;color:#888;padding-top:.06rem">' + esc(f.lbl) + '</span>' +
+      '<span style="font-size:.72rem;color:#222">' + esc(f.val) + '</span>'
     ).join('');
-    return '<div style="padding:.8rem 1.2rem">' +
-      '<div style="font-size:.45rem;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:#888;margin-bottom:.5rem">' + esc(title) + '</div>' +
-      '<div style="display:grid;gap:.25rem">' + rows + '</div>' +
+    return '<div style="padding:.85rem 1.3rem">' +
+      '<div style="font-size:.45rem;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:#888;margin-bottom:.55rem">' + esc(title) + '</div>' +
+      '<div style="display:grid;grid-template-columns:max-content 1fr;gap:.32rem .7rem;align-items:baseline">' + rows + '</div>' +
     '</div>';
   };
   return { print };
@@ -3872,6 +4010,91 @@ const Views = (() => {
 })();
 
 /* ════════════════════════════════════════════════════════════════════════
+   MÓDULO: FieldHelp — inyecta un ícono (i) con tooltip en cada campo/sección
+   del formulario en pantalla. Sirve tanto para Cotización como para Estado de
+   Pago (ambos modos comparten el mismo formulario). Es idempotente: re-ejecutar
+   init() no duplica íconos.
+════════════════════════════════════════════════════════════════════════ */
+const FieldHelp = (() => {
+  /* Tooltip por id de input/select/textarea/checkbox. */
+  const TIPS = {
+    numDoc:       'Número del documento. Usa "⚡ N° Auto" para generar un correlativo desde Supabase.',
+    fechaEmision: 'Fecha en que se emite el documento.',
+    fechaVence:   'Fecha límite de pago (Estado de Pago).',
+    selValidez:   'Días que la cotización se mantiene vigente desde la emisión.',
+    clienteSelector: 'Carga rápidamente los datos de un cliente guardado.',
+    cliNombre:    'Razón social o nombre de la empresa cliente.',
+    cliRut:       'RUT del cliente. Se valida y se formatea automáticamente.',
+    cliGiro:      'Giro o actividad económica del cliente.',
+    cliDir:       'Dirección del cliente.',
+    cliCiudad:    'Ciudad del cliente.',
+    cliEmail:     'Correo de contacto del cliente.',
+    cliTel:       'Teléfono de contacto del cliente.',
+    cliContacto:  'Persona de contacto dentro de la empresa cliente.',
+    cliContrato:  'N° de contrato asociado (solo Estado de Pago).',
+    cliOC:        'Orden de compra asociada (solo Estado de Pago).',
+    cliProyecto:  'Proyecto o servicio al que corresponde el documento.',
+    cliSistema:   'Régimen operacional (ej. turno 7×7, servicio diario).',
+    prvNombre:    'Razón social del proveedor/oferente (tu empresa).',
+    prvRut:       'RUT del proveedor. Se valida automáticamente.',
+    prvGiro:      'Giro del proveedor.',
+    prvDir:       'Dirección del proveedor.',
+    prvCiudad:    'Ciudad del proveedor.',
+    prvRegion:    'Región del proveedor.',
+    prvEmail:     'Correo del proveedor.',
+    prvTel:       'Teléfono del proveedor.',
+    prvContacto:  'Persona representante del proveedor.',
+    condPago:     'Forma y plazo de pago ofrecidos.',
+    condMoneda:   'Moneda en que se expresa la oferta.',
+    condReajuste: 'Mecanismo de reajuste de precios (IPC, UF, sin reajuste…).',
+    resumenServicio: 'Texto descriptivo del servicio que aparece en el documento impreso.',
+    chkIva:       'Si está activo, agrega 19% de IVA al total del documento.',
+  };
+
+  /* Tooltip por título de sección/party (se busca por su texto). */
+  const SECTION_TIPS = {
+    'Cliente / Destinatario': 'Datos de la empresa que recibe la cotización.',
+    'Mandante / Cliente':     'Datos del mandante en el Estado de Pago.',
+    'Proveedor / Oferente':   'Datos de tu empresa, que emite el documento.',
+    'Condiciones de la oferta': 'Términos comerciales: forma de pago, moneda y reajuste.',
+    'Resumen del Servicio y Condiciones': 'Descripción que se imprime en el documento.',
+    'Detalle de servicios':   'Líneas de servicio: vehículo, ruta, período, viajes y valor.',
+    'Ítems adicionales':      'Cargos extra, por unidad o por día.',
+  };
+
+  /* Crea el elemento (i) accesible. */
+  const icon = (tip) => {
+    const s = document.createElement('span');
+    s.className = 'info-i';
+    s.textContent = 'i';
+    s.setAttribute('data-tip', tip);
+    s.setAttribute('tabindex', '0');
+    s.setAttribute('role', 'img');
+    s.setAttribute('aria-label', 'Ayuda: ' + tip);
+    return s;
+  };
+
+  const init = () => {
+    /* Campos: ubica el <label> del contenedor del input y le anexa el (i). */
+    Object.entries(TIPS).forEach(([id, tip]) => {
+      const input = document.getElementById(id);
+      if (!input) return;
+      const cont = input.closest('.field, .meta-row, .cond-item, .iva-toggle');
+      const label = cont ? cont.querySelector('label') : null;
+      if (label && !label.querySelector('.info-i')) label.appendChild(icon(tip));
+    });
+    /* Títulos de sección y de cliente/proveedor. */
+    document.querySelectorAll('.party-title, .section-title').forEach(t => {
+      if (t.querySelector('.info-i')) return;
+      const tip = SECTION_TIPS[t.textContent.trim()];
+      if (tip) t.appendChild(icon(tip));
+    });
+  };
+
+  return { init };
+})();
+
+/* ════════════════════════════════════════════════════════════════════════
    ATAJOS DE TECLADO
 ════════════════════════════════════════════════════════════════════════ */
 document.addEventListener('keydown', (e) => {
@@ -3929,6 +4152,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   App.init();
   EmailPanel.init();
+  FieldHelp.init();   // inyecta los íconos (i) en los campos del formulario
 });
 </script>
 </body>
