@@ -1659,8 +1659,8 @@ table.ct-breakdown td:last-child { text-align: right; font-family: var(--font-mo
     </div>
 
     <div class="ct-actions">
-      <button class="btn primary" onclick="CostCalc.sendToQuote()">📄 Llevar precio a la cotización imprimible</button>
-      <span class="ct-sent-note" id="ct-sentNote">✓ Agregado a la cotización</span>
+      <button class="btn primary" onclick="CostCalc.sendToQuote()">➕ Usar este precio en la cotización</button>
+      <span class="ct-sent-note" id="ct-sentNote">✓ Agregado al total de la cotización</span>
     </div>
 
     <p class="ct-footnote">
@@ -2310,7 +2310,7 @@ const Modal = (() => {
 /* ════════════════════════════════════════════════════════════════════════
    ESTADO GLOBAL
 ════════════════════════════════════════════════════════════════════════ */
-const State = { mode: 'cot', currency: 'CLP', rows: [], extras: [], docId: null, cotizadorCosto: null };
+const State = { mode: 'cot', currency: 'CLP', rows: [], extras: [], docId: null };
 
 const CURRENCIES = [
   { code:'CLP', sym:'$',    name:'Peso chileno',           dec:0, locale:'es-CL' },
@@ -2450,7 +2450,6 @@ const AutoSave = (() => {
       // logoSrc removido del state para no inflar payload (se guarda aparte en lsWrite('logo'))
       rows: JSON.parse(JSON.stringify(State.rows)),
       extras: JSON.parse(JSON.stringify(State.extras)),
-      cotizadorCosto: State.cotizadorCosto ? JSON.parse(JSON.stringify(State.cotizadorCosto)) : null,
     };
   };
   const flush    = () => { clearTimeout(_timer); const s = capture(); DB.save('state', s, 400); };
@@ -2539,7 +2538,6 @@ const App = (() => {
     State.rows   = (snap.rows   || []).map(r => ({ periodoTipo:'dia', periodoDesde:'', periodoHasta:'', periodoMes:'', periodoAnio:'', vehiculo:'', patente:'', ruta:'', pasajeros:'', viajes:0, valorUnit:0, ...r, id: normId(r.id) }));
     State.extras = (snap.extras || []).map(e => ({ tipo:'unit', cantidad:1, valorUnit:0, desc:'', ...e, id: normId(e.id) }));
     if (!State.rows.length) State.rows = [];
-    State.cotizadorCosto = snap.cotizadorCosto || null;
     Rows.render(); Extras.render(); Calc.run();
     setTimeout(() => Rut.initAll(), 80);
   };
@@ -2616,7 +2614,7 @@ const App = (() => {
     setField('selValidez', '30');
     setField('resumenServicio', 'HAULER SpA ofrece el servicio de transporte corporativo de pasajeros, que comprende el traslado de personal en vehículos en óptimas condiciones mecánicas y de presentación, operados por conductores profesionales certificados. El servicio incluye combustible, peajes, seguros obligatorios y atención ante contingencias operacionales, garantizando puntualidad, seguridad vial y coordinación permanente con el cliente. La presente oferta tiene una vigencia de 30 días a partir de su fecha de emisión.');
     document.getElementById('chkIva').checked = true;
-    removeLogo(); State.rows = []; State.extras = []; State.cotizadorCosto = null;
+    removeLogo(); State.rows = []; State.extras = [];
     Rows.render(); Extras.render(); Calc.run();
     Modal.close('modalHistory'); Rows.add(); AutoSave.flush();
     Toast.show('📄 Nuevo documento en blanco');
@@ -3405,34 +3403,10 @@ const PDF = (() => {
         '</div>'
       : '';
 
-    /* Memoria de cálculo de costo — número final del cotizador (si se llevó a la cotización) */
-    const cc = State.cotizadorCosto;
-    const fmtCLP = n => '$' + Math.round(n || 0).toLocaleString('es-CL');
-    const ccRow = (lbl, val, strong) =>
-      '<tr><td style="padding:.28rem .6rem .28rem 0;color:#555' + (strong ? ';font-weight:700;border-top:1px solid #e0e0e8' : '') + '">' + esc(lbl) + '</td>' +
-      '<td style="padding:.28rem 0;text-align:right;font-family:var(--font-mono)' + (strong ? ';font-weight:700;border-top:1px solid #e0e0e8' : '') + '">' + fmtCLP(val) + '</td></tr>';
-    const costAnalysisBlock = cc
-      ? '<div style="border-bottom:1px solid #e0e0e8;padding:.7rem 1.5rem">' +
-          '<div style="font-size:.45rem;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:#0055CC;margin-bottom:.6rem">Memoria de cálculo de costo · referencial</div>' +
-          '<div style="display:grid;grid-template-columns:1.35fr 1fr;gap:1.2rem;align-items:center">' +
-            '<table style="width:100%;border-collapse:collapse;font-size:.7rem">' +
-              ccRow('Conductor(es) + cargas', cc.costoConductor) +
-              ccRow('Combustible', cc.costoCombustible) +
-              ccRow('Vehículo (fijo)', cc.costoVehiculo) +
-              ccRow('Seguros y cumplimiento', cc.costoSeguros) +
-              ccRow('Subtotal operativo', cc.subtotal, true) +
-              ccRow('+ Overhead (' + esc(String(cc.overheadPct)) + '%)', cc.overheadMonto) +
-              ccRow('Costo real total', cc.costoReal, true) +
-            '</table>' +
-            '<div style="background:#f2f5ff;border:1px solid #d4e0ff;border-radius:12px;padding:.9rem 1rem;text-align:center">' +
-              '<div style="font-size:.5rem;font-weight:700;letter-spacing:.8px;text-transform:uppercase;color:#666;margin-bottom:.3rem">Precio sugerido / mes</div>' +
-              '<div style="font-size:1.35rem;font-weight:700;color:#0055FF;font-family:var(--font-mono)">' + fmtCLP(cc.precioSugerido) + '</div>' +
-              '<div style="font-size:.62rem;color:#666;margin-top:.35rem">' + fmtCLP(cc.precioPax) + ' / pasajero · ' + esc(String(cc.pax)) + ' pax</div>' +
-            '</div>' +
-          '</div>' +
-          '<div style="font-size:.5rem;color:#999;margin-top:.55rem">Estimación interna de costo (' + esc(cc.modo) + ', margen objetivo ' + esc(String(cc.margenPct)) + '%). Valores en CLP; cifra referencial que no sustituye el detalle de servicios.</div>' +
-        '</div>'
-      : '';
+    /* NOTA: el cotizador de costos NO imprime su desglose interno (conductor,
+       overhead, margen, etc.). Esos son datos internos. Lo único que llega al
+       documento es el VALOR final, ya incorporado como una línea de servicio
+       (ver CostCalc.sendToQuote), por lo que entra al total como cualquier otra. */
 
     /* Totales */
     const totalsBlock =
@@ -3501,7 +3475,6 @@ const PDF = (() => {
         '</table>' +
       '</div>' +
       extrasTableBlock +
-      costAnalysisBlock +
       /* Totales + glosa */
       '<div style="display:grid;grid-template-columns:1fr auto;align-items:end;gap:.8rem">' +
         '<div style="padding:1rem 1.5rem">' +
@@ -3980,15 +3953,34 @@ const CostCalc = (() => {
     calcular();
   };
 
-  /* Lleva el precio sugerido (número final) a la cotización imprimible */
+  /* Lleva SOLO el VALOR final (precio sugerido) a la cotización, como una línea
+     de servicio, para que entre en el total. NO se exporta ningún detalle interno
+     (conductor, overhead, margen): eso queda solo en esta vista. Idempotente:
+     re-clickear actualiza la misma línea (marcada con _fromCalc) en vez de duplicar. */
   const sendToQuote = () => {
     ensureInit();
     const r = calcular();
-    State.cotizadorCosto = { ...r, generadoEl: new Date().toISOString().slice(0, 10) };
-    AutoSave.flush();
+    const val = Math.round(r.precioSugerido);
+    const existente = State.rows.find(x => x._fromCalc);
+    if (existente) {
+      existente.valorUnit = val;
+      existente.viajes    = 1;
+      existente.pasajeros = String(r.pax);
+      Rows.render(); Calc.run(); AutoSave.flush();
+    } else {
+      Rows.add({
+        _fromCalc: true,
+        vehiculo: 'Servicio de transporte de personal (mensual)',
+        pasajeros: String(r.pax),
+        viajes: 1,
+        valorUnit: val,
+      });
+      AutoSave.flush();
+    }
+    Views.set('doc');   // mostramos la cotización con el valor ya cargado
     const note = document.getElementById('ct-sentNote');
     if (note) { note.classList.add('show'); setTimeout(() => note.classList.remove('show'), 4000); }
-    Toast.show('📄 Precio agregado a la cotización imprimible · ' + clp(r.precioSugerido) + '/mes');
+    Toast.show('✓ Precio agregado al total de la cotización · ' + clp(val));
   };
 
   return { ensureInit, calcular, sendToQuote, getLast: () => _last };
@@ -4036,6 +4028,20 @@ const FieldHelp = (() => {
     'Detalle de servicios':     'Líneas de servicio: vehículo, ruta, período, viajes y valor.',
   };
 
+  /* Tooltips del COTIZADOR DE COSTOS (vista calc): aquí los conceptos requieren
+     más explicación (overhead, margen, cargas sociales, rendimiento…). */
+  const CALC_TIPS = {
+    'ct-pax':         'Cantidad de pasajeros a transportar (dotación).',
+    'ct-dias':        'Días hábiles trabajados en el mes.',
+    'ct-cargaSocial': 'Costo de leyes sociales sobre el sueldo (previsión, salud, seguros), como % del sueldo base.',
+    'ct-rendimiento': 'Rendimiento del vehículo en kilómetros por litro de combustible.',
+    'ct-depreciacion':'Pérdida de valor mensual del vehículo propio por su uso.',
+    'ct-mantencion':  'Gasto mensual estimado en mantención del vehículo propio.',
+    'ct-cuotaLeasing':'Cuota mensual del leasing o renting del vehículo.',
+    'ct-overhead':    'Gastos generales de Hauler (administración, soporte), como % sobre el costo operativo.',
+    'ct-margen':      'Margen de utilidad objetivo, como % sobre el costo real total.',
+  };
+
   /* Crea el elemento (i) accesible. */
   const icon = (tip) => {
     const s = document.createElement('span');
@@ -4048,15 +4054,20 @@ const FieldHelp = (() => {
     return s;
   };
 
+  /* Ubica el <label> del contenedor del input y le anexa el (i). */
+  const addToField = (id, tip, selector) => {
+    const input = document.getElementById(id);
+    if (!input) return;
+    const cont = input.closest(selector);
+    const label = cont ? cont.querySelector('label') : null;
+    if (label && !label.querySelector('.info-i')) label.appendChild(icon(tip));
+  };
+
   const init = () => {
-    /* Campos: ubica el <label> del contenedor del input y le anexa el (i). */
-    Object.entries(TIPS).forEach(([id, tip]) => {
-      const input = document.getElementById(id);
-      if (!input) return;
-      const cont = input.closest('.field, .meta-row, .cond-item, .iva-toggle');
-      const label = cont ? cont.querySelector('label') : null;
-      if (label && !label.querySelector('.info-i')) label.appendChild(icon(tip));
-    });
+    /* Campos del formulario (documento cot/ep). */
+    Object.entries(TIPS).forEach(([id, tip]) => addToField(id, tip, '.field, .meta-row, .cond-item, .iva-toggle'));
+    /* Campos del cotizador de costos. */
+    Object.entries(CALC_TIPS).forEach(([id, tip]) => addToField(id, tip, '.ct-field'));
     /* Títulos de sección y de cliente/proveedor. */
     document.querySelectorAll('.party-title, .section-title').forEach(t => {
       if (t.querySelector('.info-i')) return;
