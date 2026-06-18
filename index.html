@@ -1167,6 +1167,9 @@ table.ct-breakdown td:last-child { text-align: right; font-family: var(--font-mo
 .ct-market-labels { display: flex; justify-content: space-between; font-size: .64rem; color: var(--t2); }
 .ct-market-reading { font-weight: 700; color: var(--t1); }
 .ct-footnote { font-size: .62rem; color: var(--t3); margin-top: 18px; line-height: 1.5; }
+.ct-market-source { font-size: .62rem; color: var(--t3); margin-top: 6px; font-style: italic; }
+.ct-aviso { font-size: .68rem; font-weight: 600; margin: -8px 0 16px; padding: .5rem .7rem; border-radius: 8px; background: var(--bg); color: var(--t2); border-left: 3px solid var(--t3); }
+.ct-aviso.warn { background: var(--gold-lt); color: var(--gold); border-left-color: var(--gold); }
 .ct-actions { display: flex; gap: .6rem; flex-wrap: wrap; align-items: center; margin-top: 1.2rem; }
 .ct-sent-note { font-size: .66rem; color: var(--green); font-weight: 600; display: none; }
 .ct-sent-note.show { display: inline-flex; align-items: center; gap: .3rem; }
@@ -1514,14 +1517,18 @@ table.ct-breakdown td:last-child { text-align: right; font-family: var(--font-mo
       <span class="ct-badge">CLP</span>
     </div>
 
-    <div class="ct-row2">
+    <div class="ct-row3">
       <div class="ct-field">
         <label for="ct-pax">Pasajeros (dotación)</label>
-        <input type="number" id="ct-pax" value="8" min="1" step="1">
+        <input type="number" id="ct-pax" value="8" min="1" max="45" step="1">
       </div>
       <div class="ct-field">
         <label for="ct-dias">Días hábiles / mes</label>
         <input type="number" id="ct-dias" value="22" min="1" step="1">
+      </div>
+      <div class="ct-field">
+        <label for="ct-capacidad">Capacidad por vehículo (pax)</label>
+        <input type="number" id="ct-capacidad" value="18" min="1" step="1">
       </div>
     </div>
 
@@ -1623,6 +1630,7 @@ table.ct-breakdown td:last-child { text-align: right; font-family: var(--font-mo
     <div class="ct-divider">
       <p class="ct-divider-title">Desglose de costo mensual</p>
       <table class="ct-breakdown">
+        <tr><td class="ct-muted">Vehículos requeridos</td><td id="ct-rowVehiculos">—</td></tr>
         <tr><td class="ct-muted">Conductor(es) + cargas</td><td id="ct-rowConductor">—</td></tr>
         <tr><td class="ct-muted">Combustible</td><td id="ct-rowCombustible">—</td></tr>
         <tr><td class="ct-muted">Vehículo (fijo)</td><td id="ct-rowVehiculo">—</td></tr>
@@ -1644,6 +1652,8 @@ table.ct-breakdown td:last-child { text-align: right; font-family: var(--font-mo
       </div>
     </div>
 
+    <p class="ct-aviso" id="ct-aviso" style="display:none"></p>
+
     <div class="ct-divider">
       <p class="ct-divider-title">Referencia de mercado (Antofagasta, jun 2026)</p>
       <p class="ct-market-note">Inferido a partir de cotizaciones de competidores del rubro. No es tu costo: es lo que cobra el mercado.</p>
@@ -1656,6 +1666,7 @@ table.ct-breakdown td:last-child { text-align: right; font-family: var(--font-mo
         <span class="ct-market-reading" id="ct-lecturaMercado">—</span>
         <span id="ct-mercadoMax">—</span>
       </div>
+      <p class="ct-market-source" id="ct-mercadoFuente">—</p>
     </div>
 
     <div class="ct-actions">
@@ -3865,7 +3876,7 @@ const EmailPanel = (() => {
    100% cálculo local. Sin dependencias externas ni Supabase.
 ════════════════════════════════════════════════════════════════════════ */
 const CostCalc = (() => {
-  const IDS = ['ct-pax','ct-dias','ct-sueldoBase','ct-cargaSocial','ct-nConductores','ct-kmDia','ct-rendimiento','ct-precioLitro','ct-depreciacion','ct-mantencion','ct-cuotaLeasing','ct-soap','ct-accPersonales','ct-rcAsientos','ct-revTecnica','ct-overhead','ct-margen'];
+  const IDS = ['ct-pax','ct-dias','ct-capacidad','ct-sueldoBase','ct-cargaSocial','ct-nConductores','ct-kmDia','ct-rendimiento','ct-precioLitro','ct-depreciacion','ct-mantencion','ct-cuotaLeasing','ct-soap','ct-accPersonales','ct-rcAsientos','ct-revTecnica','ct-overhead','ct-margen'];
   let _inited = false, _last = null;
   const _el = {};
 
@@ -3873,10 +3884,29 @@ const CostCalc = (() => {
   const num = id => { const v = parseFloat(_el[id] && _el[id].value); return isNaN(v) ? 0 : v; };
   const out = (id, txt) => { const el = document.getElementById(id); if (el) el.textContent = txt; };
 
-  /* Benchmark de mercado por tramo de dotación ($/pax-mes), jun 2026 */
-  const banda = pax => pax <= 5 ? { min: 495000, max: 800000 }
-                     : pax <= 10 ? { min: 500000, max: 770000 }
-                     : { min: 183000, max: 500000 };
+  const MAX_PAX = 45;   // tope validado del cotizador
+
+  /* Benchmark de mercado por tramo de dotación ($/pax-mes), jun 2026.
+     Cada tramo declara su 'fuente': si viene de una cotización REAL del informe
+     de competidores o si es una EXTRAPOLACIÓN nuestra (economía de escala).
+     Origen real del informe: 4, 8 y 18 pax. El resto se infiere. */
+  const banda = pax => {
+    if (pax <= 3)  return { min: 495000, max: 800000, fuente: 'extrapolado (referencia: sedán 4 pax)' };
+    if (pax <= 5)  return { min: 495000, max: 800000, fuente: 'real (Transkyrios, TransTorres)' };
+    if (pax <= 10) return { min: 500000, max: 770000, fuente: 'real (Dunamys, Libal)' };
+    if (pax <= 18) return { min: 183000, max: 500000, fuente: 'real (Transportes Merei, 18 pax)' };
+    /* 19-45 (y >45): sin dato real de competidores; escala desde Merei. */
+    return { min: 150000, max: 350000, fuente: 'extrapolado (escala desde Merei, sin dato real de competidores)' };
+  };
+
+  /* Muestra/oculta el aviso de estado (vacío o fuera de rango). */
+  const avisoSet = (msg, warn) => {
+    const el = document.getElementById('ct-aviso');
+    if (!el) return;
+    el.textContent = msg || '';
+    el.style.display = msg ? 'block' : 'none';
+    el.className = 'ct-aviso' + (warn ? ' warn' : '');
+  };
 
   const toggleVehiculo = () => {
     const propio = document.getElementById('ct-modoPropio').checked;
@@ -3886,26 +3916,44 @@ const CostCalc = (() => {
   };
 
   const calcular = () => {
-    const pax  = Math.max(1, num('ct-pax'));
-    const dias = num('ct-dias') || 22;
     const overheadPct = num('ct-overhead');
     const margenPct   = num('ct-margen');
     out('ct-overheadOut', overheadPct);
     out('ct-margenOut', margenPct);
 
-    const costoConductor   = num('ct-sueldoBase') * (1 + num('ct-cargaSocial') / 100) * Math.max(1, num('ct-nConductores'));
-    const rendimiento      = num('ct-rendimiento') || 1;
-    const costoCombustible = (num('ct-kmDia') * dias / rendimiento) * num('ct-precioLitro');
-    const propio           = document.getElementById('ct-modoPropio').checked;
-    const costoVehiculo    = propio ? (num('ct-depreciacion') + num('ct-mantencion')) : num('ct-cuotaLeasing');
-    const costoSeguros     = num('ct-soap') + num('ct-accPersonales') + num('ct-rcAsientos') + num('ct-revTecnica');
+    /* --- Dotación y validación de casos límite --- */
+    const paxRaw  = ((_el['ct-pax'] && _el['ct-pax'].value) || '').trim();
+    const paxNum  = parseFloat(paxRaw);
+    const paxVacio = paxRaw === '' || isNaN(paxNum);   // vacío o no numérico → estado vacío
+    const pax     = paxVacio ? 1 : Math.max(1, paxNum); // 0/negativo → se calcula como 1 (sin forzar el input)
+
+    /* --- Capacidad y nº de vehículos (costo en escalones) --- */
+    const capacidad = Math.max(1, num('ct-capacidad') || 18);
+    const vehiculos = Math.max(1, Math.ceil(pax / capacidad));
+
+    /* --- Costos POR VEHÍCULO (lógica de 1 vehículo, intacta) --- */
+    const dias        = num('ct-dias') || 22;
+    const rendimiento = num('ct-rendimiento') || 1;
+    const propio      = document.getElementById('ct-modoPropio').checked;
+    const conductor1   = num('ct-sueldoBase') * (1 + num('ct-cargaSocial') / 100) * Math.max(1, num('ct-nConductores'));
+    const combustible1 = (num('ct-kmDia') * dias / rendimiento) * num('ct-precioLitro');
+    const vehiculo1    = propio ? (num('ct-depreciacion') + num('ct-mantencion')) : num('ct-cuotaLeasing');
+    const seguros1     = num('ct-soap') + num('ct-accPersonales') + num('ct-rcAsientos') + num('ct-revTecnica');
+
+    /* --- Escalado por nº de vehículos: cada vehículo suma su propio costo --- */
+    const costoConductor   = conductor1   * vehiculos;
+    const costoCombustible = combustible1 * vehiculos;
+    const costoVehiculo    = vehiculo1    * vehiculos;
+    const costoSeguros     = seguros1     * vehiculos;
 
     const subtotal       = costoConductor + costoCombustible + costoVehiculo + costoSeguros;
     const overheadMonto  = subtotal * (overheadPct / 100);
     const costoReal      = subtotal + overheadMonto;
     const precioSugerido = costoReal * (1 + margenPct / 100);
-    const precioPax      = precioSugerido / pax;
+    const precioPax      = precioSugerido / pax;   // pax siempre ≥ 1 → sin división por cero
 
+    /* --- Desglose --- */
+    out('ct-rowVehiculos', vehiculos + (vehiculos === 1 ? ' vehículo' : ' vehículos') + ' (cap. ' + capacidad + ' pax c/u)');
     out('ct-rowConductor', clp(costoConductor));
     out('ct-rowCombustible', clp(costoCombustible));
     out('ct-rowVehiculo', clp(costoVehiculo));
@@ -3913,32 +3961,59 @@ const CostCalc = (() => {
     out('ct-rowSubtotal', clp(subtotal));
     out('ct-rowOverhead', clp(overheadMonto));
     out('ct-rowCostoReal', clp(costoReal));
-    out('ct-precioSugerido', clp(precioSugerido));
-    out('ct-precioPax', clp(precioPax));
 
     _last = {
-      pax, dias, costoConductor, costoCombustible, costoVehiculo, costoSeguros,
+      pax, dias, capacidad, vehiculos,
+      costoConductor, costoCombustible, costoVehiculo, costoSeguros,
       subtotal, overheadPct, overheadMonto, costoReal, margenPct, precioSugerido, precioPax,
       modo: propio ? 'Vehículo propio' : 'Leasing / renting',
     };
 
-    /* Barra comparativa de mercado */
+    const marca = document.getElementById('ct-marcadorTuyo');
+    const rango = document.getElementById('ct-rangoMercado');
+
+    /* --- Estado vacío: sin dotación válida no mostramos $/pax ni marcador --- */
+    if (paxVacio) {
+      out('ct-precioSugerido', '—');
+      out('ct-precioPax', '—');
+      out('ct-mercadoMin', '—');
+      out('ct-mercadoMax', '—');
+      out('ct-mercadoFuente', '');
+      out('ct-lecturaMercado', 'Ingresa al menos 1 pasajero');
+      if (marca) marca.style.display = 'none';
+      if (rango) rango.style.width = '0%';
+      avisoSet('Ingresa al menos 1 pasajero para calcular el costo por pasajero.', false);
+      _last = null;   // sendToQuote no agrega nada sin dotación válida
+      return _last;
+    }
+
+    out('ct-precioSugerido', clp(precioSugerido));
+    out('ct-precioPax', clp(precioPax));
+
+    /* --- Aviso de fuera de rango (>45) — sin romper el cálculo --- */
+    avisoSet(pax > MAX_PAX
+      ? 'Para dotaciones sobre ' + MAX_PAX + ' pasajeros, cotizar por flota completa aparte (fuera del rango validado).'
+      : '', pax > MAX_PAX);
+
+    /* --- Barra comparativa de mercado (escala robusta + marcador con clamp) --- */
     const b = banda(pax);
     const ancho = b.max - b.min;
-    const mv = ancho * 0.15;
+    const mv = (ancho || b.max) * 0.15;                 // margen visual; evita 0 si min==max
     const escMin = Math.min(b.min, precioPax) - mv;
     const escMax = Math.max(b.max, precioPax) + mv;
     const escTot = (escMax - escMin) || 1;
     out('ct-mercadoMin', clp(b.min) + '/pax');
     out('ct-mercadoMax', clp(b.max) + '/pax');
-    const rango = document.getElementById('ct-rangoMercado');
-    const marca = document.getElementById('ct-marcadorTuyo');
+    out('ct-mercadoFuente', 'Fuente del tramo: ' + b.fuente);
+    if (marca) marca.style.display = '';
     if (rango) { rango.style.left = ((b.min - escMin) / escTot * 100) + '%'; rango.style.width = (ancho / escTot * 100) + '%'; }
-    if (marca) { marca.style.left = 'calc(' + ((precioPax - escMin) / escTot * 100) + '% - 1.5px)'; }
-    const lectura = precioPax < b.min ? 'bajo el rango de mercado'
-                  : precioPax > b.max ? 'sobre el rango de mercado'
-                  : 'dentro del rango competitivo';
-    out('ct-lecturaMercado', 'tu precio: ' + lectura);
+    if (marca) {
+      const mPct = Math.max(0, Math.min(100, (precioPax - escMin) / escTot * 100));  // siempre visible
+      marca.style.left = 'calc(' + mPct + '% - 1.5px)';
+    }
+    out('ct-lecturaMercado', 'tu precio: ' + (precioPax < b.min ? 'bajo el rango de mercado'
+      : precioPax > b.max ? 'sobre el rango de mercado'
+      : 'dentro del rango competitivo'));
 
     return _last;
   };
@@ -3960,6 +4035,7 @@ const CostCalc = (() => {
   const sendToQuote = () => {
     ensureInit();
     const r = calcular();
+    if (!r) { Toast.show('⚠️ Ingresa al menos 1 pasajero en el cotizador'); return; }
     const val = Math.round(r.precioSugerido);
     const existente = State.rows.find(x => x._fromCalc);
     if (existente) {
@@ -4031,8 +4107,9 @@ const FieldHelp = (() => {
   /* Tooltips del COTIZADOR DE COSTOS (vista calc): aquí los conceptos requieren
      más explicación (overhead, margen, cargas sociales, rendimiento…). */
   const CALC_TIPS = {
-    'ct-pax':         'Cantidad de pasajeros a transportar (dotación).',
+    'ct-pax':         'Cantidad de pasajeros a transportar (dotación). Rango validado: 1 a 45.',
     'ct-dias':        'Días hábiles trabajados en el mes.',
+    'ct-capacidad':   'Capacidad de pasajeros por vehículo. Define cuántos vehículos se necesitan: el costo sube en escalones al superar cada múltiplo.',
     'ct-cargaSocial': 'Costo de leyes sociales sobre el sueldo (previsión, salud, seguros), como % del sueldo base.',
     'ct-rendimiento': 'Rendimiento del vehículo en kilómetros por litro de combustible.',
     'ct-depreciacion':'Pérdida de valor mensual del vehículo propio por su uso.',
