@@ -4016,50 +4016,24 @@ const Views = (() => {
    init() no duplica íconos.
 ════════════════════════════════════════════════════════════════════════ */
 const FieldHelp = (() => {
-  /* Tooltip por id de input/select/textarea/checkbox. */
+  /* Tooltip por id de campo. Solo los puntos MÁS RELEVANTES (enfocado en la
+     cotización): los que tienen comportamiento especial o impacto comercial.
+     El resto de campos se dejan sin (i) para no saturar el formulario. */
   const TIPS = {
-    numDoc:       'Número del documento. Usa "⚡ N° Auto" para generar un correlativo desde Supabase.',
-    fechaEmision: 'Fecha en que se emite el documento.',
-    fechaVence:   'Fecha límite de pago (Estado de Pago).',
-    selValidez:   'Días que la cotización se mantiene vigente desde la emisión.',
-    clienteSelector: 'Carga rápidamente los datos de un cliente guardado.',
-    cliNombre:    'Razón social o nombre de la empresa cliente.',
-    cliRut:       'RUT del cliente. Se valida y se formatea automáticamente.',
-    cliGiro:      'Giro o actividad económica del cliente.',
-    cliDir:       'Dirección del cliente.',
-    cliCiudad:    'Ciudad del cliente.',
-    cliEmail:     'Correo de contacto del cliente.',
-    cliTel:       'Teléfono de contacto del cliente.',
-    cliContacto:  'Persona de contacto dentro de la empresa cliente.',
-    cliContrato:  'N° de contrato asociado (solo Estado de Pago).',
-    cliOC:        'Orden de compra asociada (solo Estado de Pago).',
-    cliProyecto:  'Proyecto o servicio al que corresponde el documento.',
-    cliSistema:   'Régimen operacional (ej. turno 7×7, servicio diario).',
-    prvNombre:    'Razón social del proveedor/oferente (tu empresa).',
-    prvRut:       'RUT del proveedor. Se valida automáticamente.',
-    prvGiro:      'Giro del proveedor.',
-    prvDir:       'Dirección del proveedor.',
-    prvCiudad:    'Ciudad del proveedor.',
-    prvRegion:    'Región del proveedor.',
-    prvEmail:     'Correo del proveedor.',
-    prvTel:       'Teléfono del proveedor.',
-    prvContacto:  'Persona representante del proveedor.',
-    condPago:     'Forma y plazo de pago ofrecidos.',
-    condMoneda:   'Moneda en que se expresa la oferta.',
-    condReajuste: 'Mecanismo de reajuste de precios (IPC, UF, sin reajuste…).',
-    resumenServicio: 'Texto descriptivo del servicio que aparece en el documento impreso.',
-    chkIva:       'Si está activo, agrega 19% de IVA al total del documento.',
+    numDoc:          'N° del documento. Usa "⚡ N° Auto" para generar un correlativo desde Supabase.',
+    selValidez:      'Días que la cotización se mantiene vigente desde la emisión.',
+    cliRut:          'RUT del cliente. Se valida y se formatea automáticamente.',
+    cliProyecto:     'Proyecto o servicio que se cotiza (aparece en el documento).',
+    condPago:        'Forma y plazo de pago ofrecidos al cliente.',
+    condReajuste:    'Mecanismo de reajuste de precios (IPC, UF, sin reajuste…).',
+    resumenServicio: 'Texto descriptivo del servicio que se imprime en la cotización.',
+    chkIva:          'Si está activo, agrega 19% de IVA al total del documento.',
   };
 
-  /* Tooltip por título de sección/party (se busca por su texto). */
+  /* Tooltip por título de sección: solo las secciones clave de la cotización. */
   const SECTION_TIPS = {
-    'Cliente / Destinatario': 'Datos de la empresa que recibe la cotización.',
-    'Mandante / Cliente':     'Datos del mandante en el Estado de Pago.',
-    'Proveedor / Oferente':   'Datos de tu empresa, que emite el documento.',
     'Condiciones de la oferta': 'Términos comerciales: forma de pago, moneda y reajuste.',
-    'Resumen del Servicio y Condiciones': 'Descripción que se imprime en el documento.',
-    'Detalle de servicios':   'Líneas de servicio: vehículo, ruta, período, viajes y valor.',
-    'Ítems adicionales':      'Cargos extra, por unidad o por día.',
+    'Detalle de servicios':     'Líneas de servicio: vehículo, ruta, período, viajes y valor.',
   };
 
   /* Crea el elemento (i) accesible. */
