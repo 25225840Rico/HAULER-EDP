@@ -1,0 +1,215 @@
+# ═══════════════════════════════════════════════════════════════
+# COTIZACIÓN — datos específicos
+# Replica el PDF de referencia (Cotizacion_Hauler_0216.pdf).
+# Todo lo de aquí sobreescribe a config/defaults.yaml.
+# ═══════════════════════════════════════════════════════════════
+numero_cotizacion: "COT-0216-2026"
+fecha: null            # null = fecha de hoy automática
+vigencia_dias: 30
+
+titulo: "Propuesta Comercial"
+subtitulo: "Transporte de Personal Minero"
+
+# Títulos "hero" a dos tonos por página (l1 = tinta, l2 = azul).
+heroes:
+  portada: { l1: "Transporte de",  l2: "Personal Minero" }
+  firma:   { l1: "Listos para",    l2: "el 01 de agosto." }
+
+cliente:
+  razon_social:   "SOLUCIONES MINERAS SpA"
+  rut:            "77.722.803-K"
+  contacto_nombre: "Camelia Fuentes Castillo"
+  contacto_cargo:  "Gestora de Compras y Abastecimiento"
+  email:           "matias.valderrama@solminspa.cl"
+  referencia:      "Transporte personal — Impermeabilización Piscina Refino Dump Este · Mantos Blancos"
+
+# Métricas del strip de portada (5 stats)
+stats:
+  - valor: "2"
+    etiqueta: "opciones de jornada"
+  - valor: "14"
+    etiqueta: "personas por turno"
+  - valor: "4 m"
+    etiqueta: "duración del contrato"
+  - valor: "100%"
+    etiqueta: "costos incluidos"
+  - valor: "01 ago"
+    etiqueta: "inicio referencial"
+
+servicio:
+  descripcion_corta: "Todo incluido, sin sorpresas."
+  resumen: >
+    El conductor llega con el personal, permanece en faena durante toda la
+    jornada para traslados internos, y al cierre regresa con todos a
+    Antofagasta. Sin gestión adicional del cliente.
+  intro: >
+    Hauler SpA propone un servicio integral de transporte bajo circuito
+    cerrado (D.S. N° 80 MTT): traslado externo ida y vuelta más permanencia
+    del conductor en faena para traslados internos durante toda la jornada.
+    El cliente no gestiona ningún aspecto del transporte.
+  inicio_referencial: "01 de agosto de 2026"
+  duracion: "4 meses con opción de renovación"
+  ruta: "Antofagasta → Mantos Blancos → Antofagasta · Ruta 5 Norte"
+  tiempo_viaje: "50 – 60 min por tramo"
+  peaje: "Peaje Troncal km 1.399, ambos sentidos"
+  servicio_en_faena: "Conductor permanece para traslados internos durante toda la jornada"
+  dotacion: "14 personas por turno"
+  modalidad: "Minibús dedicado · conductor en faena · rotación de conductores incluida"
+  embarque: "Punto único en Antofagasta, a coordinar antes del inicio"
+  rotacion: "Incluida en ambas opciones — Art. 25 Cód. del Trabajo"
+
+  incluido:
+    - titulo: "Combustible"
+      detalle: "consumo total ida/vuelta y traslados internos en faena"
+    - titulo: "Peajes"
+      detalle: "Ruta 5 Norte, ambos sentidos"
+    - titulo: "Conductor y rotación"
+      detalle: "remuneración, colación y EPP completo"
+    - titulo: "SOAP vigente"
+      detalle: "cubre conductor, pasajeros y terceros hasta 600 UF/persona"
+    - titulo: "Seguro RC pasajeros"
+      detalle: "póliza adicional Art. 23 D.S. 80 MTT"
+    - titulo: "Permiso de circulación y revisión técnica"
+      detalle: "al día durante toda la vigencia"
+    - titulo: "Acreditación SERNAGEOMIN"
+      detalle: "Inducción Básica Homologada D.S. 99/2014 y examen preocupacional"
+    - titulo: "Coordinación operacional"
+      detalle: "permanente durante toda la vigencia"
+
+  respaldo:
+    - "Vehículo de respaldo disponible desde Antofagasta ante falla mecánica o siniestro"
+    - "Coordinador de turno disponible durante toda la jornada de servicio"
+    - "Check list pre-uso diario — revisión mecánica, neumáticos, luces y cinturones antes de cada turno"
+    - "Conductores titulares y suplentes con Licencia A-2 y hoja de vida sin infracciones graves"
+    - "Mantenciones preventivas programadas fuera del horario de servicio"
+    - "Protocolo de contingencia ante cortes de ruta — sin penalidad para ninguna de las partes"
+
+  normativa:
+    - "D.S. N° 80/2004 MTT"
+    - "Licencia A-2 vigente"
+    - "Art. 25 Cód. del Trabajo"
+    - "SOAP + RC pasajeros"
+    - "Acreditación SERNAGEOMIN"
+
+vehiculo:
+  marca: "Ford"
+  modelo: "Transit 350 HD Wagon"
+  anio: "2023 / 2024"
+  nota: "Acreditada para faena minera · O similar"
+  motor: "2.0L EcoBlue Diesel turbocargado, 170 HP"
+  transmision: "Automática 10 velocidades SelectShift"
+  capacidad: "15 pasajeros incluido conductor"
+  pbv: "3.175 kg — cumple D.S. N° 80 (mín. 2.700 kg)"
+  norma_emisiones: "Euro V / Euro VI"
+  equipamiento:
+    - "ABS + EBD, control de tracción (TCS) y control de estabilidad (ESC)"
+    - "Airbags frontales conductor y pasajero"
+    - "Cinturones de seguridad de 3 puntos en todos los asientos"
+    - "Aire acondicionado doble zona"
+    - "Cámara de retroceso y sensores de estacionamiento"
+    - "GPS con monitoreo en tiempo real"
+    - "Radio VHF para comunicación en faena"
+    - "Extintor, botiquín, triángulos y chalecos reflectantes certificados"
+    - "Letrero «Transporte Privado» (D.S. N° 80 MTT)"
+
+opciones:
+  - id: 1
+    nombre: "Opción 1"
+    subtitulo: "Jornada Estándar"
+    badge: null
+    destacada: false
+    jornada: "Lun – Jue 08:00–18:00 · Vie 08:00–14:00"
+    dotacion: "14 personas · Rotación de conductores incluida"
+    precio: 7500000
+    precio_label: "CLP neto · por mes · todo incluido"
+    features:
+      - "Conductor permanece en faena toda la jornada"
+      - "Traslados internos sin límite"
+      - "Rotación de conductores sin costo adicional"
+      - "Vehículo de respaldo disponible desde Antofagasta"
+      - "Todos los seguros y documentación incluidos"
+    comparativo:
+      jornada_diaria: "10 hrs (L–J) / 6 hrs (V)"
+      dias: "Lun – Vie"
+      rotacion: true
+
+  - id: 2
+    nombre: "Opción 2"
+    subtitulo: "Jornada Extendida"
+    badge: "Cobertura máxima"
+    destacada: true
+    jornada: "Lun – Dom 08:00–20:00 · 7 días"
+    dotacion: "14 personas · Rotación de conductores incluida"
+    precio: 8500000
+    precio_label: "CLP neto · por mes · todo incluido"
+    features:
+      - "Cobertura completa 7 días, 12 hrs/día"
+      - "Conductor permanece en faena toda la jornada"
+      - "Rotación de conductores sin costo adicional"
+      - "Vehículo de respaldo disponible desde Antofagasta"
+      - "Todos los seguros y documentación incluidos"
+    comparativo:
+      jornada_diaria: "12 hrs/día"
+      dias: "Lun – Dom"
+      rotacion: true
+
+# Nota al pie de la propuesta económica (nivel raíz, no dentro de opciones)
+opciones_nota: >
+  Ambas opciones incluyen combustible, conductor, peajes, seguros SOAP y RC,
+  permisos, acreditación SERNAGEOMIN y coordinación operacional. Sin costos
+  adicionales dentro del alcance definido.
+
+condiciones:
+  pago:
+    - clave: "Moneda"
+      valor: "Pesos Chilenos (CLP) netos"
+    - clave: "Garantía inicio"
+      valor: "50% del valor mensual a la firma del contrato — reserva conductor y vehículo"
+    - clave: "Facturación"
+      valor: "El día 1° de cada mes por el mes en curso"
+    - clave: "Plazo de pago"
+      valor: "7 días hábiles desde la emisión de la factura"
+    - clave: "Mora"
+      valor: "Interés máximo convencional (Ley N° 18.010) desde el primer día de atraso"
+    - clave: "Suspensión"
+      valor: "+10 días de atraso habilita a Hauler a suspender el servicio sin penalidad"
+    - clave: "Reajuste"
+      valor: "Trimestral según IPC + precio bencina 93 ENAP Antofagasta"
+    - clave: "Vigencia oferta"
+      valor: "30 días corridos desde la fecha de emisión"
+  operacion:
+    - clave: "Dotación máxima"
+      valor: "14 personas/turno. Incrementos requieren cotización adicional"
+    - clave: "Solo personal"
+      valor: "El vehículo no traslada materiales, herramientas ni equipos de volumen"
+    - clave: "Acreditación"
+      valor: "5–15 días hábiles. Inicio del servicio condicionado a su aprobación. Hauler gestiona el proceso desde la firma"
+    - clave: "Rotación"
+      valor: "Incluida en ambas opciones. Art. 25 Cód. del Trabajo sin costo adicional"
+    - clave: "Fuerza mayor"
+      valor: "Corte de ruta o emergencia vial sin penalidad para ninguna de las partes"
+    - clave: "Modificaciones"
+      valor: "Cambios de jornada, ruta o dotación por addendum al contrato"
+    - clave: "Contrato"
+      valor: "Hauler emite contrato conforme a D.S. N° 80 MTT. Obligaciones laborales exclusivas de Hauler — sin solidaridad para el cliente"
+  # El prefijo "Protección para <razón social>:" se antepone automáticamente.
+  texto_callout: >
+    Hauler SpA asume la responsabilidad total del servicio, incluyendo
+    obligaciones laborales, previsionales y de seguridad del conductor. El
+    cliente solo paga la factura mensual. Sin complicaciones operacionales,
+    sin gestión de personal de transporte, sin imprevistos.
+
+firma:
+  texto_cierre: >
+    Hauler SpA tiene la flota, los conductores acreditados y la experiencia
+    operacional para garantizar que el personal de Soluciones Mineras SpA llegue
+    a Mantos Blancos puntual y seguro — sin que el cliente deba gestionar ningún
+    aspecto del transporte.
+  nota_contacto: >
+    Para confirmar la propuesta, seleccionar una opción o solicitar una reunión,
+    contáctenos directamente al correo o teléfono indicados. La oferta tiene
+    vigencia de 30 días corridos.
+  texto_legal: >
+    Al firmar esta propuesta, Soluciones Mineras SpA confirma la aceptación de
+    las condiciones comerciales y operacionales descritas bajo la cotización
+    COT-0216-2026 emitida por Hauler SpA.

@@ -1,0 +1,61 @@
+# ───────────────────────────────────────────────────────────────
+# VALORES POR DEFECTO (secciones fijas / texto reutilizable)
+# El YAML de cada cotización tiene SIEMPRE precedencia (deep-merge).
+# Las listas se REEMPLAZAN por completo cuando la cotización las define.
+# ───────────────────────────────────────────────────────────────
+vigencia_dias: 30
+
+# Títulos "hero" a dos tonos (l1 = tinta, l2 = azul). Una entrada por página.
+heroes:
+  portada:     { l1: "Propuesta de",   l2: "Transporte." }
+  servicio:    { l1: "Todo incluido,", l2: "sin sorpresas." }
+  precios:     { l1: "Precios claros,", l2: "todo incluido." }
+  condiciones: { l1: "Claro, simple,", l2: "sin letra chica." }
+  firma:       { l1: "Listos para",    l2: "operar." }
+
+servicio:
+  normativa:
+    - "D.S. N° 80/2004 MTT"
+    - "Licencia A-2 vigente"
+    - "Art. 25 Cód. del Trabajo"
+    - "SOAP + RC vigentes"
+  respaldo:
+    - "Coordinador de turno disponible durante toda la jornada de servicio"
+    - "Check list pre-uso diario antes de cada turno"
+    - "Mantenciones preventivas programadas fuera del horario de servicio"
+
+condiciones:
+  pago:
+    - clave: "Moneda"
+      valor: "Pesos Chilenos (CLP) netos"
+    - clave: "Garantía inicio"
+      valor: "50% del valor mensual a la firma del contrato"
+    - clave: "Facturación"
+      valor: "Mensual, contra estado de pago aprobado"
+    - clave: "Vigencia oferta"
+      valor: "30 días corridos desde la fecha de emisión"
+  operacion:
+    - clave: "Dotación máxima"
+      valor: "Según opción. Incrementos requieren cotización adicional"
+    - clave: "Horario"
+      valor: "Según jornada de la opción seleccionada"
+  # El prefijo "Protección para <cliente>:" se antepone automáticamente.
+  texto_callout: >
+    Hauler SpA asume la responsabilidad total del servicio, incluyendo
+    obligaciones laborales, previsionales y de seguridad del conductor. El
+    cliente solo paga la factura mensual. Sin complicaciones operacionales,
+    sin gestión de personal de transporte, sin imprevistos.
+
+firma:
+  texto_cierre: >
+    Hauler SpA tiene la flota, los conductores acreditados y la experiencia
+    operacional para operar este servicio desde el primer día, bajo circuito
+    cerrado y cumplimiento normativo total.
+  nota_contacto: >
+    Para confirmar la propuesta, seleccionar una opción o solicitar una reunión,
+    contáctenos directamente al correo o teléfono indicados. La oferta tiene
+    vigencia de 30 días corridos.
+  texto_legal: >
+    Al firmar esta propuesta, el cliente confirma la aceptación de las
+    condiciones comerciales y operacionales descritas en este documento,
+    dando inicio a la coordinación del servicio.

@@ -1,0 +1,61 @@
+{# ── PÁGINA 2 · EL SERVICIO (operación + vehículo + incluido) ── #}
+<div class="hero">
+  <span class="l1">{{ heroes.servicio.l1 }}</span>
+  <span class="l2">{{ heroes.servicio.l2 }}</span>
+</div>
+{% if servicio.resumen %}<p class="lead mt3">{{ servicio.resumen }}</p>{% endif %}
+
+<div class="col2 mt4">
+  <div>
+    <h3 class="block-title">Operación y ruta</h3>
+    <table class="kv">
+      <tr><td class="k">Ruta</td><td class="v">{{ servicio.ruta }}</td></tr>
+      <tr><td class="k">Tiempo de viaje</td><td class="v">{{ servicio.tiempo_viaje }}</td></tr>
+      {% if servicio.peaje %}<tr><td class="k">Peaje incluido</td><td class="v">{{ servicio.peaje }}</td></tr>{% endif %}
+      <tr><td class="k">Servicio en faena</td><td class="v">{{ servicio.servicio_en_faena }}</td></tr>
+      <tr><td class="k">Embarque</td><td class="v">{{ servicio.embarque }}</td></tr>
+      {% if servicio.rotacion %}<tr><td class="k">Rotación</td><td class="v">{{ servicio.rotacion }}</td></tr>{% endif %}
+    </table>
+  </div>
+  <div>
+    <h3 class="block-title">Respaldo operativo</h3>
+    {% for r in servicio.respaldo %}<div class="resp-item">{{ r }}</div>{% endfor %}
+  </div>
+</div>
+
+<div class="rule mt4"></div>
+
+<div class="col2 mt4">
+  <div>
+    <span class="section-label">Vehículo asignado</span>
+    <div class="veh-head">
+      <div class="veh-name">{{ vehiculo.marca }} {{ vehiculo.modelo }}</div>
+      <div class="veh-meta">{{ vehiculo.anio }}{% if vehiculo.nota %} · {{ vehiculo.nota }}{% endif %}</div>
+    </div>
+    <table class="kv mt3">
+      <tr><td class="k">Motor</td><td class="v">{{ vehiculo.motor }}</td></tr>
+      <tr><td class="k">Transmisión</td><td class="v">{{ vehiculo.transmision }}</td></tr>
+      <tr><td class="k">Capacidad</td><td class="v">{{ vehiculo.capacidad }}</td></tr>
+      <tr><td class="k">PBV</td><td class="v">{{ vehiculo.pbv }}</td></tr>
+      <tr><td class="k">Norma emisiones</td><td class="v">{{ vehiculo.norma_emisiones }}</td></tr>
+    </table>
+  </div>
+  <div>
+    {% if vehiculo.equipamiento %}
+    <h3 class="block-title">Equipamiento de seguridad</h3>
+    {% for e in vehiculo.equipamiento %}<div class="resp-item">{{ e }}</div>{% endfor %}
+    {% endif %}
+  </div>
+</div>
+
+{% if servicio.incluido %}
+<div class="rule mt3"></div>
+<div class="mt4">
+  <h3 class="block-title">Incluido en el precio</h3>
+  <div class="col2">
+    {% for i in servicio.incluido %}
+      <div class="chk"><b>{{ i.titulo }}</b>{% if i.detalle %} — {{ i.detalle }}{% endif %}</div>
+    {% endfor %}
+  </div>
+</div>
+{% endif %}

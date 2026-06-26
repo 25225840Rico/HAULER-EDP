@@ -1,0 +1,29 @@
+# ───────────────────────────────────────────────────────────────
+# TOKENS DE DISEÑO
+# Se inyectan como variables CSS (:root) en el template base.
+# Cambiar un valor aquí re-tematiza TODO el PDF sin tocar HTML/CSS.
+# ───────────────────────────────────────────────────────────────
+colors:
+  blue:  "#1B5EFF"   # acento principal
+  ink:   "#0f172a"   # títulos
+  body:  "#475569"   # texto de cuerpo
+  muted: "#94a3b8"   # labels, metadata
+  line:  "#e2e8f0"   # líneas divisorias
+  tint:  "#fafafa"   # fondos alternos en tablas
+  light: "#f8faff"   # fondo card opción destacada
+
+font:
+  family: "'Helvetica Neue', Arial, sans-serif"
+
+# Tamaños base (pt). El template los usa vía var(--fs-*).
+sizes:
+  hero:      "27pt"   # hero title (24–30pt)
+  section:   "6.5pt"  # label de sección uppercase
+  body:      "8.5pt"  # texto de cuerpo
+  kv_key:    "7pt"    # claves de tabla KV
+  kv_value:  "8pt"    # valores de tabla KV
+  price:     "28pt"   # número de precio
+
+layout:
+  page_padding: "14mm"  # padding lateral del contenido
+  kv_key_width: "34mm"  # ancho fijo de claves KV

@@ -1,0 +1,46 @@
+{# ── PÁGINA 1 · PORTADA ── #}
+<span class="section-label">{{ titulo | default('Propuesta Comercial') }}</span>
+<div class="hero">
+  <span class="l1">{{ heroes.portada.l1 }}</span>
+  <span class="l2">{{ heroes.portada.l2 }}</span>
+</div>
+{% if cliente.referencia %}<div class="hero-sub">{{ cliente.referencia }}</div>{% endif %}
+
+{% if stats %}
+<div class="stats mt8">
+  {% for s in stats %}
+  <div class="stat">
+    <div class="s-val">{{ s.valor }}</div>
+    <div class="s-lab">{{ s.etiqueta }}</div>
+  </div>
+  {% endfor %}
+</div>
+{% endif %}
+
+<div class="rule mt8"></div>
+
+<div class="mt6">
+  <span class="section-label">Elaborado para</span>
+  <table class="kv">
+    <tr><td class="k">Razón social</td><td class="v"><b>{{ cliente.razon_social }}</b></td></tr>
+    <tr><td class="k">RUT</td><td class="v">{{ cliente.rut }}</td></tr>
+    <tr><td class="k">Contacto</td><td class="v">{{ cliente.contacto_nombre }}{% if cliente.contacto_cargo %} — {{ cliente.contacto_cargo }}{% endif %}</td></tr>
+    {% if cliente.email %}<tr><td class="k">Email</td><td class="v">{{ cliente.email }}</td></tr>{% endif %}
+    {% if cliente.referencia %}<tr><td class="k">Referencia</td><td class="v">{{ cliente.referencia }}</td></tr>{% endif %}
+  </table>
+</div>
+
+<div class="mt6">
+  <span class="section-label">Resumen del servicio</span>
+  <table class="kv">
+    <tr><td class="k">Inicio referencial</td><td class="v">{{ servicio.inicio_referencial }}</td></tr>
+    <tr><td class="k">Duración</td><td class="v">{{ servicio.duracion }}</td></tr>
+    <tr><td class="k">Ruta</td><td class="v">{{ servicio.ruta }}</td></tr>
+    <tr><td class="k">Dotación</td><td class="v">{{ servicio.dotacion }}</td></tr>
+    <tr><td class="k">Modalidad</td><td class="v">{{ servicio.modalidad }}</td></tr>
+  </table>
+</div>
+
+{% if servicio.intro %}
+<div class="callout mt8">{{ servicio.intro }}</div>
+{% endif %}

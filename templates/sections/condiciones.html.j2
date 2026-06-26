@@ -1,0 +1,31 @@
+{# ── PÁGINA 4 · CONDICIONES ── #}
+<div class="hero">
+  <span class="l1">{{ heroes.condiciones.l1 }}</span>
+  <span class="l2">{{ heroes.condiciones.l2 }}</span>
+</div>
+
+<div class="col2 mt8">
+  <div>
+    <h3 class="block-title">Pago y facturación</h3>
+    <table class="kv">
+      {% for c in condiciones.pago %}
+      <tr><td class="k">{{ c.clave }}</td><td class="v">{{ c.valor }}</td></tr>
+      {% endfor %}
+    </table>
+  </div>
+  <div>
+    <h3 class="block-title">Condiciones de operación</h3>
+    <table class="kv">
+      {% for c in condiciones.operacion %}
+      <tr><td class="k">{{ c.clave }}</td><td class="v">{{ c.valor }}</td></tr>
+      {% endfor %}
+    </table>
+  </div>
+</div>
+
+{% if condiciones.texto_callout %}
+<div class="rule mt8"></div>
+<div class="callout-blue mt6">
+  <b>Protección para {{ cliente.razon_social }}:</b> {{ condiciones.texto_callout }}
+</div>
+{% endif %}

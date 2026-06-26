@@ -1,0 +1,31 @@
+# ───────────────────────────────────────────────────────────────
+# DATOS DEL EMISOR
+# Compartidos por todas las cotizaciones. Sobreescribibles por
+# cotización si alguna vez hace falta (deep-merge).
+# ───────────────────────────────────────────────────────────────
+nombre:    "Hauler SpA"
+rut:       "77.000.000-0"        # ← reemplazar por el RUT real de Hauler
+ciudad:    "Antofagasta, Chile"
+email:     "operaciones@hauler.cl"
+telefono:  "+56 9 6864 6396"
+
+# Logo: ruta a un PNG/SVG. Si es null, el header usa la marca por defecto
+# (ícono SVG + wordmark de texto). Si se define, se embebe como base64.
+logo_path: null
+
+# Marca de texto (junto al ícono cuando no hay logo_path)
+brand_title: "HAULER"
+brand_sub:   "Transporte Minero e Industrial"
+
+# Pie de página corporativo (portada)
+footer: "HAULER SpA · Transporte Minero e Industrial · Antofagasta, Chile"
+
+# Firmante (página de firma)
+representante_nombre: "Aron Humberto Guerra Rico"
+representante_cargo:  "Gerente General — HAULER SpA"
+representante_firma_pie: "Aron H. Guerra Rico · Gerente General · Hauler SpA"
+
+# Firma del emisor (imagen escaneada/PNG con fondo transparente).
+# Si es null, se muestra solo la línea de firma en blanco.
+# Acepta ruta relativa al repo o absoluta. Ejemplo: "assets/firma-demo.png"
+firma_emisor_path: null
