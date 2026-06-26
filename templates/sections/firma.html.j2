@@ -1,32 +1,59 @@
-{# ── PÁGINA 6 · FIRMA ── #}
-<span class="section-label">Aceptación de la propuesta</span>
-<div class="hero">Listos para operar.</div>
+{# ── PÁGINA 5 · CONTACTO Y FIRMA ── #}
+<div class="hero">
+  <span class="l1">{{ heroes.firma.l1 }}</span>
+  <span class="l2">{{ heroes.firma.l2 }}</span>
+</div>
 {% if firma.texto_cierre %}<p class="lead mt3">{{ firma.texto_cierre }}</p>{% endif %}
 
-<div class="callout mt6">
-  <b style="color:var(--ink)">{{ empresa.nombre }}</b> ·
-  {{ empresa.email }} · {{ empresa.telefono }} · {{ empresa.ciudad }}
+<div class="sign-cols mt8">
+  {# ── Contacto directo (emisor) ── #}
+  <div class="card">
+    <span class="section-label">Contacto directo</span>
+    <div class="c-name">{{ empresa.representante_nombre }}</div>
+    <div class="c-role">{{ empresa.representante_cargo }}</div>
+    <table class="kv">
+      <tr><td class="k">Teléfono</td><td class="v">{{ empresa.telefono }}</td></tr>
+      <tr><td class="k">Email</td><td class="v"><span class="link">{{ empresa.email }}</span></td></tr>
+      <tr><td class="k">Ciudad</td><td class="v">{{ empresa.ciudad }}</td></tr>
+    </table>
+    {% if firma.nota_contacto %}<div class="c-note">{{ firma.nota_contacto }}</div>{% endif %}
+  </div>
+
+  {# ── Firmas ── #}
+  <div class="card">
+    <span class="section-label">Firma del emisor</span>
+    <div class="sign-slot">
+      {% if firma_data_uri %}<img class="sign-img" src="{{ firma_data_uri }}" alt="Firma">{% endif %}
+    </div>
+    <div class="sign-line"></div>
+    <div class="sign-cap">{{ empresa.representante_firma_pie }}</div>
+
+    <span class="section-label mt8">Aceptación del cliente</span>
+    <div class="sign-slot"></div>
+    <div class="sign-line"></div>
+    <div class="sign-cap">Nombre / Cargo · {{ cliente.razon_social }}</div>
+  </div>
 </div>
 
-<div class="sign-grid">
-  <div class="sign-box">
-    <div class="sign-line"></div>
-    <div class="s-name">{{ empresa.representante_nombre }}</div>
-    <div class="s-role">{{ empresa.representante_cargo }}</div>
+<div class="rule mt8"></div>
+
+<div class="accept-grid mt6">
+  <div>
+    <span class="section-label">Fecha de aceptación</span>
+    <div class="field-line"></div>
+    <div class="field-cap">Fecha</div>
   </div>
-  <div class="sign-box">
-    <div class="sign-line"></div>
-    <div class="s-name">{{ cliente.razon_social }}</div>
-    <div class="s-role">{{ cliente.contacto_nombre }}{% if cliente.contacto_cargo %} — {{ cliente.contacto_cargo }}{% endif %}</div>
+  <div>
+    <span class="section-label">Opción seleccionada</span>
+    <div class="opts" style="margin-top:5mm">
+      {% for o in opciones %}
+      <div class="opt"><span class="circle"></span>{{ o.nombre }} · {{ o.precio | clp }}/mes</div>
+      {% endfor %}
+    </div>
+    <div class="field-cap mt3">Marcar la opción elegida</div>
   </div>
 </div>
 
 {% if firma.texto_legal %}
-<div class="rule mt8"></div>
-<p class="legal mt3">{{ firma.texto_legal }}</p>
+<div class="callout mt8">{{ firma.texto_legal }}</div>
 {% endif %}
-
-<p class="legal mt3">
-  Cotización {{ numero_cotizacion }} · Emitida el {{ fecha_fmt }} ·
-  Válida hasta el {{ valida_hasta_fmt }} ({{ vigencia_dias }} días corridos).
-</p>

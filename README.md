@@ -16,11 +16,20 @@ cotizaciones/
   COT-0216-2026.yaml ← datos de cada cotización (precedencia sobre defaults)
 templates/
   base.html.j2      ← chrome de página + CSS embebido (sistema de diseño)
-  sections/         ← una plantilla por sección (portada, servicio, vehículo,
-                      precios, condiciones, firma)
+  sections/         ← una plantilla por página: portada, servicio,
+                      precios, condiciones, firma
+assets/             ← imágenes embebibles (ej. firma-demo.png)
 generate.py         ← CLI
 output/             ← PDFs generados (ignorados por git)
 ```
+
+El PDF resultante tiene **5 páginas A4** (idéntico al formato de referencia):
+
+1. **Portada** — hero + 5 stats + datos del cliente + resumen + callout.
+2. **El Servicio** — operación/ruta + respaldo + vehículo + equipamiento + incluido.
+3. **Propuesta Económica** — price cards + tabla comparativa.
+4. **Condiciones** — pago/facturación + operación + callout de protección.
+5. **Contacto y Firma** — contacto + firma del emisor + aceptación del cliente.
 
 ## Instalación
 
@@ -59,7 +68,11 @@ python generate.py --new COT-0217-2026
 - **Colores / tipografía / tamaños**: editar `config/design.yaml` (se inyectan
   como variables CSS; re-tematiza todo el PDF sin tocar HTML).
 - **Logo**: definir `logo_path` en `config/empresa.yaml` (PNG/SVG). Se embebe
-  como base64 → PDF autónomo. Si es `null`, se usa el wordmark de texto.
+  como base64 → PDF autónomo. Si es `null`, se usa el ícono + wordmark de texto.
+- **Firma del emisor**: definir `firma_emisor_path` en `config/empresa.yaml` con
+  un PNG (idealmente fondo transparente). Se embebe sobre la línea de firma en la
+  página 5. Si es `null`, queda la línea en blanco para firmar a mano. Hay un
+  ejemplo en `assets/firma-demo.png`.
 - **Texto fijo** (normativa, condiciones, textos legales): vive en
   `config/defaults.yaml` y se puede sobreescribir por cotización.
 - **Secciones / orden de páginas**: lista `PAGES` en `generate.py`.

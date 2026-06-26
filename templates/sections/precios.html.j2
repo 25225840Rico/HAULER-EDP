@@ -1,22 +1,25 @@
-{# ── PÁGINA 4 · PROPUESTA ECONÓMICA ── #}
-<span class="section-label">Propuesta económica</span>
-<div class="hero">Precios claros, todo incluido.</div>
+{# ── PÁGINA 3 · PROPUESTA ECONÓMICA ── #}
+<div class="hero">
+  <span class="l1">{{ heroes.precios.l1 }}</span>
+  <span class="l2">{{ heroes.precios.l2 }}</span>
+</div>
 <p class="lead mt3">
   Valores en Pesos Chilenos (CLP) netos. Incluyen la totalidad de costos
   operacionales, documentales y de seguros — sin suplementos.
 </p>
 
-<div class="pc-grid mt6">
+<div class="pc-grid mt8">
   {% for o in opciones %}
   <div class="pc {% if o.destacada %}pc-blue{% endif %}">
     {% if o.badge %}<span class="badge">{{ o.badge }}</span>{% endif %}
     <div class="pc-name">{{ o.nombre }}{% if o.subtitulo %} · {{ o.subtitulo }}{% endif %}</div>
-    <div class="pc-sub">{{ o.subtitulo }}</div>
     <div class="pc-jor">{{ o.jornada }}</div>
     <div class="pc-dot">{{ o.dotacion }}</div>
+    <div class="pc-div"></div>
     <div class="price-label-top">Valor mensual</div>
     <div class="price-num">{{ o.precio | clp }}</div>
     <div class="pc-plabel">{{ o.precio_label }}</div>
+    <div class="pc-div"></div>
     {% if o.features %}
     <div class="pc-feats">
       {% for f in o.features %}<div class="feat">{{ f }}</div>{% endfor %}
@@ -27,28 +30,37 @@
 </div>
 
 {% if opciones_nota %}
-<div class="callout mt6">{{ opciones_nota }}</div>
+<div class="callout-blue mt6">{{ opciones_nota }}</div>
 {% endif %}
 
 {% if opciones | selectattr('comparativo') | list %}
+<div class="rule mt6"></div>
 <div class="mt6">
   <h3 class="block-title">Comparativo de opciones</h3>
   <table class="cmp">
     <thead>
       <tr>
-        <th>Opción</th><th>Jornada diaria</th><th>Días</th><th>Rotación</th><th>Valor mensual</th>
+        <th>Característica</th>
+        {% for o in opciones %}{% if o.comparativo %}<th class="num">{{ o.nombre }}</th>{% endif %}{% endfor %}
       </tr>
     </thead>
     <tbody>
-      {% for o in opciones %}{% if o.comparativo %}
       <tr>
-        <td><b>{{ o.subtitulo }}</b></td>
-        <td>{{ o.comparativo.jornada_diaria }}</td>
-        <td>{{ o.comparativo.dias }}</td>
-        <td>{% if o.comparativo.rotacion %}<span class="yes">Incluida</span>{% else %}—{% endif %}</td>
-        <td><b>{{ o.precio | clp }}</b></td>
+        <td>Jornada diaria</td>
+        {% for o in opciones %}{% if o.comparativo %}<td class="num">{{ o.comparativo.jornada_diaria }}</td>{% endif %}{% endfor %}
       </tr>
-      {% endif %}{% endfor %}
+      <tr>
+        <td>Días de servicio</td>
+        {% for o in opciones %}{% if o.comparativo %}<td class="num">{{ o.comparativo.dias }}</td>{% endif %}{% endfor %}
+      </tr>
+      <tr>
+        <td>Rotación de conductores</td>
+        {% for o in opciones %}{% if o.comparativo %}<td class="num">{% if o.comparativo.rotacion %}<span class="yes">✓ Incluida</span>{% else %}—{% endif %}</td>{% endif %}{% endfor %}
+      </tr>
+      <tr>
+        <td>Valor mensual neto</td>
+        {% for o in opciones %}{% if o.comparativo %}<td class="num"><span class="price">{{ o.precio | clp }}</span></td>{% endif %}{% endfor %}
+      </tr>
     </tbody>
   </table>
 </div>

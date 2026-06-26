@@ -10,6 +10,11 @@ vigencia_dias: 30
 titulo: "Propuesta Comercial"
 subtitulo: "Transporte de Personal Minero"
 
+# Títulos "hero" a dos tonos por página (l1 = tinta, l2 = azul).
+heroes:
+  portada: { l1: "Transporte de",  l2: "Personal Minero" }
+  firma:   { l1: "Listos para",    l2: "el 01 de agosto." }
+
 cliente:
   razon_social:   "SOLUCIONES MINERAS SpA"
   rut:            "77.722.803-K"
@@ -18,16 +23,18 @@ cliente:
   email:           "matias.valderrama@solminspa.cl"
   referencia:      "Transporte personal — Impermeabilización Piscina Refino Dump Este · Mantos Blancos"
 
-# Métricas del strip de portada (4 stats)
+# Métricas del strip de portada (5 stats)
 stats:
   - valor: "2"
     etiqueta: "opciones de jornada"
   - valor: "14"
     etiqueta: "personas por turno"
-  - valor: "4m"
+  - valor: "4 m"
     etiqueta: "duración del contrato"
   - valor: "100%"
     etiqueta: "costos incluidos"
+  - valor: "01 ago"
+    etiqueta: "inicio referencial"
 
 servicio:
   descripcion_corta: "Todo incluido, sin sorpresas."
@@ -157,33 +164,52 @@ condiciones:
     - clave: "Moneda"
       valor: "Pesos Chilenos (CLP) netos"
     - clave: "Garantía inicio"
-      valor: "50% del valor mensual a la firma del contrato"
+      valor: "50% del valor mensual a la firma del contrato — reserva conductor y vehículo"
     - clave: "Facturación"
-      valor: "Mensual, contra estado de pago aprobado"
+      valor: "El día 1° de cada mes por el mes en curso"
+    - clave: "Plazo de pago"
+      valor: "7 días hábiles desde la emisión de la factura"
+    - clave: "Mora"
+      valor: "Interés máximo convencional (Ley N° 18.010) desde el primer día de atraso"
+    - clave: "Suspensión"
+      valor: "+10 días de atraso habilita a Hauler a suspender el servicio sin penalidad"
     - clave: "Reajuste"
-      valor: "Sin reajuste dentro de la vigencia del contrato"
+      valor: "Trimestral según IPC + precio bencina 93 ENAP Antofagasta"
     - clave: "Vigencia oferta"
       valor: "30 días corridos desde la fecha de emisión"
   operacion:
     - clave: "Dotación máxima"
       valor: "14 personas/turno. Incrementos requieren cotización adicional"
-    - clave: "Punto de embarque"
-      valor: "Único en Antofagasta, a coordinar antes del inicio"
-    - clave: "Respaldo"
-      valor: "Vehículo y conductor suplente disponibles desde Antofagasta"
-    - clave: "Contingencias"
-      valor: "Protocolo ante cortes de ruta sin penalidad para las partes"
+    - clave: "Solo personal"
+      valor: "El vehículo no traslada materiales, herramientas ni equipos de volumen"
+    - clave: "Acreditación"
+      valor: "5–15 días hábiles. Inicio del servicio condicionado a su aprobación. Hauler gestiona el proceso desde la firma"
+    - clave: "Rotación"
+      valor: "Incluida en ambas opciones. Art. 25 Cód. del Trabajo sin costo adicional"
+    - clave: "Fuerza mayor"
+      valor: "Corte de ruta o emergencia vial sin penalidad para ninguna de las partes"
+    - clave: "Modificaciones"
+      valor: "Cambios de jornada, ruta o dotación por addendum al contrato"
+    - clave: "Contrato"
+      valor: "Hauler emite contrato conforme a D.S. N° 80 MTT. Obligaciones laborales exclusivas de Hauler — sin solidaridad para el cliente"
+  # El prefijo "Protección para <razón social>:" se antepone automáticamente.
   texto_callout: >
-    Hauler SpA asume la responsabilidad total del servicio: vehículo,
-    conductor, combustible, seguros, permisos y coordinación operacional.
-    El cliente no gestiona ningún aspecto del transporte.
+    Hauler SpA asume la responsabilidad total del servicio, incluyendo
+    obligaciones laborales, previsionales y de seguridad del conductor. El
+    cliente solo paga la factura mensual. Sin complicaciones operacionales,
+    sin gestión de personal de transporte, sin imprevistos.
 
 firma:
   texto_cierre: >
     Hauler SpA tiene la flota, los conductores acreditados y la experiencia
-    para operar este servicio desde el primer día, bajo circuito cerrado y
-    cumplimiento normativo total (D.S. N° 80 MTT).
+    operacional para garantizar que el personal de Soluciones Mineras SpA llegue
+    a Mantos Blancos puntual y seguro — sin que el cliente deba gestionar ningún
+    aspecto del transporte.
+  nota_contacto: >
+    Para confirmar la propuesta, seleccionar una opción o solicitar una reunión,
+    contáctenos directamente al correo o teléfono indicados. La oferta tiene
+    vigencia de 30 días corridos.
   texto_legal: >
-    Al firmar esta propuesta, SOLUCIONES MINERAS SpA confirma la aceptación de
-    las condiciones técnicas, económicas y operacionales descritas en este
-    documento, dando inicio a la coordinación del servicio.
+    Al firmar esta propuesta, Soluciones Mineras SpA confirma la aceptación de
+    las condiciones comerciales y operacionales descritas bajo la cotización
+    COT-0216-2026 emitida por Hauler SpA.

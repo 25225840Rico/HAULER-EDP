@@ -40,13 +40,13 @@ COTIZ_DIR = ROOT / "cotizaciones"
 OUTPUT_DIR = ROOT / "output"
 
 # Orden de las páginas del documento. Cada entrada = una hoja A4.
+# foot_kind: brand (tagline) | compact (empresa·COT) | confidential (cliente·COT)
 PAGES = [
-    {"tag": "Propuesta Comercial", "template": "portada.html.j2"},
-    {"tag": "El Servicio",         "template": "servicio.html.j2"},
-    {"tag": "Vehículo",            "template": "vehiculo.html.j2"},
-    {"tag": "Propuesta Económica", "template": "precios.html.j2"},
-    {"tag": "Condiciones",         "template": "condiciones.html.j2"},
-    {"tag": "Aceptación",          "template": "firma.html.j2"},
+    {"tag": "Propuesta Comercial",                  "template": "portada.html.j2",     "foot_kind": "brand"},
+    {"tag": "El Servicio",                          "template": "servicio.html.j2",    "foot_kind": "compact"},
+    {"tag": "Propuesta Económica",                  "template": "precios.html.j2",     "foot_kind": "compact"},
+    {"tag": "Condiciones Comerciales y Operacionales", "template": "condiciones.html.j2", "foot_kind": "compact"},
+    {"tag": "Contacto y Firma",                     "template": "firma.html.j2",       "foot_kind": "confidential"},
 ]
 
 MESES = [
@@ -89,16 +89,15 @@ def fmt_fecha(d: dt.date) -> str:
     return f"{d.day:02d} de {MESES[d.month]} de {d.year}"
 
 
-def logo_data_uri(empresa: dict) -> str | None:
-    """Embebe el logo como data-URI base64 (PDF autónomo). None si no hay logo."""
-    lp = empresa.get("logo_path")
-    if not lp:
+def embed_image(path, label: str = "imagen") -> str | None:
+    """Embebe una imagen como data-URI base64 (PDF autónomo). None si no hay/falta."""
+    if not path:
         return None
-    p = Path(lp)
+    p = Path(path)
     if not p.is_absolute():
         p = ROOT / p
     if not p.exists():
-        print(f"⚠ logo_path apunta a un archivo inexistente: {p} — uso wordmark.")
+        print(f"⚠ {label}: archivo inexistente ({p}) — se omite.")
         return None
     mime = mimetypes.guess_type(str(p))[0] or "image/png"
     data = base64.b64encode(p.read_bytes()).decode("ascii")
@@ -128,7 +127,8 @@ def build_context(cotiz_path: Path) -> dict:
         empresa=empresa,
         design=design,
         pages=PAGES,
-        logo_data_uri=logo_data_uri(empresa),
+        logo_data_uri=embed_image(empresa.get("logo_path"), "logo_path"),
+        firma_data_uri=embed_image(empresa.get("firma_emisor_path"), "firma_emisor_path"),
         fecha_fmt=fmt_fecha(fecha),
         valida_hasta_fmt=fmt_fecha(valida_hasta),
         vigencia_dias=vigencia,
