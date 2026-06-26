@@ -1241,7 +1241,8 @@ table.ct-breakdown td:last-child { text-align: right; font-family: var(--font-mo
     <input type="checkbox" id="chkAutoNumPrint" checked>
     <label for="chkAutoNumPrint">N° auto al imprimir</label>
   </div>
-  <button class="btn primary" onclick="PDF.print()">🖨 Imprimir PDF</button>
+  <button class="btn primary" onclick="PDF.print()" title="Imprimir en el formato clásico de Hauler (Formato 1)">🖨 Imprimir PDF</button>
+  <button class="btn" onclick="PDF2.print()" title="Imprimir en el formato nuevo minimalista A4 (Formato 2)">🖨 Cotización 2</button>
   <span class="sync-dot idle" id="syncDot" title="Click para reconectar a Supabase" onclick="SyncQueue.forceReconnect()">☁ Iniciando…</span>
   <span class="queue-badge zero" id="queueBadge" title="Operaciones pendientes en cola"></span>
 </div>
@@ -3535,6 +3536,235 @@ const PDF = (() => {
       '<div style="font-size:.45rem;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:#888;margin-bottom:.55rem">' + esc(title) + '</div>' +
       '<div style="display:grid;grid-template-columns:max-content 1fr;gap:.32rem .7rem;align-items:baseline">' + rows + '</div>' +
     '</div>';
+  };
+  return { print };
+})();
+
+/* ════════════════════════════════════════════════════════════════════════
+   ★ MÓDULO: PDF2 — "Cotización 2" (FORMATO NUEVO, minimalista A4)
+   Toma los MISMOS datos del documento actual (cliente, proveedor, servicios,
+   extras, totales, condiciones) y los renderiza con el sistema de diseño nuevo
+   (barra de acento, hero a dos tonos, paleta azul/gris, total azul). Permite
+   alternar con el formato clásico (PDF.print) desde el botón "Cotización 2".
+   esc() en TODAS las interpolaciones (XSS-safe), igual que el módulo PDF.
+════════════════════════════════════════════════════════════════════════ */
+const PDF2 = (() => {
+  const C = { blue:'#1B5EFF', ink:'#0f172a', body:'#475569', muted:'#94a3b8', line:'#e2e8f0', tint:'#fafafa', light:'#f8faff' };
+
+  const _per = (r) => {
+    const t = r.periodoTipo || 'dia';
+    const f = (iso) => (!iso || !/^\d{4}-\d{2}-\d{2}$/.test(iso)) ? '' : iso.split('-').reverse().join('/');
+    if (t === 'dia')   return f(r.periodoDesde) || 'Día';
+    if (t === 'rango') return r.periodoDesde && r.periodoHasta ? f(r.periodoDesde) + ' → ' + f(r.periodoHasta) : 'Rango';
+    if (t === 'mes')   return r.periodoMes || 'Mes';
+    if (t === 'anio')  return r.periodoAnio || 'Año';
+    return '';
+  };
+  const _fd = (iso) => (!iso || !/^\d{4}-\d{2}-\d{2}$/.test(iso)) ? '' : iso.split('-').reverse().join('/');
+
+  /* Tabla clave-valor del diseño nuevo (filas pares con fondo tint) */
+  const _kv = (fields) => {
+    const rows = fields.filter(f => f.val).map((f, i) =>
+      '<tr style="background:' + (i % 2 ? C.tint : '#fff') + '">' +
+        '<td style="padding:1.4mm 2.5mm;width:34mm;font-size:7pt;color:' + C.muted + ';font-weight:500;vertical-align:top">' + esc(f.lbl) + '</td>' +
+        '<td style="padding:1.4mm 2.5mm;font-size:8pt;color:' + C.ink + ';font-weight:500">' + esc(f.val) + '</td>' +
+      '</tr>'
+    ).join('');
+    return '<table style="width:100%;border-collapse:collapse">' + rows + '</table>';
+  };
+  const _label = (t) => '<span style="display:block;font-size:6.5pt;font-weight:700;letter-spacing:2.5px;text-transform:uppercase;color:' + C.blue + ';margin-bottom:2.5mm">' + esc(t) + '</span>';
+
+  const print = async () => {
+    const auto = document.getElementById('chkAutoNumPrint')?.checked;
+    if (auto) {
+      Toast.show('⚡ Generando nuevo correlativo…');
+      const num = await Counter.next(true);
+      if (num) { Toast.show('✓ ' + num + ' — listo para imprimir'); await sleep(400); }
+    }
+    App.saveDoc();
+
+    const isCot = State.mode === 'cot';
+    const sym = getCur().sym;
+    let brutoServ = 0, brutoExtra = 0;
+
+    /* Filas de servicios (estilo nuevo) */
+    const rowsHtml = State.rows.map((r, i) => {
+      const tot = (+r.viajes || 0) * (+r.valorUnit || 0);
+      brutoServ += tot;
+      return '<tr style="background:' + (i % 2 ? C.tint : '#fff') + '">' +
+        '<td style="padding:2mm 2.5mm;font-size:7.5pt;color:' + C.ink + '">' + esc(r.vehiculo || '') + '</td>' +
+        '<td style="padding:2mm 2.5mm;font-size:7pt;color:' + C.body + '">' + esc(r.patente || '') + '</td>' +
+        '<td style="padding:2mm 2.5mm;font-size:7.5pt;color:' + C.body + '">' + esc(r.ruta || '') + '</td>' +
+        '<td style="padding:2mm 2.5mm;font-size:7pt;color:' + C.body + '">' + esc(_per(r)) + '</td>' +
+        '<td style="padding:2mm 2.5mm;font-size:7.5pt;text-align:center;color:' + C.body + '">' + esc(r.pasajeros || '') + '</td>' +
+        '<td style="padding:2mm 2.5mm;font-size:7.5pt;text-align:center;color:' + C.body + '">' + esc(r.viajes || 0) + '</td>' +
+        '<td style="padding:2mm 2.5mm;font-size:7.5pt;text-align:right;color:' + C.body + '">' + sym + ' ' + fmt(+r.valorUnit || 0) + '</td>' +
+        '<td style="padding:2mm 2.5mm;font-size:7.5pt;text-align:right;font-weight:700;color:' + C.blue + '">' + (tot ? sym + ' ' + fmt(tot) : '—') + '</td>' +
+      '</tr>';
+    }).join('') || '<tr><td colspan="8" style="text-align:center;padding:4mm;color:' + C.muted + '">— sin servicios —</td></tr>';
+
+    const extrasHtml = State.extras.map((e, i) => {
+      const q = +e.cantidad || 0, vu = +e.valorUnit || 0, tot = q * vu;
+      brutoExtra += tot;
+      return '<tr style="background:' + (i % 2 ? C.tint : '#fff') + '">' +
+        '<td style="padding:2mm 2.5mm;font-size:7.5pt;color:' + C.ink + '">' + esc(e.desc || '') + '</td>' +
+        '<td style="padding:2mm 2.5mm;font-size:7pt;text-align:center;color:' + C.body + '">' + esc(e.tipo === 'dia' ? 'Por día' : 'Por unidad') + '</td>' +
+        '<td style="padding:2mm 2.5mm;font-size:7.5pt;text-align:center;color:' + C.body + '">' + esc(q) + '</td>' +
+        '<td style="padding:2mm 2.5mm;font-size:7.5pt;text-align:right;color:' + C.body + '">' + sym + ' ' + fmt(vu) + '</td>' +
+        '<td style="padding:2mm 2.5mm;font-size:7.5pt;text-align:right;font-weight:700;color:' + C.blue + '">' + (tot ? sym + ' ' + fmt(tot) : '—') + '</td>' +
+      '</tr>';
+    }).join('');
+
+    const bruto  = brutoServ + brutoExtra;
+    const conIva = document.getElementById('chkIva')?.checked ?? true;
+    const iva    = conIva ? Math.round(bruto * 0.19) : 0;
+    const total  = bruto + iva;
+
+    /* Marca (logo o wordmark) */
+    const logoVisible = document.getElementById('logoImg').style.display !== 'none';
+    const logoSrc = logoVisible ? document.getElementById('imgLogo').src : '';
+    const logoSize = document.getElementById('logoSize')?.value || '46';
+    const brand = logoVisible
+      ? '<img src="' + esc(logoSrc) + '" style="max-height:' + esc(logoSize) + 'px;max-width:55mm;object-fit:contain">'
+      : '<div style="display:flex;align-items:center;gap:3mm">' +
+          '<svg width="11mm" height="11mm" viewBox="0 0 100 100"><g transform="skewX(-11)">' +
+            '<rect x="20" y="12" width="15" height="76" rx="3" fill="' + C.blue + '"/>' +
+            '<rect x="42" y="12" width="15" height="76" rx="3" fill="' + C.ink + '"/>' +
+            '<rect x="64" y="12" width="11" height="76" rx="3" fill="' + C.blue + '"/></g></svg>' +
+          '<span style="font-size:15pt;font-weight:800;letter-spacing:.5px;color:' + C.ink + '">HAULER</span>' +
+        '</div>';
+
+    const titleDoc = isCot ? 'Cotización' : 'Estado de Pago';
+    const heroL2   = isCot ? 'de Transporte.' : 'de Servicios.';
+    const tag      = isCot ? 'Propuesta Comercial' : 'Documento de Cobro';
+    const totalLbl = isCot ? 'TOTAL COTIZACIÓN' : 'TOTAL A PAGAR';
+
+    /* Cliente / Proveedor */
+    const cliKv = _kv([
+      { lbl: 'Razón social', val: fv('cliNombre') }, { lbl: 'RUT', val: fv('cliRut') },
+      { lbl: 'Dirección', val: fv('cliDir') }, { lbl: 'Ciudad', val: fv('cliCiudad') },
+      { lbl: 'Email', val: fv('cliEmail') }, { lbl: 'Teléfono', val: fv('cliTel') },
+      { lbl: 'Contacto', val: fv('cliContacto') }, { lbl: 'Proyecto', val: fv('cliProyecto') },
+    ].concat(!isCot ? [ { lbl: 'Contrato', val: fv('cliContrato') }, { lbl: 'OC', val: fv('cliOC') } ] : []));
+    const prvKv = _kv([
+      { lbl: 'Razón social', val: fv('prvNombre') }, { lbl: 'RUT', val: fv('prvRut') },
+      { lbl: 'Dirección', val: fv('prvDir') }, { lbl: 'Ciudad', val: fv('prvCiudad') },
+      { lbl: 'Email', val: fv('prvEmail') }, { lbl: 'Teléfono', val: fv('prvTel') },
+      { lbl: 'Contacto', val: fv('prvContacto') },
+    ]);
+
+    /* Condiciones (cot) */
+    const condKv = isCot ? _kv([
+      { lbl: 'Forma de pago', val: fv('condPago') }, { lbl: 'Moneda', val: fv('condMoneda') },
+      { lbl: 'Reajuste', val: fv('condReajuste') }, { lbl: 'Validez', val: (fv('selValidez') ? fv('selValidez') + ' días' : '') },
+    ]) : '';
+
+    const resumen = isCot && fv('resumenServicio').trim()
+      ? '<div style="background:#f8fafc;border-left:3px solid ' + C.blue + ';border-radius:0 8px 8px 0;padding:4mm;font-size:8.5pt;color:' + C.body + ';line-height:1.55;margin-top:6mm">' + esc(fv('resumenServicio')) + '</div>'
+      : '';
+
+    const glosa = isCot
+      ? 'Esta cotización tiene carácter de oferta comercial y no constituye factura ni documento tributario. Los precios son referenciales y están sujetos a variaciones en combustible, peajes u otros costos operativos. Válida según el plazo indicado.'
+      : 'Documento administrativo emitido en virtud de la Ley N° 19.983. Respaldo de servicios prestados — no constituye factura ni documento tributario.';
+
+    const thStyle = 'text-align:left;padding:2mm 2.5mm;font-size:6pt;letter-spacing:1px;text-transform:uppercase;color:' + C.blue + ';font-weight:700;border-bottom:1.5px solid ' + C.blue;
+    const servTable =
+      '<div style="margin-top:6mm">' + _label('Detalle de servicios') +
+        '<table style="width:100%;border-collapse:collapse">' +
+          '<thead><tr>' +
+            '<th style="' + thStyle + '">Vehículo</th><th style="' + thStyle + '">Patente</th>' +
+            '<th style="' + thStyle + '">Ruta</th><th style="' + thStyle + '">Período</th>' +
+            '<th style="' + thStyle + ';text-align:center">Pasaj.</th><th style="' + thStyle + ';text-align:center">V/D</th>' +
+            '<th style="' + thStyle + ';text-align:right">V. unit.</th><th style="' + thStyle + ';text-align:right">Total</th>' +
+          '</tr></thead><tbody>' + rowsHtml + '</tbody>' +
+        '</table>' +
+      '</div>';
+
+    const extrasTable = State.extras.length > 0
+      ? '<div style="margin-top:6mm">' + _label('Ítems adicionales') +
+          '<table style="width:100%;border-collapse:collapse">' +
+            '<thead><tr>' +
+              '<th style="' + thStyle + '">Descripción</th><th style="' + thStyle + ';text-align:center">Tipo</th>' +
+              '<th style="' + thStyle + ';text-align:center">Cant./Días</th><th style="' + thStyle + ';text-align:right">V. unit.</th>' +
+              '<th style="' + thStyle + ';text-align:right">Total</th>' +
+            '</tr></thead><tbody>' + extrasHtml + '</tbody>' +
+          '</table>' +
+        '</div>'
+      : '';
+
+    const totRow = (lbl, val, strong) =>
+      '<tr><td style="padding:1.6mm 4mm 1.6mm 0;color:' + (strong ? C.ink : C.body) + ';font-size:8pt">' + esc(lbl) + '</td>' +
+      '<td style="padding:1.6mm 0;text-align:right;font-size:8pt;font-weight:' + (strong ? '700' : '500') + ';color:' + C.ink + '">' + val + '</td></tr>';
+    const totalsBlock =
+      '<div style="display:flex;justify-content:flex-end;margin-top:6mm">' +
+        '<table style="border-collapse:collapse;min-width:75mm">' +
+          totRow('Subtotal servicios', sym + ' ' + fmt(brutoServ)) +
+          (brutoExtra > 0 ? totRow('Ítems adicionales', sym + ' ' + fmt(brutoExtra)) : '') +
+          totRow('Subtotal neto', sym + ' ' + fmt(bruto), true) +
+          (conIva ? totRow('IVA 19%', sym + ' ' + fmt(iva)) : '') +
+          '<tr><td style="padding:2.5mm 4mm;font-weight:700;font-size:8pt;letter-spacing:.5px;text-transform:uppercase;background:' + C.blue + ';color:#fff;border-radius:8px 0 0 8px">' + esc(totalLbl) + '</td>' +
+          '<td style="padding:2.5mm 4mm;text-align:right;font-weight:800;font-size:13pt;background:' + C.blue + ';color:#fff;border-radius:0 8px 8px 0">' + sym + ' ' + fmt(total) + '</td></tr>' +
+        '</table>' +
+      '</div>';
+
+    const firmas =
+      '<div style="display:grid;grid-template-columns:1fr 1fr;gap:14mm;margin-top:14mm">' +
+        '<div style="text-align:center"><div style="border-top:1px solid ' + C.ink + ';padding-top:2mm;font-size:7.5pt;color:' + C.body + '"><strong style="color:' + C.ink + '">' + esc(fv('prvNombre') || 'Proveedor') + '</strong><br>' + esc(fv('prvContacto') || '') + '</div></div>' +
+        '<div style="text-align:center"><div style="border-top:1px solid ' + C.ink + ';padding-top:2mm;font-size:7.5pt;color:' + C.body + '"><strong style="color:' + C.ink + '">' + esc(fv('cliNombre') || 'Cliente') + '</strong><br>' + esc(fv('cliContacto') || '') + '</div></div>' +
+      '</div>';
+
+    const metaRight =
+      '<div style="text-align:right;line-height:1.4">' +
+        '<span style="display:block;font-size:8pt;font-weight:800;color:' + C.blue + ';letter-spacing:.5px">' + esc(fv('numDoc') || '—') + '</span>' +
+        '<span style="display:block;font-size:6pt;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:' + C.muted + ';margin-top:1mm">' + esc(tag) + '</span>' +
+        '<span style="display:block;font-size:6.5pt;color:' + C.muted + ';margin-top:.5mm">' + esc(_fd(fv('fechaEmision'))) + '</span>' +
+      '</div>';
+
+    const html = '<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8"><title>' + esc(titleDoc) + ' ' + esc(fv('numDoc')) + '</title>' +
+      '<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">' +
+      '<style>' +
+        '@page { size: A4; margin: 0; }' +
+        '* { box-sizing: border-box; margin: 0; padding: 0; }' +
+        'body { font-family: "Inter","Helvetica Neue",Arial,sans-serif; color: ' + C.body + '; font-size: 8.5pt; line-height: 1.5; -webkit-print-color-adjust: exact; print-color-adjust: exact; background:#fff; }' +
+        '.wrap { padding: 0 14mm 16mm; position: relative; }' +
+        '.accent { position:absolute; top:0; left:0; right:0; height:3px; background:linear-gradient(90deg,#1B5EFF 0%,#6366f1 55%,#e2e8f0 100%); }' +
+        'tr { page-break-inside: avoid; }' +
+        'thead { display: table-header-group; }' +
+      '</style></head>' +
+    '<body><span class="accent"></span><div class="wrap">' +
+      '<div style="display:flex;align-items:center;justify-content:space-between;padding-top:11mm;padding-bottom:3.5mm">' +
+        '<div>' + brand + '</div>' + metaRight +
+      '</div>' +
+      '<div style="height:1px;background:' + C.line + '"></div>' +
+      '<div style="padding-top:7mm">' +
+        _label(tag) +
+        '<div style="font-size:26pt;font-weight:800;line-height:1.02;letter-spacing:-.6px">' +
+          '<span style="display:block;color:' + C.ink + '">' + esc(titleDoc) + '</span>' +
+          '<span style="display:block;color:' + C.blue + '">' + esc(heroL2) + '</span>' +
+        '</div>' +
+        (fv('cliProyecto') ? '<div style="font-size:10pt;color:' + C.body + ';margin-top:3mm">' + esc(fv('cliProyecto')) + '</div>' : '') +
+        '<div style="display:grid;grid-template-columns:1fr 1fr;gap:5mm;margin-top:8mm">' +
+          '<div>' + _label(isCot ? 'Cliente / Destinatario' : 'Mandante / Cliente') + cliKv + '</div>' +
+          '<div>' + _label('Proveedor / Oferente') + prvKv + '</div>' +
+        '</div>' +
+        (condKv ? '<div style="margin-top:6mm">' + _label('Condiciones de la oferta') + condKv + '</div>' : '') +
+        resumen +
+        servTable +
+        extrasTable +
+        totalsBlock +
+        '<div style="background:#eff6ff;border-left:3px solid ' + C.blue + ';border-radius:0 8px 8px 0;padding:4mm;font-size:8pt;color:#1e40af;line-height:1.55;margin-top:6mm">' +
+          '<strong style="color:#1e3a8a">' + (isCot ? 'Nota: ' : 'Importante: ') + '</strong>' + esc(glosa) +
+        '</div>' +
+        firmas +
+        '<div style="text-align:center;font-size:6pt;color:' + C.muted + ';margin-top:8mm;border-top:1px solid ' + C.line + ';padding-top:2.5mm">Documento generado el ' + esc(_fd(new Date().toISOString().slice(0,10))) + ' · HAULER SpA · ' + esc(fv('prvEmail') || '') + '</div>' +
+      '</div>' +
+    '</div></body></html>';
+
+    const w = window.open('', '_blank', 'width=900,height=900');
+    if (!w) { Toast.show('⚠️ El navegador bloqueó la ventana de impresión'); return; }
+    w.document.write(html);
+    w.document.close();
+    w.onload = () => { setTimeout(() => { w.print(); }, 600); };
   };
   return { print };
 })();
