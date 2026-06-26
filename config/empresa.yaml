@@ -1,0 +1,25 @@
+# ───────────────────────────────────────────────────────────────
+# DATOS DEL EMISOR
+# Compartidos por todas las cotizaciones. Sobreescribibles por
+# cotización si alguna vez hace falta (deep-merge).
+# ───────────────────────────────────────────────────────────────
+nombre:    "Hauler SpA"
+rut:       "77.000.000-0"        # ← reemplazar por el RUT real de Hauler
+ciudad:    "Antofagasta, Chile"
+email:     "contacto@hauler.cl"  # ← reemplazar
+telefono:  "+56 9 0000 0000"     # ← reemplazar
+
+# Logo: ruta a un PNG/SVG. Si es null, el header usa el wordmark de texto
+# (brand_title + brand_sub). Si se define, se embebe como base64 en el PDF.
+logo_path: null
+
+# Wordmark de texto (fallback cuando no hay logo_path)
+brand_title: "HAULER"
+brand_sub:   "Transporte Minero e Industrial"
+
+# Pie de página de cada hoja
+footer: "HAULER SpA · Transporte Minero e Industrial · Antofagasta, Chile"
+
+# Firmante (página de firma)
+representante_nombre: "Aron Rico"
+representante_cargo:  "Representante Comercial · Hauler SpA"

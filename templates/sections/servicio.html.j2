@@ -1,0 +1,32 @@
+{# ── PÁGINA 2 · EL SERVICIO ── #}
+<span class="section-label">El Servicio</span>
+<div class="hero">{{ servicio.descripcion_corta | default('Todo incluido, sin sorpresas.') }}</div>
+{% if servicio.resumen %}<p class="lead mt3">{{ servicio.resumen }}</p>{% endif %}
+
+<div class="mt6">
+  <h3 class="block-title">Operación y ruta</h3>
+  <table class="kv">
+    <tr><td class="k">Ruta</td><td class="v">{{ servicio.ruta }}</td></tr>
+    <tr><td class="k">Tiempo de viaje</td><td class="v">{{ servicio.tiempo_viaje }}</td></tr>
+    {% if servicio.peaje %}<tr><td class="k">Peaje incluido</td><td class="v">{{ servicio.peaje }}</td></tr>{% endif %}
+    <tr><td class="k">Servicio en faena</td><td class="v">{{ servicio.servicio_en_faena }}</td></tr>
+    <tr><td class="k">Embarque</td><td class="v">{{ servicio.embarque }}</td></tr>
+    {% if servicio.rotacion %}<tr><td class="k">Rotación</td><td class="v">{{ servicio.rotacion }}</td></tr>{% endif %}
+  </table>
+</div>
+
+{% if servicio.respaldo %}
+<div class="mt6">
+  <h3 class="block-title">Respaldo operativo</h3>
+  {% for r in servicio.respaldo %}<div class="resp-item">{{ r }}</div>{% endfor %}
+</div>
+{% endif %}
+
+{% if servicio.normativa %}
+<div class="mt6">
+  <h3 class="block-title">Cumplimiento normativo</h3>
+  <div class="norm-strip">
+    {% for n in servicio.normativa %}<span class="chip">{{ n }}</span>{% endfor %}
+  </div>
+</div>
+{% endif %}

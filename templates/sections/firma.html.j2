@@ -1,0 +1,32 @@
+{# ── PÁGINA 6 · FIRMA ── #}
+<span class="section-label">Aceptación de la propuesta</span>
+<div class="hero">Listos para operar.</div>
+{% if firma.texto_cierre %}<p class="lead mt3">{{ firma.texto_cierre }}</p>{% endif %}
+
+<div class="callout mt6">
+  <b style="color:var(--ink)">{{ empresa.nombre }}</b> ·
+  {{ empresa.email }} · {{ empresa.telefono }} · {{ empresa.ciudad }}
+</div>
+
+<div class="sign-grid">
+  <div class="sign-box">
+    <div class="sign-line"></div>
+    <div class="s-name">{{ empresa.representante_nombre }}</div>
+    <div class="s-role">{{ empresa.representante_cargo }}</div>
+  </div>
+  <div class="sign-box">
+    <div class="sign-line"></div>
+    <div class="s-name">{{ cliente.razon_social }}</div>
+    <div class="s-role">{{ cliente.contacto_nombre }}{% if cliente.contacto_cargo %} — {{ cliente.contacto_cargo }}{% endif %}</div>
+  </div>
+</div>
+
+{% if firma.texto_legal %}
+<div class="rule mt8"></div>
+<p class="legal mt3">{{ firma.texto_legal }}</p>
+{% endif %}
+
+<p class="legal mt3">
+  Cotización {{ numero_cotizacion }} · Emitida el {{ fecha_fmt }} ·
+  Válida hasta el {{ valida_hasta_fmt }} ({{ vigencia_dias }} días corridos).
+</p>

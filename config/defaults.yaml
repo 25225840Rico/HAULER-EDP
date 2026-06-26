@@ -1,0 +1,52 @@
+# ───────────────────────────────────────────────────────────────
+# VALORES POR DEFECTO (secciones fijas / texto reutilizable)
+# El YAML de cada cotización tiene SIEMPRE precedencia (deep-merge).
+# Las listas se REEMPLAZAN por completo cuando la cotización las define.
+# ───────────────────────────────────────────────────────────────
+vigencia_dias: 30
+
+servicio:
+  # Normativa mostrada como strip al pie de la sección Servicio
+  normativa:
+    - "D.S. N° 80/2004 MTT"
+    - "Licencia A-2 vigente"
+    - "Art. 25 Cód. del Trabajo"
+    - "SOAP + RC vigentes"
+
+  # Respaldo operativo por defecto (sobreescribible)
+  respaldo:
+    - "Coordinador de turno disponible durante toda la jornada de servicio"
+    - "Check list pre-uso diario antes de cada turno"
+    - "Mantenciones preventivas programadas fuera del horario de servicio"
+
+condiciones:
+  pago:
+    - clave: "Moneda"
+      valor: "Pesos Chilenos (CLP) netos"
+    - clave: "Garantía inicio"
+      valor: "50% del valor mensual a la firma del contrato"
+    - clave: "Facturación"
+      valor: "Mensual, contra estado de pago aprobado"
+    - clave: "Reajuste"
+      valor: "Sin reajuste dentro de la vigencia del contrato"
+  operacion:
+    - clave: "Dotación máxima"
+      valor: "Según opción. Incrementos requieren cotización adicional"
+    - clave: "Horario"
+      valor: "Según jornada de la opción seleccionada"
+    - clave: "Vigencia oferta"
+      valor: "30 días corridos desde la fecha de emisión"
+  texto_callout: >
+    Hauler SpA asume la responsabilidad total del servicio: vehículo,
+    conductor, combustible, seguros, permisos y coordinación operacional.
+    El cliente no gestiona ningún aspecto del transporte.
+
+firma:
+  texto_cierre: >
+    Hauler SpA tiene la flota, los conductores acreditados y la experiencia
+    para operar este servicio desde el primer día, bajo circuito cerrado y
+    cumplimiento normativo total.
+  texto_legal: >
+    Al firmar esta propuesta, el cliente confirma la aceptación de las
+    condiciones técnicas, económicas y operacionales descritas en este
+    documento, dando inicio a la coordinación del servicio.

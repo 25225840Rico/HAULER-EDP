@@ -1,0 +1,9 @@
+# PDFs y previews generados
+output/*.pdf
+output/*.preview.html
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/

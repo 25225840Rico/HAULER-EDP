@@ -1,0 +1,26 @@
+{# ── PÁGINA 5 · CONDICIONES ── #}
+<span class="section-label">Condiciones comerciales</span>
+<div class="hero">Reglas claras del servicio.</div>
+
+<div class="col2 mt6">
+  <div>
+    <h3 class="block-title">Condiciones de pago</h3>
+    <table class="kv">
+      {% for c in condiciones.pago %}
+      <tr><td class="k">{{ c.clave }}</td><td class="v">{{ c.valor }}</td></tr>
+      {% endfor %}
+    </table>
+  </div>
+  <div>
+    <h3 class="block-title">Condiciones de operación</h3>
+    <table class="kv">
+      {% for c in condiciones.operacion %}
+      <tr><td class="k">{{ c.clave }}</td><td class="v">{{ c.valor }}</td></tr>
+      {% endfor %}
+    </table>
+  </div>
+</div>
+
+{% if condiciones.texto_callout %}
+<div class="callout-blue mt8">{{ condiciones.texto_callout }}</div>
+{% endif %}
