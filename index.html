@@ -2462,6 +2462,10 @@ const AutoSave = (() => {
       // logoSrc removido del state para no inflar payload (se guarda aparte en lsWrite('logo'))
       rows: JSON.parse(JSON.stringify(State.rows)),
       extras: JSON.parse(JSON.stringify(State.extras)),
+      /* savedAt SIEMPRE presente: sin él, syncFromSupabase interpretaba el
+         estado local (autosave) como "sin fecha" y lo pisaba con la nube,
+         perdiendo ítems adicionales agregados después del último Guardar. */
+      savedAt: new Date().toISOString(),
     };
   };
   const flush    = () => { clearTimeout(_timer); const s = capture(); DB.save('state', s, 400); };
@@ -2501,9 +2505,14 @@ const App = (() => {
     const sbClients = sb.clients;
     const sbLogo = sb.logo;
     if (sbState) {
-      const lTs = (DB.lsRead('state')?.savedAt || 0);
+      const localState = DB.lsRead('state');
+      const lTs = (localState?.savedAt || 0);
       const sTs = (sbState.savedAt || 0);
-      if (!lTs || (sTs && sTs > lTs)) {
+      /* Restaurar desde la nube SOLO si no hay estado local, o si ambos tienen
+         fecha y la nube es estrictamente más nueva. Antes, un estado local sin
+         savedAt (autosave) se pisaba con la nube aunque fuera más vieja, y se
+         perdían servicios/ítems adicionales agregados tras el último Guardar. */
+      if (!localState || (sTs && lTs && sTs > lTs)) {
         restoreSnapshot(sbState, sbLogo);
         DB.lsWrite('state', sbState);
         if (sbLogo) DB.lsWrite('logo', sbLogo);
@@ -3256,7 +3265,18 @@ const History = (() => {
    ★ MÓDULO: PDF — con esc() en TODAS las interpolaciones (XSS-safe)
 ════════════════════════════════════════════════════════════════════════ */
 const PDF = (() => {
+  /* Ítems adicionales que aportarían $0 al total (cantidad o valor sin
+     ingresar): se advierte antes de imprimir para evitar cobros incompletos. */
+  const extrasEnCero = () => State.extras.filter(e => !((+e.cantidad || 0) * (+e.valorUnit || 0)));
+  const confirmarExtras = () => {
+    const cero = extrasEnCero();
+    if (!cero.length) return true;
+    return confirm('⚠️ Hay ' + cero.length + ' ítem(s) adicional(es) con total $ 0 (falta cantidad o valor unitario):\n\n'
+      + cero.map(e => '  · ' + (e.desc || '(sin descripción)')).join('\n')
+      + '\n\nNo aportarán al total del documento. ¿Imprimir de todas formas?');
+  };
   const print = async () => {
+    if (!confirmarExtras()) return;
     /* ★ AUTO-CORRELATIVO al imprimir si checkbox activo */
     const auto = document.getElementById('chkAutoNumPrint')?.checked;
     if (auto) {
@@ -3537,7 +3557,7 @@ const PDF = (() => {
       '<div style="display:grid;grid-template-columns:max-content 1fr;gap:.32rem .7rem;align-items:baseline">' + rows + '</div>' +
     '</div>';
   };
-  return { print };
+  return { print, confirmarExtras };
 })();
 
 /* ════════════════════════════════════════════════════════════════════════
@@ -3575,6 +3595,7 @@ const PDF2 = (() => {
   const _label = (t) => '<span style="display:block;font-size:6.5pt;font-weight:700;letter-spacing:2.5px;text-transform:uppercase;color:' + C.blue + ';margin-bottom:2.5mm">' + esc(t) + '</span>';
 
   const print = async () => {
+    if (!PDF.confirmarExtras()) return;
     const auto = document.getElementById('chkAutoNumPrint')?.checked;
     if (auto) {
       Toast.show('⚡ Generando nuevo correlativo…');
