@@ -2343,6 +2343,9 @@ const CURRENCIES = [
 
 const getCur = () => CURRENCIES.find(c => c.code === State.currency) || CURRENCIES[0];
 const fmt = n => { const c = getCur(); const v = Math.round(n * (10 ** c.dec)) / (10 ** c.dec); return v.toLocaleString(c.locale, { minimumFractionDigits: c.dec, maximumFractionDigits: c.dec }); };
+/* IVA redondeado a los decimales de la moneda: Math.round a entero perdía
+   los centavos en monedas con 2 decimales (USD, ARS, BRL, ...). */
+const ivaDe = (bruto, dec = getCur().dec) => { const f = 10 ** dec; return Math.round(bruto * 0.19 * f) / f; };
 
 /* ════════════════════════════════════════════════════════════════════════
    ★ MÓDULO: Counter — Correlativos con fallback local que mantiene secuencia
@@ -2521,7 +2524,10 @@ const App = (() => {
     }
     if (sbClients && Array.isArray(sbClients)) {
       const lc = DB.lsRead('clients', []);
-      if (sbClients.length >= lc.length) {
+      /* Solo si la nube tiene MAS clientes: con ">=" un empate (p.ej. un
+         cliente renombrado localmente con push pendiente) se pisaba con la
+         version vieja de la nube y se perdia la edicion local. */
+      if (sbClients.length > lc.length) {
         Clients.list = sbClients;
         DB.lsWrite('clients', sbClients);
         Clients.renderSelector();
@@ -2897,7 +2903,7 @@ const Calc = (() => {
       const q = +e.cantidad || 0, vu = +e.valorUnit || 0, tot = q * vu; brutoExtra += tot;
       const cel = document.getElementById('etot_' + e.id); if (cel) cel.textContent = q && vu ? sym + ' ' + fmt(tot) : '—';
     });
-    const bruto = brutoServ + brutoExtra, conIva = document.getElementById('chkIva')?.checked ?? true, iva = conIva ? Math.round(bruto * 0.19) : 0;
+    const bruto = brutoServ + brutoExtra, conIva = document.getElementById('chkIva')?.checked ?? true, iva = conIva ? ivaDe(bruto) : 0;
     document.getElementById('tSubServ').textContent   = sym + ' ' + fmt(brutoServ);
     document.getElementById('tSubExtras').textContent = sym + ' ' + fmt(brutoExtra);
     document.getElementById('tSubtotal').textContent  = sym + ' ' + fmt(bruto);
@@ -3199,8 +3205,8 @@ const History = (() => {
       const badgeTxt = isCot ? 'COT' : 'EP';
       const bruto = (d.rows || []).reduce((s, r) => s + ((+r.viajes || 0) * (+r.valorUnit || 0)), 0)
                   + (d.extras || []).reduce((s, e) => s + ((+e.cantidad || 0) * (+e.valorUnit || 0)), 0);
-      const total = bruto + ((d.conIva ?? true) ? Math.round(bruto * 0.19) : 0);
       const cur   = CURRENCIES.find(c => c.code === d.currency) || CURRENCIES[0];
+      const total = bruto + ((d.conIva ?? true) ? ivaDe(bruto, cur.dec) : 0);
       const totalStr = cur.sym + ' ' + Math.round(total).toLocaleString(cur.locale, { minimumFractionDigits: 0, maximumFractionDigits: 0 });
       const fecha = (d.savedAt || '').slice(0, 10);
       const isActive = String(d.id) === String(State.docId) ? '<span class="hist-active-badge">EN USO</span>' : '';
@@ -3265,14 +3271,22 @@ const History = (() => {
    ★ MÓDULO: PDF — con esc() en TODAS las interpolaciones (XSS-safe)
 ════════════════════════════════════════════════════════════════════════ */
 const PDF = (() => {
-  /* Ítems adicionales que aportarían $0 al total (cantidad o valor sin
-     ingresar): se advierte antes de imprimir para evitar cobros incompletos. */
+  /* Líneas que aportarían $0 al total (cantidad/viajes o valor sin ingresar):
+     se advierte antes de imprimir para evitar cobros incompletos. Los ítems
+     adicionales se revisan siempre; los servicios solo en Estado de Pago
+     (en una cotización en borrador es normal tener filas sin valor). */
   const extrasEnCero = () => State.extras.filter(e => !((+e.cantidad || 0) * (+e.valorUnit || 0)));
+  const serviciosEnCero = () => State.mode === 'ep'
+    ? State.rows.filter(r => !((+r.viajes || 0) * (+r.valorUnit || 0)))
+    : [];
   const confirmarExtras = () => {
-    const cero = extrasEnCero();
-    if (!cero.length) return true;
-    return confirm('⚠️ Hay ' + cero.length + ' ítem(s) adicional(es) con total $ 0 (falta cantidad o valor unitario):\n\n'
-      + cero.map(e => '  · ' + (e.desc || '(sin descripción)')).join('\n')
+    const lineas = [
+      ...serviciosEnCero().map(r => '  · [servicio] ' + (r.ruta || r.vehiculo || '(sin descripción)')),
+      ...extrasEnCero().map(e => '  · [adicional] ' + (e.desc || '(sin descripción)')),
+    ];
+    if (!lineas.length) return true;
+    return confirm('⚠️ Hay ' + lineas.length + ' línea(s) con total $ 0 (falta cantidad/viajes o valor unitario):\n\n'
+      + lineas.join('\n')
       + '\n\nNo aportarán al total del documento. ¿Imprimir de todas formas?');
   };
   const print = async () => {
@@ -3327,7 +3341,7 @@ const PDF = (() => {
 
     const bruto  = brutoServ + brutoExtra;
     const conIva = document.getElementById('chkIva')?.checked ?? true;
-    const iva    = conIva ? Math.round(bruto * 0.19) : 0;
+    const iva    = conIva ? ivaDe(bruto) : 0;
     const total  = bruto + iva;
 
     /* Logo */
@@ -3638,7 +3652,7 @@ const PDF2 = (() => {
 
     const bruto  = brutoServ + brutoExtra;
     const conIva = document.getElementById('chkIva')?.checked ?? true;
-    const iva    = conIva ? Math.round(bruto * 0.19) : 0;
+    const iva    = conIva ? ivaDe(bruto) : 0;
     const total  = bruto + iva;
 
     /* Marca (logo o wordmark) */
