@@ -2638,7 +2638,25 @@ const App = (() => {
     State.firmado = !!snap.firmado; Firma.updateBtn();
     if (!State.rows.length) State.rows = [];
     Rows.render(); Extras.render(); Calc.run();
+    syncFechaEmision();
     setTimeout(() => Rut.initAll(), 80);
+  };
+
+  /* La fecha de emisión SIEMPRE es la fecha actual: se re-sincroniza al
+     restaurar cualquier documento y antes de cada impresión (el momento de
+     imprimir ES la emisión). Si cambia y estamos en cotización, el
+     vencimiento se recalcula desde la validez; en cualquier modo, el
+     vencimiento nunca queda antes de la emisión. */
+  const syncFechaEmision = () => {
+    const hoy = iso(new Date());
+    if (fv('fechaEmision') !== hoy) {
+      setField('fechaEmision', hoy);
+      if (State.mode === 'cot') updateValidez();
+    }
+    if (fv('fechaVence') && fv('fechaVence') < hoy) {
+      const d = new Date(); d.setDate(d.getDate() + (parseInt(fv('selValidez')) || 30));
+      setField('fechaVence', iso(d));
+    }
   };
 
   const initCurrencySelect = () => {
@@ -2766,7 +2784,7 @@ const App = (() => {
     DB.save('logo', null, 800);
   };
 
-  return { init, setCurrency, setMode, applyMode, updateValidez, saveDoc, newDoc, clearAll, executeConvert, loadLogo, resizeLogo, removeLogo, syncFromSupabase, restoreSnapshot };
+  return { init, setCurrency, setMode, applyMode, updateValidez, syncFechaEmision, saveDoc, newDoc, clearAll, executeConvert, loadLogo, resizeLogo, removeLogo, syncFromSupabase, restoreSnapshot };
 })();
 
 /* ════════════════════════════════════════════════════════════════════════
@@ -3374,7 +3392,8 @@ const PDF = (() => {
         await sleep(400);  // que se vea el toast antes de la ventana de impresión
       }
     }
-    /* Persistir antes de imprimir */
+    /* Emisión = momento de imprimir; persistir antes de imprimir */
+    App.syncFechaEmision();
     App.saveDoc();
 
     const isCot = State.mode === 'cot';
@@ -3689,6 +3708,7 @@ const PDF2 = (() => {
       const num = await Counter.next(true);
       if (num) { Toast.show('✓ ' + num + ' — listo para imprimir'); await sleep(400); }
     }
+    App.syncFechaEmision();
     App.saveDoc();
 
     const isCot = State.mode === 'cot';
