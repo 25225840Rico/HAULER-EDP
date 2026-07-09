@@ -1271,6 +1271,16 @@ table.ct-breakdown td:last-child { text-align: right; font-family: var(--font-mo
           <span id="logoSizePx">56px</span>
         </div>
         <button class="btn" id="btnRemoveLogo" style="display:none;font-size:.6rem;padding:.25rem .7rem" onclick="App.removeLogo()">✕ Quitar logo</button>
+        <div style="display:flex;align-items:center;gap:.4rem;flex-wrap:wrap;margin-top:.35rem">
+          <label class="btn-upload">
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+            Subir firma
+            <input type="file" accept="image/png,image/*" onchange="Firma.load(this)" style="display:none">
+          </label>
+          <button class="btn" id="btnFirmar" style="font-size:.6rem;padding:.25rem .7rem" onclick="Firma.toggle()">✍ Firmar</button>
+          <button class="btn" id="btnRemoveFirma" style="display:none;font-size:.6rem;padding:.25rem .7rem" onclick="Firma.remove()">✕ Quitar firma</button>
+          <img id="firmaPreview" src="" alt="Firma" style="display:none;max-height:30px;max-width:90px;object-fit:contain;border:1px dashed #ccd;border-radius:4px;padding:2px;background:#fff">
+        </div>
       </div>
     </div>
 
@@ -2322,7 +2332,7 @@ const Modal = (() => {
 /* ════════════════════════════════════════════════════════════════════════
    ESTADO GLOBAL
 ════════════════════════════════════════════════════════════════════════ */
-const State = { mode: 'cot', currency: 'CLP', rows: [], extras: [], docId: null };
+const State = { mode: 'cot', currency: 'CLP', rows: [], extras: [], docId: null, firmado: false };
 
 const CURRENCIES = [
   { code:'CLP', sym:'$',    name:'Peso chileno',           dec:0, locale:'es-CL' },
@@ -2460,6 +2470,7 @@ const AutoSave = (() => {
       condPago: fv('condPago'), condMoneda: fv('condMoneda'), condReajuste: fv('condReajuste'),
       resumenServicio: fv('resumenServicio'),
       conIva: document.getElementById('chkIva')?.checked ?? true,
+      firmado: !!State.firmado,
       tieneLogo: document.getElementById('logoImg')?.style.display !== 'none',
       logoSize: document.getElementById('logoSize')?.value || '56',
       // logoSrc removido del state para no inflar payload (se guarda aparte en lsWrite('logo'))
@@ -2478,6 +2489,59 @@ const AutoSave = (() => {
 })();
 
 /* ════════════════════════════════════════════════════════════════════════
+   MÓDULO: Firma — imagen de firma del emisor (mismo patrón que el logo:
+   se guarda APARTE del state para no inflar el autosave). El flag
+   State.firmado es POR DOCUMENTO: solo si el documento está "firmado"
+   la imagen aparece sobre la línea del proveedor en los imprimibles.
+════════════════════════════════════════════════════════════════════════ */
+const Firma = (() => {
+  let _src = null;
+  const src = () => _src;
+  const set = (val, persist = true) => {
+    _src = val || null;
+    const prev = document.getElementById('firmaPreview');
+    if (prev) { prev.src = _src || ''; prev.style.display = _src ? 'block' : 'none'; }
+    const btnR = document.getElementById('btnRemoveFirma');
+    if (btnR) btnR.style.display = _src ? 'inline-flex' : 'none';
+    updateBtn();
+    if (persist) DB.save('firma', _src ? { src: _src, savedAt: new Date().toISOString() } : null, 1500);
+  };
+  const load = (input) => {
+    const file = input.files[0]; if (!file) return;
+    if (file.size > 1024 * 1024) { Toast.show('⚠️ Firma demasiado grande (>1MB) — usa una versión más liviana'); input.value = ''; return; }
+    const reader = new FileReader();
+    reader.onload = e => {
+      set(e.target.result);
+      Toast.show('✍ Firma cargada — usa "Firmar" para aplicarla a este documento');
+    };
+    reader.readAsDataURL(file);
+    input.value = '';
+  };
+  const remove = () => {
+    set(null);
+    if (State.firmado) { State.firmado = false; updateBtn(); AutoSave.flush(); }
+    Toast.show('✕ Firma eliminada');
+  };
+  const toggle = () => {
+    if (!State.firmado && !_src) { Toast.show('⚠️ Primero sube la imagen de tu firma (PNG)'); return; }
+    State.firmado = !State.firmado;
+    updateBtn();
+    AutoSave.flush();
+    Toast.show(State.firmado ? '✍ Documento firmado — la firma saldrá en el imprimible' : 'Firma retirada de este documento');
+  };
+  const updateBtn = () => {
+    const b = document.getElementById('btnFirmar'); if (!b) return;
+    b.textContent = State.firmado ? '✓ Firmado' : '✍ Firmar';
+    b.classList.toggle('primary', !!State.firmado);
+  };
+  /* Bloque <img> para los imprimibles: va ARRIBA de la línea de firma. */
+  const printImg = () => (State.firmado && _src)
+    ? '<img src="' + esc(_src) + '" alt="Firma" style="display:block;margin:0 auto 2px;max-height:58px;max-width:190px;object-fit:contain">'
+    : '';
+  return { src, set, load, remove, toggle, updateBtn, printImg };
+})();
+
+/* ════════════════════════════════════════════════════════════════════════
    MÓDULO: App
 ════════════════════════════════════════════════════════════════════════ */
 const App = (() => {
@@ -2485,6 +2549,8 @@ const App = (() => {
     Sync.setIdle();
     const localState = DB.lsRead('state'), localClients = DB.lsRead('clients', []);
     const localLogo  = DB.lsRead('logo');
+    const localFirma = DB.lsRead('firma');
+    if (localFirma?.src) Firma.set(localFirma.src, false);
     if (localState) { restoreSnapshot(localState, localLogo); } else {
       const hoy = new Date(), v30 = new Date(hoy); v30.setDate(v30.getDate() + 30);
       setField('fechaEmision', iso(hoy)); setField('fechaVence', iso(v30)); Rows.add();
@@ -2503,10 +2569,15 @@ const App = (() => {
 
   const syncFromSupabase = async () => {
     Sync.setReconnecting();
-    const sb = await DB.loadMany(['state', 'clients', 'logo']);
+    const sb = await DB.loadMany(['state', 'clients', 'logo', 'firma']);
     const sbState = sb.state;
     const sbClients = sb.clients;
     const sbLogo = sb.logo;
+    /* Firma: solo si no hay una local (no pisar la del dispositivo) */
+    if (sb.firma?.src && !DB.lsRead('firma')?.src) {
+      Firma.set(sb.firma.src, false);
+      DB.lsWrite('firma', sb.firma);
+    }
     if (sbState) {
       const localState = DB.lsRead('state');
       const lTs = (localState?.savedAt || 0);
@@ -2564,6 +2635,7 @@ const App = (() => {
     const normId = id => id ? 'r' + String(id).replace(/^r/, '') : uid();
     State.rows   = (snap.rows   || []).map(r => ({ periodoTipo:'dia', periodoDesde:'', periodoHasta:'', periodoMes:'', periodoAnio:'', vehiculo:'', patente:'', ruta:'', pasajeros:'', viajes:0, valorUnit:0, ...r, id: normId(r.id) }));
     State.extras = (snap.extras || []).map(e => ({ tipo:'unit', cantidad:1, valorUnit:0, desc:'', ...e, id: normId(e.id) }));
+    State.firmado = !!snap.firmado; Firma.updateBtn();
     if (!State.rows.length) State.rows = [];
     Rows.render(); Extras.render(); Calc.run();
     setTimeout(() => Rut.initAll(), 80);
@@ -2642,6 +2714,7 @@ const App = (() => {
     setField('resumenServicio', 'HAULER SpA ofrece el servicio de transporte corporativo de pasajeros, que comprende el traslado de personal en vehículos en óptimas condiciones mecánicas y de presentación, operados por conductores profesionales certificados. El servicio incluye combustible, peajes, seguros obligatorios y atención ante contingencias operacionales, garantizando puntualidad, seguridad vial y coordinación permanente con el cliente. La presente oferta tiene una vigencia de 30 días a partir de su fecha de emisión.');
     document.getElementById('chkIva').checked = true;
     removeLogo(); State.rows = []; State.extras = [];
+    State.firmado = false; Firma.updateBtn();
     Rows.render(); Extras.render(); Calc.run();
     Modal.close('modalHistory'); Rows.add(); AutoSave.flush();
     Toast.show('📄 Nuevo documento en blanco');
@@ -3530,9 +3603,9 @@ const PDF = (() => {
         '</div>' +
         totalsBlock +
       '</div>' +
-      /* Firmas + footer */
-      '<div style="padding:1.5rem 1.5rem .8rem;display:grid;grid-template-columns:1fr 1fr;gap:2rem">' +
-        '<div style="text-align:center"><div style="border-top:1px solid #888;padding-top:.4rem;font-size:.65rem;color:#666"><strong>' + esc(fv('prvNombre') || 'Proveedor') + '</strong><br>' + esc(fv('prvContacto') || '') + '</div></div>' +
+      /* Firmas + footer (la imagen de firma va ARRIBA de la línea del proveedor) */
+      '<div style="padding:1.5rem 1.5rem .8rem;display:grid;grid-template-columns:1fr 1fr;gap:2rem;align-items:end">' +
+        '<div style="text-align:center">' + Firma.printImg() + '<div style="border-top:1px solid #888;padding-top:.4rem;font-size:.65rem;color:#666"><strong>' + esc(fv('prvNombre') || 'Proveedor') + '</strong><br>' + esc(fv('prvContacto') || '') + '</div></div>' +
         '<div style="text-align:center"><div style="border-top:1px solid #888;padding-top:.4rem;font-size:.65rem;color:#666"><strong>' + esc(fv('cliNombre') || 'Cliente') + '</strong><br>' + esc(fv('cliContacto') || '') + '</div></div>' +
       '</div>' +
       '<div style="text-align:center;font-size:.55rem;color:#aaa;padding:.6rem 1rem .3rem;border-top:1px solid #f0f0f0">Documento generado el ' + esc(_formatDate(new Date().toISOString().slice(0, 10))) + ' · HAULER SpA · ' + esc(fv('prvEmail')) + '</div>' +
@@ -3743,8 +3816,8 @@ const PDF2 = (() => {
       '</div>';
 
     const firmas =
-      '<div style="display:grid;grid-template-columns:1fr 1fr;gap:14mm;margin-top:14mm">' +
-        '<div style="text-align:center"><div style="border-top:1px solid ' + C.ink + ';padding-top:2mm;font-size:7.5pt;color:' + C.body + '"><strong style="color:' + C.ink + '">' + esc(fv('prvNombre') || 'Proveedor') + '</strong><br>' + esc(fv('prvContacto') || '') + '</div></div>' +
+      '<div style="display:grid;grid-template-columns:1fr 1fr;gap:14mm;margin-top:14mm;align-items:end">' +
+        '<div style="text-align:center">' + Firma.printImg() + '<div style="border-top:1px solid ' + C.ink + ';padding-top:2mm;font-size:7.5pt;color:' + C.body + '"><strong style="color:' + C.ink + '">' + esc(fv('prvNombre') || 'Proveedor') + '</strong><br>' + esc(fv('prvContacto') || '') + '</div></div>' +
         '<div style="text-align:center"><div style="border-top:1px solid ' + C.ink + ';padding-top:2mm;font-size:7.5pt;color:' + C.body + '"><strong style="color:' + C.ink + '">' + esc(fv('cliNombre') || 'Cliente') + '</strong><br>' + esc(fv('cliContacto') || '') + '</div></div>' +
       '</div>';
 
