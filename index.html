@@ -1204,6 +1204,20 @@ table.ct-breakdown td:last-child { text-align: right; font-family: var(--font-mo
 }
 .info-i:hover::after, .info-i:hover::before,
 .info-i:focus::after, .info-i:focus::before { opacity: 1; visibility: visible; }
+
+/* ── Vista previa de firmas ── */
+.firmas-prev { padding: 1rem 2.2rem 1.4rem; border-top: 1px dashed #e0e0e8; }
+.fp-title { font-size:.6rem; font-weight:700; letter-spacing:1.5px; text-transform:uppercase; color:#0055CC; margin-bottom:.6rem; }
+.fp-hint { font-weight:400; letter-spacing:.2px; text-transform:none; color:#999; }
+.fp-grid { display:grid; grid-template-columns:1fr 1fr; gap:2rem; }
+.fp-box { text-align:center; }
+.fp-stage { position:relative; height:120px; }
+#fpImg { position:absolute; left:50%; bottom:0; height:80px; max-width:none; transform:translateX(-50%); cursor:grab; user-select:none; -webkit-user-drag:none; touch-action:none; display:none; }
+#fpImg:active { cursor:grabbing; }
+.fp-line { border-top:1px solid #888; padding-top:.4rem; font-size:.68rem; color:#666; }
+.fp-line strong { display:block; color:#333; }
+.fp-controls { display:flex; align-items:center; gap:1rem; margin-top:.8rem; flex-wrap:wrap; font-size:.7rem; color:#555; }
+.fp-controls label { display:flex; align-items:center; gap:.5rem; }
 </style>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
@@ -1509,6 +1523,30 @@ table.ct-breakdown td:last-child { text-align: right; font-family: var(--font-mo
       <div class="t-row"><span>Subtotal neto</span><span class="amt" id="tSubtotal">$ 0</span></div>
       <div class="t-row" id="ivaRow"><span>IVA 19%</span><span class="amt" id="tIva">$ 0</span></div>
       <div class="t-row grand"><span id="totalLabel">TOTAL COTIZACIÓN</span><span class="amt" id="tTotal">$ 0</span></div>
+    </div>
+  </div>
+
+  <!-- Vista previa de firmas: arrastra la firma para ubicarla, ajusta el
+       tamaño (slider o rueda del mouse) y apruébala. El imprimible sale
+       EXACTAMENTE como se ve aquí. -->
+  <div class="firmas-prev" id="firmasPrev" style="display:none">
+    <div class="fp-title">Firmas <span class="fp-hint">— arrastra tu firma para ubicarla · rueda del mouse o control para el tamaño · aprueba</span></div>
+    <div class="fp-grid">
+      <div class="fp-box">
+        <div class="fp-stage" id="fpStage">
+          <img id="fpImg" src="" alt="Firma" draggable="false">
+        </div>
+        <div class="fp-line"><strong id="fpProv">Proveedor</strong></div>
+      </div>
+      <div class="fp-box">
+        <div class="fp-stage"></div>
+        <div class="fp-line"><strong id="fpCli">Cliente</strong></div>
+      </div>
+    </div>
+    <div class="fp-controls">
+      <label>Tamaño <input type="range" id="fpSize" min="24" max="160" value="80" oninput="Firma.setSize(this.value)"> <span id="fpSizePx">80px</span></label>
+      <button class="btn" onclick="Firma.center()">⌖ Centrar</button>
+      <button class="btn primary" id="fpAprobar" onclick="Firma.toggle()">✓ Aprobar y firmar</button>
     </div>
   </div>
 
@@ -2495,24 +2533,68 @@ const AutoSave = (() => {
    la imagen aparece sobre la línea del proveedor en los imprimibles.
 ════════════════════════════════════════════════════════════════════════ */
 const Firma = (() => {
-  let _src = null;
+  /* _h = alto en px; _dx/_dy = desplazamiento desde el centro-sobre-la-línea
+     (dx positivo = derecha, dy positivo = baja/pisa la línea). Se persisten
+     junto con la imagen, y los imprimibles usan la MISMA geometría que la
+     vista previa (WYSIWYG). */
+  let _src = null, _h = 80, _dx = 0, _dy = 0;
   const src = () => _src;
-  const set = (val, persist = true) => {
-    _src = val || null;
+  const _persist = () => DB.save('firma', _src ? { src: _src, h: _h, dx: _dx, dy: _dy, savedAt: new Date().toISOString() } : null, 1200);
+  const set = (data, persist = true) => {
+    if (typeof data === 'string') data = { src: data };
+    _src = data?.src || null;
+    _h   = Math.max(24, Math.min(160, +data?.h || 80));
+    _dx  = +data?.dx || 0;
+    _dy  = +data?.dy || 0;
     const prev = document.getElementById('firmaPreview');
     if (prev) { prev.src = _src || ''; prev.style.display = _src ? 'block' : 'none'; }
     const btnR = document.getElementById('btnRemoveFirma');
     if (btnR) btnR.style.display = _src ? 'inline-flex' : 'none';
+    renderPreview();
     updateBtn();
-    if (persist) DB.save('firma', _src ? { src: _src, savedAt: new Date().toISOString() } : null, 1500);
+    if (persist) _persist();
+  };
+  const _applyPos = (img) => {
+    img.style.height = _h + 'px';
+    img.style.transform = 'translate(calc(-50% + ' + _dx + 'px), ' + _dy + 'px)';
+  };
+  const renderPreview = () => {
+    const wrap = document.getElementById('firmasPrev'), img = document.getElementById('fpImg');
+    if (!wrap || !img) return;
+    wrap.style.display = _src ? 'block' : 'none';
+    if (!_src) return;
+    if (img.src !== _src) img.src = _src;
+    img.style.display = 'block';
+    _applyPos(img);
+    const sl = document.getElementById('fpSize');   if (sl) sl.value = _h;
+    const px = document.getElementById('fpSizePx'); if (px) px.textContent = _h + 'px';
+    const p = document.getElementById('fpProv');    if (p) p.textContent = fv('prvNombre') || 'Proveedor';
+    const c = document.getElementById('fpCli');     if (c) c.textContent = fv('cliNombre') || 'Cliente';
+  };
+  const setSize = (v) => { _h = Math.max(24, Math.min(160, +v || 80)); renderPreview(); _persist(); };
+  const center  = () => { _dx = 0; _dy = 0; renderPreview(); _persist(); Toast.show('⌖ Firma centrada sobre la línea'); };
+  const initDrag = () => {
+    const img = document.getElementById('fpImg'); if (!img) return;
+    let drag = false, sx = 0, sy = 0, ox = 0, oy = 0;
+    img.addEventListener('pointerdown', e => { drag = true; sx = e.clientX; sy = e.clientY; ox = _dx; oy = _dy; img.setPointerCapture(e.pointerId); e.preventDefault(); });
+    img.addEventListener('pointermove', e => {
+      if (!drag) return;
+      _dx = Math.max(-160, Math.min(160, ox + (e.clientX - sx)));
+      _dy = Math.max(-60,  Math.min(45,  oy + (e.clientY - sy)));
+      _applyPos(img);
+    });
+    img.addEventListener('pointerup', e => { if (!drag) return; drag = false; try { img.releasePointerCapture(e.pointerId); } catch {} _persist(); });
+    /* Rueda del mouse sobre la firma = agrandar/achicar */
+    img.addEventListener('wheel', e => { e.preventDefault(); setSize(_h + (e.deltaY < 0 ? 4 : -4)); }, { passive: false });
   };
   const load = (input) => {
     const file = input.files[0]; if (!file) return;
     if (file.size > 1024 * 1024) { Toast.show('⚠️ Firma demasiado grande (>1MB) — usa una versión más liviana'); input.value = ''; return; }
     const reader = new FileReader();
     reader.onload = e => {
-      set(e.target.result);
-      Toast.show('✍ Firma cargada — usa "Firmar" para aplicarla a este documento');
+      set({ src: e.target.result, h: _h, dx: 0, dy: 0 });
+      Toast.show('✍ Firma cargada — ubícala y apruébala en la vista previa (al pie del documento)');
+      document.getElementById('firmasPrev')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
     };
     reader.readAsDataURL(file);
     input.value = '';
@@ -2527,18 +2609,22 @@ const Firma = (() => {
     State.firmado = !State.firmado;
     updateBtn();
     AutoSave.flush();
-    Toast.show(State.firmado ? '✍ Documento firmado — la firma saldrá en el imprimible' : 'Firma retirada de este documento');
+    Toast.show(State.firmado ? '✅ Firma aprobada — saldrá en el imprimible tal como se ve' : 'Firma retirada de este documento');
   };
   const updateBtn = () => {
-    const b = document.getElementById('btnFirmar'); if (!b) return;
-    b.textContent = State.firmado ? '✓ Firmado' : '✍ Firmar';
-    b.classList.toggle('primary', !!State.firmado);
+    const b = document.getElementById('btnFirmar');
+    if (b) { b.textContent = State.firmado ? '✓ Firmado' : '✍ Firmar'; b.classList.toggle('primary', !!State.firmado); }
+    const a = document.getElementById('fpAprobar');
+    if (a) a.textContent = State.firmado ? '✓ Aprobada — clic para retirar' : '✓ Aprobar y firmar';
   };
-  /* Bloque <img> para los imprimibles: va ARRIBA de la línea de firma. */
+  /* Bloque para los imprimibles: misma geometría que la vista previa
+     (anclada al centro sobre la línea + desplazamiento dx/dy). */
   const printImg = () => (State.firmado && _src)
-    ? '<img src="' + esc(_src) + '" alt="Firma" style="display:block;margin:0 auto 2px;max-height:58px;max-width:190px;object-fit:contain">'
+    ? '<div style="position:relative;height:' + _h + 'px;margin-bottom:2px">' +
+        '<img src="' + esc(_src) + '" alt="Firma" style="position:absolute;left:50%;bottom:0;height:' + _h + 'px;transform:translate(calc(-50% + ' + _dx + 'px), ' + _dy + 'px)">' +
+      '</div>'
     : '';
-  return { src, set, load, remove, toggle, updateBtn, printImg };
+  return { src, set, load, remove, toggle, updateBtn, setSize, center, renderPreview, initDrag, printImg };
 })();
 
 /* ════════════════════════════════════════════════════════════════════════
@@ -2550,13 +2636,13 @@ const App = (() => {
     const localState = DB.lsRead('state'), localClients = DB.lsRead('clients', []);
     const localLogo  = DB.lsRead('logo');
     const localFirma = DB.lsRead('firma');
-    if (localFirma?.src) Firma.set(localFirma.src, false);
+    if (localFirma?.src) Firma.set(localFirma, false);
     if (localState) { restoreSnapshot(localState, localLogo); } else {
       const hoy = new Date(), v30 = new Date(hoy); v30.setDate(v30.getDate() + 30);
       setField('fechaEmision', iso(hoy)); setField('fechaVence', iso(v30)); Rows.add();
     }
     Clients.list = localClients; Clients.renderSelector(); initCurrencySelect(); applyMode(State.mode, false);
-    AutoSave.init(); Counter.init();
+    AutoSave.init(); Counter.init(); Firma.initDrag(); Firma.renderPreview();
     setTimeout(() => { Clients.updateInlineStatus(); Rut.initAll(); }, 150);
 
     /* Drenar cola pendiente y luego sincronizar desde Supabase */
@@ -2575,7 +2661,7 @@ const App = (() => {
     const sbLogo = sb.logo;
     /* Firma: solo si no hay una local (no pisar la del dispositivo) */
     if (sb.firma?.src && !DB.lsRead('firma')?.src) {
-      Firma.set(sb.firma.src, false);
+      Firma.set(sb.firma, false);
       DB.lsWrite('firma', sb.firma);
     }
     if (sbState) {
@@ -2635,7 +2721,7 @@ const App = (() => {
     const normId = id => id ? 'r' + String(id).replace(/^r/, '') : uid();
     State.rows   = (snap.rows   || []).map(r => ({ periodoTipo:'dia', periodoDesde:'', periodoHasta:'', periodoMes:'', periodoAnio:'', vehiculo:'', patente:'', ruta:'', pasajeros:'', viajes:0, valorUnit:0, ...r, id: normId(r.id) }));
     State.extras = (snap.extras || []).map(e => ({ tipo:'unit', cantidad:1, valorUnit:0, desc:'', ...e, id: normId(e.id) }));
-    State.firmado = !!snap.firmado; Firma.updateBtn();
+    State.firmado = !!snap.firmado; Firma.updateBtn(); Firma.renderPreview();
     if (!State.rows.length) State.rows = [];
     Rows.render(); Extras.render(); Calc.run();
     syncFechaEmision();
