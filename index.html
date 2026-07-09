@@ -1211,9 +1211,15 @@ table.ct-breakdown td:last-child { text-align: right; font-family: var(--font-mo
 .fp-hint { font-weight:400; letter-spacing:.2px; text-transform:none; color:#999; }
 .fp-grid { display:grid; grid-template-columns:1fr 1fr; gap:2rem; }
 .fp-box { text-align:center; }
-.fp-stage { position:relative; height:120px; }
-#fpImg { position:absolute; left:50%; bottom:0; height:80px; max-width:none; transform:translateX(-50%); cursor:grab; user-select:none; -webkit-user-drag:none; touch-action:none; display:none; }
-#fpImg:active { cursor:grabbing; }
+.fp-stage { position:relative; height:150px; }
+#fpSel { position:absolute; left:50%; bottom:0; height:80px; transform:translateX(-50%); display:none; outline:1.5px dashed #9db6ff; outline-offset:3px; cursor:grab; touch-action:none; }
+#fpSel:active { cursor:grabbing; }
+#fpImg { display:block; height:100%; width:auto; max-width:none; user-select:none; -webkit-user-drag:none; pointer-events:none; }
+.fp-h { position:absolute; width:12px; height:12px; background:#fff; border:2px solid #0055FF; border-radius:3px; z-index:5; touch-action:none; }
+.fp-h[data-c="nw"] { top:-9px;   left:-9px;  cursor:nwse-resize; }
+.fp-h[data-c="ne"] { top:-9px;   right:-9px; cursor:nesw-resize; }
+.fp-h[data-c="sw"] { bottom:-9px;left:-9px;  cursor:nesw-resize; }
+.fp-h[data-c="se"] { bottom:-9px;right:-9px; cursor:nwse-resize; }
 .fp-line { border-top:1px solid #888; padding-top:.4rem; font-size:.68rem; color:#666; }
 .fp-line strong { display:block; color:#333; }
 .fp-controls { display:flex; align-items:center; gap:1rem; margin-top:.8rem; flex-wrap:wrap; font-size:.7rem; color:#555; }
@@ -1530,11 +1536,17 @@ table.ct-breakdown td:last-child { text-align: right; font-family: var(--font-mo
        tamaño (slider o rueda del mouse) y apruébala. El imprimible sale
        EXACTAMENTE como se ve aquí. -->
   <div class="firmas-prev" id="firmasPrev" style="display:none">
-    <div class="fp-title">Firmas <span class="fp-hint">— arrastra tu firma para ubicarla · rueda del mouse o control para el tamaño · aprueba</span></div>
+    <div class="fp-title">Firmas <span class="fp-hint">— arrastra la firma para ubicarla · estírala por las esquinas al tamaño que quieras · aprueba</span></div>
     <div class="fp-grid">
       <div class="fp-box">
         <div class="fp-stage" id="fpStage">
-          <img id="fpImg" src="" alt="Firma" draggable="false">
+          <div id="fpSel">
+            <img id="fpImg" src="" alt="Firma" draggable="false">
+            <span class="fp-h" data-c="nw"></span>
+            <span class="fp-h" data-c="ne"></span>
+            <span class="fp-h" data-c="sw"></span>
+            <span class="fp-h" data-c="se"></span>
+          </div>
         </div>
         <div class="fp-line"><strong id="fpProv">Proveedor</strong></div>
       </div>
@@ -1544,7 +1556,7 @@ table.ct-breakdown td:last-child { text-align: right; font-family: var(--font-mo
       </div>
     </div>
     <div class="fp-controls">
-      <label>Tamaño <input type="range" id="fpSize" min="24" max="160" value="80" oninput="Firma.setSize(this.value)"> <span id="fpSizePx">80px</span></label>
+      <span id="fpDim" style="font-family:monospace;color:#888"></span>
       <button class="btn" onclick="Firma.center()">⌖ Centrar</button>
       <button class="btn primary" id="fpAprobar" onclick="Firma.toggle()">✓ Aprobar y firmar</button>
     </div>
@@ -2543,7 +2555,7 @@ const Firma = (() => {
   const set = (data, persist = true) => {
     if (typeof data === 'string') data = { src: data };
     _src = data?.src || null;
-    _h   = Math.max(24, Math.min(160, +data?.h || 80));
+    _h   = Math.max(20, Math.min(400, +data?.h || 80));
     _dx  = +data?.dx || 0;
     _dy  = +data?.dy || 0;
     const prev = document.getElementById('firmaPreview');
@@ -2554,38 +2566,89 @@ const Firma = (() => {
     updateBtn();
     if (persist) _persist();
   };
-  const _applyPos = (img) => {
-    img.style.height = _h + 'px';
-    img.style.transform = 'translate(calc(-50% + ' + _dx + 'px), ' + _dy + 'px)';
+  const _applyPos = (sel) => {
+    sel.style.height = _h + 'px';
+    sel.style.transform = 'translate(calc(-50% + ' + _dx + 'px), ' + _dy + 'px)';
+    const dim = document.getElementById('fpDim');
+    if (dim) {
+      const img = document.getElementById('fpImg');
+      const ar = (img && img.naturalWidth && img.naturalHeight) ? img.naturalWidth / img.naturalHeight : 0;
+      dim.textContent = ar ? Math.round(_h * ar) + ' × ' + Math.round(_h) + ' px' : Math.round(_h) + ' px';
+    }
   };
   const renderPreview = () => {
-    const wrap = document.getElementById('firmasPrev'), img = document.getElementById('fpImg');
-    if (!wrap || !img) return;
+    const wrap = document.getElementById('firmasPrev'), sel = document.getElementById('fpSel'), img = document.getElementById('fpImg');
+    if (!wrap || !sel || !img) return;
     wrap.style.display = _src ? 'block' : 'none';
-    if (!_src) return;
-    if (img.src !== _src) img.src = _src;
-    img.style.display = 'block';
-    _applyPos(img);
-    const sl = document.getElementById('fpSize');   if (sl) sl.value = _h;
-    const px = document.getElementById('fpSizePx'); if (px) px.textContent = _h + 'px';
-    const p = document.getElementById('fpProv');    if (p) p.textContent = fv('prvNombre') || 'Proveedor';
-    const c = document.getElementById('fpCli');     if (c) c.textContent = fv('cliNombre') || 'Cliente';
+    if (!_src) { sel.style.display = 'none'; return; }
+    if (img.src !== _src) { img.onload = () => _applyPos(sel); img.src = _src; }
+    sel.style.display = 'block';
+    _applyPos(sel);
+    const p = document.getElementById('fpProv'); if (p) p.textContent = fv('prvNombre') || 'Proveedor';
+    const c = document.getElementById('fpCli');  if (c) c.textContent = fv('cliNombre') || 'Cliente';
   };
-  const setSize = (v) => { _h = Math.max(24, Math.min(160, +v || 80)); renderPreview(); _persist(); };
+  const setSize = (v) => { _h = Math.max(20, Math.min(400, +v || 80)); renderPreview(); _persist(); };
   const center  = () => { _dx = 0; _dy = 0; renderPreview(); _persist(); Toast.show('⌖ Firma centrada sobre la línea'); };
   const initDrag = () => {
-    const img = document.getElementById('fpImg'); if (!img) return;
+    const sel = document.getElementById('fpSel'), stage = document.getElementById('fpStage');
+    if (!sel || !stage) return;
+    const ar = () => {
+      const img = document.getElementById('fpImg');
+      return (img && img.naturalWidth && img.naturalHeight) ? img.naturalWidth / img.naturalHeight : 2.5;
+    };
+    /* MOVER: arrastrando el cuerpo de la firma */
     let drag = false, sx = 0, sy = 0, ox = 0, oy = 0;
-    img.addEventListener('pointerdown', e => { drag = true; sx = e.clientX; sy = e.clientY; ox = _dx; oy = _dy; img.setPointerCapture(e.pointerId); e.preventDefault(); });
-    img.addEventListener('pointermove', e => {
-      if (!drag) return;
-      _dx = Math.max(-160, Math.min(160, ox + (e.clientX - sx)));
-      _dy = Math.max(-60,  Math.min(45,  oy + (e.clientY - sy)));
-      _applyPos(img);
+    sel.addEventListener('pointerdown', e => {
+      if (e.target.classList.contains('fp-h')) return;   /* las esquinas tienen su propio manejo */
+      drag = true; sx = e.clientX; sy = e.clientY; ox = _dx; oy = _dy;
+      sel.setPointerCapture(e.pointerId); e.preventDefault();
     });
-    img.addEventListener('pointerup', e => { if (!drag) return; drag = false; try { img.releasePointerCapture(e.pointerId); } catch {} _persist(); });
-    /* Rueda del mouse sobre la firma = agrandar/achicar */
-    img.addEventListener('wheel', e => { e.preventDefault(); setSize(_h + (e.deltaY < 0 ? 4 : -4)); }, { passive: false });
+    sel.addEventListener('pointermove', e => {
+      if (!drag) return;
+      _dx = Math.max(-260, Math.min(260, ox + (e.clientX - sx)));
+      _dy = Math.max(-120, Math.min(70,  oy + (e.clientY - sy)));
+      _applyPos(sel);
+    });
+    sel.addEventListener('pointerup', e => { if (!drag) return; drag = false; try { sel.releasePointerCapture(e.pointerId); } catch {} _persist(); });
+    /* Rueda del mouse = tamaño fino (bonus) */
+    sel.addEventListener('wheel', e => { e.preventDefault(); setSize(_h + (e.deltaY < 0 ? 5 : -5)); }, { passive: false });
+
+    /* REDIMENSIONAR por las esquinas: la esquina opuesta queda ANCLADA,
+       como en un editor gráfico. Proporción siempre conservada. */
+    sel.querySelectorAll('.fp-h').forEach(hd => {
+      hd.addEventListener('pointerdown', e => {
+        e.preventDefault(); e.stopPropagation();
+        const corner = hd.dataset.c;                       /* nw|ne|sw|se */
+        const hxs = corner.includes('e') ? 1 : -1;         /* lado x del tirador */
+        const hys = corner.includes('s') ? 1 : -1;         /* lado y del tirador */
+        const r = ar();
+        const rect = stage.getBoundingClientRect();
+        const cx = rect.left + rect.width / 2 + _dx;       /* centro-abajo actual */
+        const by = rect.bottom + _dy;
+        const w = _h * r;
+        const axp = cx - hxs * w / 2;                      /* esquina opuesta (ancla) */
+        const ayp = (hys === 1) ? by - _h : by;
+        const move = ev => {
+          const gw = (ev.clientX - axp) * hxs;             /* crecimiento en x hacia el cursor */
+          const gh = (ev.clientY - ayp) * hys;             /* crecimiento en y hacia el cursor */
+          const nh = Math.max(20, Math.min(400, Math.max(gh, gw / r)));
+          const nw2 = nh * r;
+          const ncx = axp + hxs * nw2 / 2;                 /* nuevo centro-abajo manteniendo el ancla */
+          const nby = (hys === 1) ? ayp + nh : ayp;
+          _h = nh;
+          _dx = Math.max(-260, Math.min(260, ncx - (rect.left + rect.width / 2)));
+          _dy = Math.max(-120, Math.min(70,  nby - rect.bottom));
+          _applyPos(sel);
+        };
+        const up = ev => {
+          window.removeEventListener('pointermove', move);
+          window.removeEventListener('pointerup', up);
+          _persist();
+        };
+        window.addEventListener('pointermove', move);
+        window.addEventListener('pointerup', up);
+      });
+    });
   };
   const load = (input) => {
     const file = input.files[0]; if (!file) return;
@@ -2593,7 +2656,7 @@ const Firma = (() => {
     const reader = new FileReader();
     reader.onload = e => {
       set({ src: e.target.result, h: _h, dx: 0, dy: 0 });
-      Toast.show('✍ Firma cargada — ubícala y apruébala en la vista previa (al pie del documento)');
+      Toast.show('✍ Firma cargada — arrástrala y estírala por las esquinas en la vista previa (al pie del documento)');
       document.getElementById('firmasPrev')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
     };
     reader.readAsDataURL(file);
